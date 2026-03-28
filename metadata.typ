@@ -1,0 +1,12 @@
+#let thesis-type-title = "Bachelor Thesis"
+#let title = "On the Containment and Termination of the Minotaur"
+#let author = "Theseus of Crete"
+#let university = "University of Crete"
+#let department = "Department of Architecture"
+#let institute = "Institute for Labyrinths and Mazes"
+#let student-id = "1234567"
+#let submission-date = [14\.07\.0700]
+#let period = [01\.04\.0700]
+#let reviewer = "Prof. D. Daedalus"
+#let reviewer-university = "University of Crete"
+#let reviewer-department = "Department of Architecture"
