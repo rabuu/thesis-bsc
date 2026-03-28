@@ -1,5 +1,6 @@
 #let thesis-type-title = "Bachelor Thesis"
-#let title = "Linear Continuations in Sequent-Calculus-Based Compilation"
+#let title-linebreak = [Linearity of Continuations in\ Sequent-Calculus-Based Compilation]
+#let title = [Linearity of Continuations in Sequent-Calculus-Based Compilation]
 #let author = "Rasmus Buurman"
 #let university = "Eberhard Karls Universität Tübingen"
 #let department = "Mathematisch-Naturwissenschaftliche Fakultät"

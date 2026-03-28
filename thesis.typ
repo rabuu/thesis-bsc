@@ -22,9 +22,9 @@
   justify: true,
 )
 
-#theseus.title.basic(
+#theseus.title.se-tuebingen(
   author: meta.author,
-  title: meta.title,
+  title: meta.title-linebreak,
   thesis-type-title: meta.thesis-type-title,
   university: meta.university,
   department: meta.department,
