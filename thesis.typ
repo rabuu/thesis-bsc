@@ -1,7 +1,10 @@
+#import "@preview/hydra:0.6.2": hydra
+
 // TODO: Replace with @preview
 #import "@local/theseus:0.1.0"
 
 #import "metadata.typ" as meta
+#import "header.typ": header
 
 #set document(
   title: meta.title,
@@ -42,13 +45,18 @@
 )
 
 #set page(
-  header: theseus.header.basic(
-    meta.title,
-    meta.author,
-    line: true,
-  ),
+  header: context {
+    let odd = calc.odd(here().page())
+    let text = if odd {
+      hydra(1, skip-starting: false)
+    } else {
+      hydra(2, skip-starting: false)
+    }
+    let alignment = if odd { left } else { right }
+    header(text, alignment: alignment)
+  },
   margin: (
-    inside: 3.0cm,
+    inside: 3.5cm,
     outside: 2.5cm,
   ),
 )
