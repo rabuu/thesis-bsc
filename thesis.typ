@@ -4,7 +4,6 @@
 #import "@local/theseus:0.1.0"
 
 #import "metadata.typ" as meta
-#import "header.typ": header
 
 #set document(
   title: meta.title,
@@ -53,7 +52,7 @@
       hydra(2, skip-starting: false)
     }
     let alignment = if odd { left } else { right }
-    header(text, alignment: alignment)
+    theseus.header.basic(text, alignment: alignment)
   },
   margin: (
     inside: 3.5cm,
