@@ -12,7 +12,6 @@
 
 #set page(
   paper: "a4",
-  numbering: none,
 )
 
 #set text(
@@ -23,6 +22,10 @@
 #set par(
   justify: true,
 )
+
+//
+// TITLE
+//
 
 #theseus.title.se-tuebingen(
   author: meta.author,
@@ -43,11 +46,35 @@
   backside: true,
 )
 
+//
+// FRONTMATTER
+//
+
+#set page(numbering: "i")
+#counter(page).update(1)
+
+#include "content/frontmatter.typ"
+#pagebreak(to: "odd")
+
+//
+// TABLE OF CONTENTS
+//
+
+#set page(numbering: "1")
+#counter(page).update(1)
+
+#outline()
+#pagebreak(to: "odd")
+
+//
+// MAIN PART
+//
+
 #set page(
   header: context {
     let odd = calc.odd(here().page())
     let text = if odd {
-      hydra(1, skip-starting: false)
+      hydra(1, skip-starting: true)
     } else {
       hydra(2, skip-starting: false)
     }
@@ -63,10 +90,10 @@
 #set heading(numbering: "1.")
 
 = First Chapter
-#lorem(100)
+#lorem(400)
 
 = Second Chapter
-#lorem(300)
+#lorem(500)
 
 = Third Chapter
-#lorem(700)
+#lorem(300)
