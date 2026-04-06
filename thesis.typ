@@ -4,6 +4,8 @@
 #import "@local/theseus:0.1.0"
 
 #import "metadata.typ" as meta
+#import "settings.typ"
+#import "util.typ": *
 
 #set document(
   title: meta.title,
@@ -12,16 +14,24 @@
 
 #set page(
   paper: "a4",
+  binding: settings.binding,
+  margin: (
+    inside: settings.margin-inside,
+    outside: settings.margin-outside,
+  ),
 )
 
 #set text(
-  font: "Libertinus Serif",
-  size: 12pt,
+  font: settings.font-serif,
+  size: settings.font-size-normal,
 )
 
 #set par(
   justify: true,
 )
+
+#show heading: set text(font: settings.font-sans)
+#show heading.where(level: 1): set text(size: settings.font-size-chapter)
 
 //
 // TITLE
@@ -50,47 +60,56 @@
 // FRONTMATTER
 //
 
-#set page(numbering: "i")
 #counter(page).update(1)
+#set page(numbering: "i")
 
 #include "content/frontmatter.typ"
-#pagebreak(to: "odd")
-
-//
-// TABLE OF CONTENTS
-//
-
-#set page(numbering: "1")
-#counter(page).update(1)
-
-#outline()
-#pagebreak(to: "odd")
+#pagebreak-to()
 
 //
 // MAIN PART
 //
 
+#counter(page).update(1)
+
 #set page(
+  numbering: "1 / 1",
   header: context {
+    let current-page = here().page()
+    let chapters = query(heading.where(level: 1))
+    if chapters.any(chapter => chapter.location().page() == current-page) {
+      return none
+    }
+
     let odd = calc.odd(here().page())
     let text = if odd {
-      hydra(1, skip-starting: true)
+      hydra(1, skip-starting: false)
     } else {
       hydra(2, skip-starting: false)
     }
     let alignment = if odd { left } else { right }
-    theseus.header.basic(text, alignment: alignment)
+    theseus.header.basic(text, alignment: alignment, line: true)
   },
-  margin: (
-    inside: 3.5cm,
-    outside: 2.5cm,
-  ),
 )
 
-#set heading(numbering: "1.")
+#set heading(numbering: "1.1")
+
+#show heading.where(level: 1): it => {
+  pagebreak-to()
+  {
+    let it = counter(heading).display(it.numbering) + h(1em) + it.body
+    pad(it, top: 3cm, bottom: 1cm)
+  }
+}
 
 = First Chapter
-#lorem(400)
+#lorem(60)
+
+#lorem(70)
+
+== Foo
+=== Bar
+#lorem(600)
 
 = Second Chapter
 #lorem(500)
