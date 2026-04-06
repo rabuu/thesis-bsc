@@ -61,7 +61,7 @@
 #counter(page).update(1)
 #set page(numbering: "i")
 
-#include "content/frontmatter.typ"
+#include "content/0-frontmatter.typ"
 #pagebreak-to()
 
 //
@@ -100,17 +100,6 @@
   }
 }
 
-= First Chapter
-#lorem(60)
-
-#lorem(70)
-
-== Foo
-=== Bar
-#lorem(600)
-
-= Second Chapter
-#lorem(500)
-
-= Third Chapter
-#lorem(300)
+#include "content/1-introduction.typ"
+#include "content/2-foo.typ"
+#include "content/3-bar.typ"
