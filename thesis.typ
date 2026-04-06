@@ -1,7 +1,5 @@
-#import "@preview/hydra:0.6.2": hydra
-
-// TODO: Replace with @preview
-#import "@local/theseus:0.1.0"
+#import "deps.typ": *
+#import hydra: hydra
 
 #import "metadata.typ" as meta
 #import "settings.typ"
