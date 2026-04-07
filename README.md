@@ -9,3 +9,6 @@ To build the thesis:
 ```sh
 just compile
 ```
+
+## Fonts
+You need to install `Libertinus Serif` and `Libertinus Sans`.
