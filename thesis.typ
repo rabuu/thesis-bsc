@@ -101,5 +101,12 @@
 }
 
 #include "content/1-introduction.typ"
-#include "content/2-foo.typ"
-#include "content/3-bar.typ"
+#include "content/2-fun.typ"
+#include "content/3-core.typ"
+#include "content/4-axcut.typ"
+#include "content/5-compilation.typ"
+#include "content/6-discussion.typ"
+
+#show: appendix
+
+#include "content/A-implementation.typ"
