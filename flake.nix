@@ -17,6 +17,7 @@
             typst
             tinymist
             typstyle
+            hayagriva
             just
             fd
           ];

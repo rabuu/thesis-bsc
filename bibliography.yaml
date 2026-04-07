@@ -1,0 +1,21 @@
+Binder2024grokking:
+  type: article
+  title: Grokking the Sequent Calculus (Functional Pearl)
+  author:
+  - Binder, David
+  - Tzschentke, Marco
+  - Müller, Marius
+  - Ostermann, Klaus
+  date: 2024-08
+  url: https://doi.org/10.1145/3674639
+  serial-number:
+    doi: 10.1145/3674639
+  parent:
+    type: periodical
+    title: Proc. ACM Program. Lang.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: ICFP
+    volume: 8
+

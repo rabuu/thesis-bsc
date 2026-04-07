@@ -95,7 +95,11 @@
 #show heading.where(level: 1): it => {
   pagebreak-to()
   {
-    let it = counter(heading).display(it.numbering) + h(1em) + it.body
+    let it = if it.has("numbering") and it.numbering != none {
+      counter(heading).display(it.numbering) + h(1em) + it.body
+    } else {
+      it
+    }
     pad(it, top: 3cm, bottom: 1cm)
   }
 }
@@ -106,6 +110,8 @@
 #include "content/4-axcut.typ"
 #include "content/5-compilation.typ"
 #include "content/6-discussion.typ"
+
+#bibliography("bibliography.yaml", style: "association-for-computing-machinery")
 
 #show: appendix
 
