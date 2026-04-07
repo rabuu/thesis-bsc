@@ -11,8 +11,12 @@
 
 #pagebreak()
 
-= Zusammenfassung
-#lorem(100)
+#[
+  #set text(lang: "de")
+
+  = Zusammenfassung
+  #lorem(100)
+]
 
 #pagebreak-to()
 
