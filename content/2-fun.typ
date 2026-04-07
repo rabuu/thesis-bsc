@@ -1,4 +1,4 @@
-#import "/globals.typ": *
+#import "/lib/lib.typ": *
 
 = Restricting the Surface Language #Fun
 

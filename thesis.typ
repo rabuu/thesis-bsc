@@ -1,9 +1,7 @@
-#import "deps.typ": *
-#import hydra: hydra
+#import "lib/lib.typ": *
+#import deps: hydra, theseus
 
-#import "metadata.typ" as meta
-#import "settings.typ"
-#import "util.typ": *
+#import hydra: hydra
 
 #set document(
   title: meta.title,

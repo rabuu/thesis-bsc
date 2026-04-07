@@ -1,4 +1,4 @@
-#import "/globals.typ": *
+#import "/lib/lib.typ": *
 
 = Compiling Efficient Machine Code
 

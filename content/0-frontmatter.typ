@@ -1,5 +1,4 @@
-#import "/settings.typ"
-#import "/util.typ": *
+#import "/lib/lib.typ": *
 
 #set heading(outlined: false)
 #show heading: it => {

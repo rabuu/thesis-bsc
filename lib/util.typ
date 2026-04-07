@@ -1,4 +1,4 @@
-#import "/settings.typ"
+#import "settings.typ"
 
 #let pagebreak-to(
   disable-header: true,

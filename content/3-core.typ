@@ -1,4 +1,4 @@
-#import "/globals.typ": *
+#import "/lib/lib.typ": *
 
 = The Intermediate Language #Core
 #lorem(200)
