@@ -109,7 +109,11 @@
 #include "content/5-compilation.typ"
 #include "content/6-discussion.typ"
 
-#bibliography("bibliography.yaml", style: "association-for-computing-machinery")
+#bibliography(
+  "bibliography.yaml",
+  style: "association-for-computing-machinery",
+  title: "References",
+)
 
 #show: appendix
 
