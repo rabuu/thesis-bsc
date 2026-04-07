@@ -1,6 +1,7 @@
 VIEWER := "okular"
 ENTRY := "thesis.typ"
 ARTIFACT := "thesis.pdf"
+SYNC_PATH := "~/uni/ba/thesis.pdf"
 
 alias c := compile
 alias w := watch
@@ -30,3 +31,6 @@ clean:
 
 configure-git-hooks:
 	git config core.hooksPath scripts/git-hooks
+
+sync: compile
+	cp {{ARTIFACT}} {{SYNC_PATH}}
