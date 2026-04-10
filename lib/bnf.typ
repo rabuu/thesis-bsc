@@ -4,6 +4,7 @@
   column-gutter: 1em,
   row-gutter: 0.75em,
   padding-line: false,
+  fill-width: false,
   ..body,
 ) = {
   assert(body.named().len() == 0)
@@ -40,7 +41,7 @@
 
   grid(
     // meta-variable, symbol, body, annotation
-    columns: 4,
+    columns: if fill-width { (auto, auto, 1fr, auto) } else { 4 },
     column-gutter: column-gutter,
     row-gutter: row-gutter,
     align: (right, right, left, left + horizon),
