@@ -104,6 +104,7 @@
 }
 
 #include "content/1-introduction.typ"
+#include "content/2-background.typ"
 
 #bibliography(
   "bibliography.yaml",
