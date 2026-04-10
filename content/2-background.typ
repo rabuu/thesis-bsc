@@ -1,13 +1,13 @@
 #import "/lib/lib.typ": *
 
+#import syntax: *
+#show: syntax.syntax-config
+
 = Background
 
 == The Surface Language #Fun
 
 === Syntax
-#import syntax.fun: *
-#show sym.colon: math.scripts
-
 #bnf(
   ($p$, "Producers / Terms"),
   alt(
@@ -72,5 +72,87 @@
 )
 
 == The High-Level Intermediate Language #Core
+
+=== Syntax
+#bnf(
+  ($p$, "Producers"),
+  alt(
+    $var(x)$,
+    $mu alpha. s$,
+    $K(sigma)$,
+    $NEW braces(D(Gamma) => s, ...)$,
+  ),
+  alt(
+    $n$,
+    $p + p$,
+  ),
+
+  ($c$, "Consumers"),
+  alt(
+    $covar(alpha)$,
+    $tilde(mu) x. s$,
+    $D(sigma)$,
+    $CASE braces(K(Gamma) => s, ...)$,
+  ),
+
+  ($s$, "Statements"),
+  alt(
+    $cut(p, c)$,
+    $IF p equiv 0 braces(s) ELSE braces(s)$,
+    $f(sigma)$,
+  ),
+  alt(
+    $EXIT p$,
+  ),
+
+  ($sigma$, "Arguments"),
+  alt(
+    $empty$,
+    $sigma, sp p$,
+    $sigma, sp c$,
+  ),
+
+  ($v$, "(Co)Variables"),
+  alt(
+    $var(x)$,
+    $covar(alpha)$,
+  ),
+
+  ($tau$, "Types"),
+  alt(
+    $i64$,
+    $T$,
+  ),
+
+  ($chi$, "Chirality"),
+  alt(
+    $prd$,
+    $cns$,
+  ),
+
+  ($Gamma$, "Typing Contexts"),
+  alt(
+    $empty$,
+    $Gamma, sp v :^chi tau$,
+  ),
+
+  ($pi$, "Polarity"),
+  alt(
+    $DATA$,
+    $CODATA$,
+  ),
+
+  ($delta$, "Declarations"),
+  alt(
+    $DEF f(Gamma) : tau braces(p)$,
+    $pi sp T braces(K(Gamma), ...)$,
+  ),
+
+  ($Theta$, "Programs"),
+  alt(
+    $empty$,
+    $Theta, sp delta$,
+  ),
+)
 
 == The Lower-Level Intermediate Language #AxCut

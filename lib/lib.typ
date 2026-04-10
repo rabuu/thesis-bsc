@@ -3,5 +3,5 @@
 #import "util.typ": *
 #import "metadata.typ" as meta
 #import "settings.typ"
-#import "syntax/syntax.typ"
+#import "syntax.typ"
 #import "bnf.typ": alt, bnf
