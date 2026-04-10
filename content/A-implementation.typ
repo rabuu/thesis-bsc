@@ -1,3 +1,1 @@
 = Implementation
-
-#lorem(300)

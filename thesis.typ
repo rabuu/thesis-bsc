@@ -90,24 +90,20 @@
 
 #set heading(numbering: "1.1")
 
-#show heading.where(level: 1): it => {
-  pagebreak-to()
-  {
-    let it = if it.has("numbering") and it.numbering != none {
-      counter(heading).display(it.numbering) + h(1em) + it.body
-    } else {
-      it
-    }
-    pad(it, top: 3cm, bottom: 1cm)
+#show heading: it => {
+  if it.has("numbering") and it.numbering != none {
+    counter(heading).display(it.numbering) + h(1em) + it.body
+  } else {
+    it
   }
 }
 
+#show heading.where(level: 1): it => {
+  pagebreak-to()
+  pad(it, top: 3cm, bottom: 1cm)
+}
+
 #include "content/1-introduction.typ"
-#include "content/2-fun.typ"
-#include "content/3-core.typ"
-#include "content/4-axcut.typ"
-#include "content/5-compilation.typ"
-#include "content/6-discussion.typ"
 
 #bibliography(
   "bibliography.yaml",
