@@ -124,9 +124,64 @@ _Producer Typing:_ $Theta mid Gamma tack p : tau$
     $Gamma tack p_2 : tau$,
     $Gamma tack IF p equiv 0 braces(p_1) ELSE braces(p_2) : tau$,
   )),
+  prooftree(rule(
+    name: rn("Label"),
+    $Gamma, alpha :^cns tau tack p : tau$,
+    $Gamma tack LABEL alpha braces(p) : tau$,
+  )),
+  prooftree(rule(
+    name: rn("Goto"),
+    $Gamma tack p : tau$,
+    $alpha :^cns tau in Gamma$,
+    $Gamma tack GOTO alpha sp (p) : tau$,
+  )),
+  prooftree(rule(
+    name: rn("Exit"),
+    $Gamma tack p : i64$,
+    $Gamma tack EXIT p : tau$,
+  )),
+  prooftree(rule(
+    name: rn("Ctor"),
+    $DATA T braces(..., K(Gamma'), ...) in Theta$,
+    $Theta mid Gamma tack sigma : Gamma'$,
+    $Theta mid Gamma tack K(sigma) : T$,
+  )),
+  prooftree(rule(
+    name: rn("Case"),
+    $DATA T braces(K_1(Gamma_1), ...) in Theta$,
+    $Gamma tack p : T$,
+    $forall i: Gamma, Gamma_i tack p_i : tau$,
+    $Theta mid Gamma tack p.CASE braces(K_1(Gamma_1) => p_1, ...) : tau$,
+  )),
+  prooftree(rule(
+    name: rn("Dtor"),
+    $CODATA T braces(..., D(Gamma') : tau, ...) in Theta$,
+    $Gamma tack p : T$,
+    $Theta mid Gamma tack sigma : Gamma'$,
+    $Theta mid Gamma tack p.D(sigma) : tau$,
+  )),
+  prooftree(rule(
+    name: rn("New"),
+    $CODATA T braces(D_1(Gamma_1) : tau_1, ...) in Theta$,
+    $forall i: Gamma, Gamma_i tack p_i : tau_i$,
+    $Theta mid Gamma tack NEW braces(D_1(Gamma_1) => p_1, ...) : T$,
+  )),
+  prooftree(rule(
+    name: rn("Call"),
+    $DEF f(Gamma') : tau braces(...) in Theta$,
+    $Theta mid Gamma tack sigma : Gamma'$,
+    $Theta mid Gamma tack f(sigma) : tau$,
+  )),
 )
 
-// TODO: ...
+_Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
+#rule-set(
+  prooftree(rule(
+    name: rn("Covar"),
+    $alpha :^cns tau in Gamma$,
+    $Gamma tack alpha :^cns tau$,
+  )),
+)
 
 == The High-Level Intermediate Language #Core
 
