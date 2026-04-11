@@ -22,6 +22,8 @@
   size: settings.font-size-normal,
 )
 
+#show math.equation: set text(font: settings.font-math)
+
 #set par(
   justify: true,
 )

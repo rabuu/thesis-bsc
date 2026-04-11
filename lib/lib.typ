@@ -5,3 +5,4 @@
 #import "settings.typ"
 #import "syntax.typ"
 #import "bnf.typ": alt, bnf
+#import "prooftree.typ"
