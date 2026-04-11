@@ -18,7 +18,7 @@ watch:
 open:
 	{{VIEWER}} {{ARTIFACT}} &
 
-watch-open: compile open watch
+watch-open: open watch
 
 format:
 	typstyle --inplace .
