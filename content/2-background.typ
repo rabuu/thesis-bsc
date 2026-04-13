@@ -96,6 +96,8 @@
     )),
   )
 
+  #line(length: 80%)
+
   _Producer Typing:_ $Theta mid Gamma tack p : tau$
   #rule-set(
     prooftree(rule(
@@ -175,6 +177,8 @@
       $Theta mid Gamma tack f(sigma) : tau$,
     )),
   )
+
+  #line(length: 80%)
 
   _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
   #rule-set(
