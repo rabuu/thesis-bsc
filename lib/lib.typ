@@ -7,4 +7,4 @@
 #import "bnf.typ": alt, bnf
 #import "prooftree.typ"
 
-#import deps.mannot: *
+#let markhl = deps.mannot.markhl.with(color: yellow)
