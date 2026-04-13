@@ -6,3 +6,5 @@
 #import "syntax.typ"
 #import "bnf.typ": alt, bnf
 #import "prooftree.typ"
+
+#import deps.mannot: *
