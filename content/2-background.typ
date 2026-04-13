@@ -267,4 +267,28 @@ _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
   ),
 )
 
+== Translation from #Fun to #Core
+#let translate(x, with: none) = $C〚#x〛_#with$
+
+$translate(dot) : "Declaration"_Fun -> "Declaration"_Core$
+$
+  translate(DEF f(Gamma) : i64 braces(p)) & := DEF f(Gamma, alpha :^cns tau) braces(translate(p, with: alpha)) quad(alpha "fresh") \
+  translate(DEF "main"(Gamma) : i64 braces(p)) & := DEF "main"(Gamma) braces(translate(p, with: tilde(mu)x.EXIT x)) \
+  translate(CODATA T braces(D_1(Gamma_1): tau_1, ...)) & := CODATA T braces(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
+  translate(DATA T braces(K_1(Gamma_1), ...)) & := DATA T braces(K_1(Gamma_1), ...)
+$
+
+$translate(dot) : "Producer"_Fun -> "Producer"_Core$
+$
+  translate(x) & := x \
+  translate(n) & := n \
+  translate(p_1 + p_2) & := translate(p_1) + translate(p_2) \
+  translate(K(sigma)) & := K(translate(sigma)) \
+  translate(NEW braces(D_1(Gamma_1) => p_1, ...)) & := NEW braces(D_1(Gamma_1, alpha_1) => translate(p_1, with: alpha_1), ...) \
+  translate(LABEL alpha braces(p)) &:= mu alpha. translate(p, with: alpha) \
+  translate(p) & := mu alpha. translate(p, with: alpha) quad "for all other producers" p
+$
+
+#text(fill: red)[Unfinished...]
+
 == The Lower-Level Intermediate Language #AxCut
