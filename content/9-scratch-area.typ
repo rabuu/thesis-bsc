@@ -5,6 +5,21 @@
 
 = Scratch Area
 
+== Syntax for Linear Context Bindings
+#bnf(
+  (markhl($rho$), markhl("Quantity")),
+  markhl(alt(
+    $1$,
+    $omega quad "(mostly ommitted)"$,
+  )),
+
+  ($Gamma$, "Typing Contexts"),
+  alt(
+    $empty$,
+    $Gamma, sp v :_markhl(rho)^chi tau$,
+  ),
+)
+
 == Translation from #Fun to #Core
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
