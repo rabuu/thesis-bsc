@@ -276,6 +276,80 @@
   )
 ]
 
+== Typing Rules
+
+#figure[
+  Producer Typing: $Theta mid Gamma tack p :^prd tau$
+  #rule-set(
+    prooftree(rule(
+      name: rn("Act-R"),
+      $Gamma, alpha :^cns tau tack s$,
+      $Gamma tack mu a. s :^prd tau$,
+    )),
+    prooftree(rule(
+      name: rn("New"),
+      $CODATA T braces(D_1(Gamma_1), ...) in Theta$,
+      $forall i: Gamma, Gamma_i tack s_i$,
+      $Theta mid Gamma tack NEW braces(D_1(Gamma_1) => s_1, ...) :^prd T$,
+    )),
+  )
+  The rules #rn("Var"), #rn("Ctor"), #rn("Plus") are identical to #Fun.
+
+  #line(length: 80%)
+
+  Consumer Typing: $Theta mid Gamma tack c :^cns tau$
+  #rule-set(
+    prooftree(rule(
+      name: rn("Act-L"),
+      $Gamma, x :^prd tau tack s$,
+      $Gamma tack tilde(mu)x. s :^cns tau$,
+    )),
+    prooftree(rule(
+      name: rn("Case"),
+      $DATA T braces(K_1(Gamma_1), ...) in Theta$,
+      $forall i: Gamma, Gamma_i tack s_i$,
+      $Theta mid Gamma tack CASE braces(K_1(Gamma_1) => s_1, ...) :^cns T$,
+    )),
+    prooftree(rule(
+      name: rn("Dtor"),
+      $CODATA T braces(..., D(Gamma'), ...) in Theta$,
+      $Theta mid Gamma tack sigma : Gamma'$,
+      $Theta mid Gamma tack D(sigma) :^cns T$,
+    )),
+  )
+  The rule #rn("Covar") is identical to #Fun.
+
+  #line(length: 80%)
+
+  Statement Typing: $Theta mid Gamma tack s$
+  #rule-set(
+    prooftree(rule(
+      name: rn("Cut"),
+      $Gamma tack p :^prd tau$,
+      $Gamma tack c :^cns tau$,
+      $Gamma tack cut(p, c)$,
+    )),
+    prooftree(rule(
+      name: rn("IfZ"),
+      $Gamma tack p :^prd i64$,
+      $Gamma tack s_1$,
+      $Gamma tack s_2$,
+      $Gamma tack IF p equiv 0 braces(s_1) ELSE braces(s_1)$,
+    )),
+    prooftree(rule(
+      name: rn("Call"),
+      $DEF f(Gamma') braces(...) in Theta$,
+      $Theta mid Gamma tack sigma : Gamma'$,
+      $Theta mid Gamma tack f(sigma)$,
+    )),
+    prooftree(rule(
+      name: rn("Exit"),
+      $Gamma tack p :^prd i64$,
+      $Gamma tack EXIT p$,
+    )),
+  )
+]
+
 == Translation from #Fun to #Core
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
