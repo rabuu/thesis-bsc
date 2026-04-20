@@ -1,0 +1,15 @@
+codata
+font-math
+font-sans
+font-serif
+font-size-chapter
+font-size-normal
+margin-inside
+margin-outside
+reviewer-department
+reviewer-university
+sequent
+student-id
+submission-date
+thesis-type-title
+title-linebreak

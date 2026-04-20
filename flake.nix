@@ -20,6 +20,7 @@
             hayagriva
             just
             fd
+            harper
           ];
 
           shellHook = "unset SOURCE_DATE_EPOCH";
