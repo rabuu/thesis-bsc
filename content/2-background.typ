@@ -276,7 +276,7 @@
   )
 ]
 
-== Typing Rules
+=== Typing Rules
 
 #figure[
   Producer Typing: $Theta mid Gamma tack p :^prd tau$
