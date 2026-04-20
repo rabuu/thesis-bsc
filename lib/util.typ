@@ -24,3 +24,5 @@
 
   #body
 ]
+
+#let todo(body) = text(fill: red, body)
