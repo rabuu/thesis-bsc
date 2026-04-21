@@ -28,11 +28,13 @@
 // TABLE OF CONTENTS
 //
 
-#show outline.entry.where(
-  level: 1,
-): it => {
-  set block(above: 1.2em)
-  strong(it)
+#show outline.entry: it => {
+  show linebreak: none
+  it
 }
+
+#show outline.entry.where(level: 1): set outline.entry(fill: none)
+#show outline.entry.where(level: 1): set block(above: 1.35em)
+#show outline.entry.where(level: 1): set text(weight: "semibold")
 
 #outline()
