@@ -24,6 +24,9 @@
 
 #show math.equation: set text(font: settings.font-math)
 
+// NOTE: smallcaps don't work in math font
+#show smallcaps: set text(font: settings.font-serif)
+
 #set par(
   justify: true,
 )

@@ -79,17 +79,17 @@
   _Argument Typing:_ $Theta mid Gamma tack sigma : Gamma'$
   #rule-set(
     prooftree(rule(
-      name: rn("Arg1"),
+      name: rn($#smallcaps("Arg") _1$),
       $Theta mid Gamma tack empty : empty$,
     )),
     prooftree(rule(
-      name: rn("Arg2"),
+      name: rn($#smallcaps("Arg") _2$),
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack p : tau$,
       $Theta mid Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
     )),
     prooftree(rule(
-      name: rn("Arg2"),
+      name: rn($#smallcaps("Arg") _3$),
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack c :^cns tau$,
       $Theta mid Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
