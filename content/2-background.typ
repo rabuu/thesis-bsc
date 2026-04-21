@@ -417,3 +417,31 @@
 ]
 
 == The Lower-Level Intermediate Language #AxCut
+
+=== Syntax
+#figure[
+  #bnf(
+    ($v$, "(Co)Variables"),
+    alt(
+      $var(x)$,
+      $covar(alpha)$,
+    ),
+
+    ($s$, "Statements"),
+    $LET v = X(sigma); sp s$,
+    $INVOKE v sp X(sigma)$,
+    $SWITCH v braces(X(Gamma) => s, ...)$,
+    $CREATE v = Gamma braces(X(Gamma) => s, ...); sp s$,
+    $LIT v <- n; sp s$,
+    $v <- v + v; sp s$,
+    $IF v equiv 0 braces(s) ELSE braces(s)$,
+    $f(sigma)$,
+    $SUBSTITUTE[Gamma := sigma]; sp s$,
+    $EXIT v$,
+    ($sigma$, "Arguments"),
+    alt(
+      $empty$,
+      $sigma, sp v$,
+    ),
+  )
+]

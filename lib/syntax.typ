@@ -20,6 +20,13 @@
 #let GOTO = _kw("goto")
 #let EXIT = _kw("exit")
 
+// AxCut
+#let INVOKE = _kw("invoke")
+#let SWITCH = _kw("switch")
+#let CREATE = _kw("create")
+#let LIT = _kw("lit")
+#let SUBSTITUTE = _kw("substitute")
+
 #let var(x) = $#x$
 #let covar(a) = $#a$
 
