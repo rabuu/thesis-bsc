@@ -1,4 +1,6 @@
 #let _kw(kw) = text(weight: "bold", raw(kw))
+#let _macro(m) = smallcaps(m)
+#let _rv(s) = text(fill: blue, raw(s))
 
 #let DEF = _kw("def")
 #let DATA = _kw("data")
@@ -26,6 +28,15 @@
 #let CREATE = _kw("create")
 #let LIT = _kw("lit")
 #let SUBSTITUTE = _kw("substitute")
+
+// codegen macros
+#let STORE = _macro("Store")
+#let REG = _macro("Reg")
+#let VTABLE = _macro("VTable")
+
+// RISC-V
+#let LI = _rv("li")
+#let LA = _rv("la")
 
 #let var(x) = $#x$
 #let covar(a) = $#a$

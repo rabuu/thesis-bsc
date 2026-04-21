@@ -86,3 +86,11 @@
     f2c(sigma\, alpha) & := f2c(sigma), alpha
   $
 ]
+
+== Code Generation
+$
+  a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 & \
+  & && LA (REG_2 sp v) sp l & \
+  & && a2m(s) & \
+  & && l: quad VTABLE sp b sp Gamma_0 & quad quad (l "fresh")
+$
