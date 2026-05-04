@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+name: scc-axcut
+file_extensions: [axcut]
+scope: source.axcut
+
+contexts:
+  main:
+    - match: def|type|exit|let|invoke|create|lit|substitute
+      scope: keyword
+    - match: prd|cns|ext
+      scope: keyword
+    - match: switch|if|else
+      scope: keyword.control
+    - match: i64
+      scope: entity.name
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.integer.decimal

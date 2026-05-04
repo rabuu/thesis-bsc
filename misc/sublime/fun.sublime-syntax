@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+name: scc-fun
+file_extensions: [fun, sc]
+scope: source.fun
+
+contexts:
+  main:
+    - match: def|data|codata|let|exit
+      scope: keyword
+    - match: case|new|if|else|label|goto
+      scope: keyword.control
+    - match: i64
+      scope: entity.name
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.integer.decimal

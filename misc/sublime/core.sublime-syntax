@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+name: scc-core
+file_extensions: [core]
+scope: source.core
+
+contexts:
+  main:
+    - match: def|data|codata|exit
+      scope: keyword
+    - match: prd|cns
+      scope: keyword
+    - match: 'μ|​̃μ'
+      scope: keyword
+    - match: case|new|if|else
+      scope: keyword.control
+    - match: i64
+      scope: entity.name
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.integer.decimal
