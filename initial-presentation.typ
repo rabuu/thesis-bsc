@@ -50,11 +50,12 @@
 
   def foo(): i64 {
       let r: i64 = sq(2);
-      println_i64(r);
+      println(r);
       r
   }
   ```
 ][
+  #pause
   #codly(languages: (fun: (name: "CPS")))
   ```fun
   def sq(x: i64, k: i64 -> !) {
@@ -63,7 +64,7 @@
 
   def foo(k: i64 -> !) {
       sq(2, λr =>
-              println_i64(r);
+              println(r);
               k(r))
   }
   ```
@@ -79,12 +80,13 @@
 
   def foo(k: i64 -> !) {
       sq(2, λr =>
-              println_i64(r);
+              println(r);
               k(r))
   }
   ```
   #codly(languages: codly-languages)
 ][
+  #pause
   ```core
   def sq(x: prd i64, k: cns i64) {
       ⟨x * x | k⟩
@@ -92,17 +94,18 @@
 
   def foo(k: cns i64) {
       sq(2, ​̃μr.
-              println_i64(r);
+              println(r);
               ⟨r | k⟩)
   }
   ```
 ]
 
-== Control Operators
+== Non-Linear Continuations
 
 #slide[
   ```fun
-  def foo(x: i64, α: cns i64): i64 {
+  def foo(x: i64,
+          α: cns i64): i64 {
       if x == 0 {
           goto α (x)
       } else {
@@ -115,13 +118,19 @@
   }
   ```
 ][
+  #pause
   ```core
-  def foo(x: prd i64, a: cns i64, a0: cns i64) {
-      if x == 0 { ⟨x | a⟩ } else { ⟨x | a0⟩ }
+  def foo(x: prd i64,
+          α: cns i64, k: cns i64) {
+      if x == 0 {
+          ⟨x | α⟩
+      } else {
+          ⟨x | k⟩
+      }
   }
 
-  def bar(a0: cns i64) {
-      ⟨mu a.foo(1, a, a) | a0⟩
+  def bar(k: cns i64) {
+      ⟨μα.foo(1, α, α) | k⟩
   }
   ```
 ]

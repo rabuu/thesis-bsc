@@ -8,6 +8,8 @@ contexts:
   main:
     - match: def|data|codata|let|exit
       scope: keyword
+    - match: cns
+      scope: keyword
     - match: case|new|if|else|label|goto
       scope: keyword.control
     - match: i64
