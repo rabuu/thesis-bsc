@@ -10,7 +10,7 @@ contexts:
       scope: keyword
     - match: prd|cns
       scope: keyword
-    - match: 'μ|​̃μ'
+    - match: 'μ1?|​̃μ1?'
       scope: keyword
     - match: case|new|if|else
       scope: keyword.control

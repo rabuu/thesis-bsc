@@ -35,6 +35,8 @@
 
 #title-slide()
 
+= Background
+
 == Sequent-Calculus-Compiler Overview
 
 #slide[
@@ -135,6 +137,25 @@
   ```
 ]
 
+== What Is the Thesis About?
+
+#slide[
+  + Statically tracking linear continuations through all compiler stages
+
+    #pause
+    #v(1em)
+
+  + Optimize the generated machine code
+
+    #pause
+    #v(1em)
+
+  + Profit
+]
+
+#show heading.where(level: 1): set heading(numbering: "1.")
+= Tracking Quantities in the Type System
+
 == Example: Fibonacci (Fun)
 
 #slide[
@@ -156,48 +177,74 @@
 == Example: Fibonacci (Core)
 
 #slide[
-  ```core
-  def fib(n: prd i64, k: cns i64) {
-      if n == 0 {
-          ⟨0 | k⟩
-      } else {
-          if n == 1 {
-              ⟨1 | k⟩
-          } else {
-              ⟨(μx.fib(n - 1, x)) + (μy.fib(n - 2, y)) | k⟩
-          }
-      }
-  }
-  ```
+  #alternatives[
+    ```core
+    def fib(n: prd i64, k: cns i64) {
+        if n == 0 {
+            ⟨0 | k⟩
+        } else {
+            if n == 1 {
+                ⟨1 | k⟩
+            } else {
+                ⟨(μα.fib(n - 1, α)) + (μβ.fib(n - 2, β)) | k⟩
+            }
+        }
+    }
+    ```
+  ][
+    ```core
+    def fib(n: prd ω i64, k: cns 1 i64) {
+        if n == 0 {
+            ⟨0 | k⟩
+        } else {
+            if n == 1 {
+                ⟨1 | k⟩
+            } else {
+                ⟨(μ1α.fib(n - 1, α)) + (μ1β.fib(n - 2, β)) | k⟩
+            }
+        }
+    }
+    ```
+  ]
 ]
+
+== Sequent-Calculus-Compiler Overview, Actually
+
+#slide[
+  #alternatives[
+    #figure(image("assets/initial-presentation/scc-overview.svg", width: 100%))
+  ][
+    #figure(image("assets/initial-presentation/scc-overview2.svg", width: 100%))
+  ]
+]
+
+== Example: Fibonacci (Focusing)
 
 #slide[
   #codly(highlights: (
     (line: 8, start: 15, fill: orange),
   ))
   ```core
-  def fib(n: prd i64, k: cns i64) {
+  def fib(n: prd ω i64, k: cns 1 i64) {
       if n == 0 {
           ⟨0 | k⟩
       } else {
           if n == 1 {
               ⟨1 | k⟩
           } else {
-              ⟨(μx.fib(n - 1, x)) + (μy.fib(n - 2, y)) | k⟩
+              ⟨(μ1α.fib(n - 1, α)) + (μ1β.fib(n - 2, β)) | k⟩
           }
       }
   }
   ```
 ]
 
-== Example: Fibonacci (Focusing)
-
 #slide(composer: (1fr, 1.5fr))[
   ```core
   ⟨
-    (μx.fib(n - 1, x))
+    (μα.fib(n - 1, α))
     +
-    (μy.fib(n - 2, y))
+    (μβ.fib(n - 2, β))
   | k⟩
   ```
 ][
@@ -209,6 +256,32 @@
       ⟩
   | ​̃μs1.
       ⟨μc2.
+          ⟨2 | ​̃μp3.
+              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
+          ⟩
+      | ​̃μs2.
+          ⟨s1 + s2 | k⟩
+      ⟩
+  ⟩
+  ```
+]
+
+#slide(composer: (1fr, 1.5fr))[
+  ```core
+  ⟨
+    (μ1α.fib(n - 1, α))
+    +
+    (μ1β.fib(n - 2, β))
+  | k⟩
+  ```
+][
+  ```core
+  ⟨μ1c1.
+      ⟨1 | ​̃μp1.
+          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
+      ⟩
+  | ​̃μs1.
+      ⟨μ1c2.
           ⟨2 | ​̃μp3.
               ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
           ⟩
@@ -240,11 +313,52 @@
   ```
 ][
   #set text(size: 15pt)
+  #pause
   ```axcut
   substitute (n2 := n), (k := k), (n1 := n);
   create c1 = (k, n1) { (s1: ext i64) =>
       substitute (n1 := n1), (k := k), (s1 := s1);
       create c2 = (k, s1) { (s2: ext i64) =>
+          sum ← s1 + s2;
+          substitute (sum := sum), (k := k);
+          invoke k (sum)
+      };
+      lit p3 ← 2;
+      p4 ← n - p3;
+      substitute (p4 := p4), (c2 := c2);
+      fib(p4, c2)
+  };
+  lit p1 ← 1;
+  p2 ← n - p1;
+  substitute (p2 := p2), (c1 := c1);
+  fib(p2, c1)
+  ```
+]
+
+#slide(composer: (1fr, 1.3fr))[
+  #set text(size: 15pt)
+  ```core
+  ⟨μ1c1.
+      ⟨1 | ​̃μp1.
+          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
+      ⟩
+  | ​̃μs1.
+      ⟨μ1c2.
+          ⟨2 | ​̃μp3.
+              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
+          ⟩
+      | ​̃μs2.
+          ⟨s1 + s2 | k⟩
+      ⟩
+  ⟩
+  ```
+][
+  #set text(size: 15pt)
+  ```axcut
+  substitute (n2 := n), (k := k), (n1 := n);
+  create1 c1 = (k, n1) { (s1: ext i64) =>
+      substitute (n1 := n1), (k := k), (s1 := s1);
+      create1 c2 = (k, s1) { (s2: ext i64) =>
           sum ← s1 + s2;
           substitute (sum := sum), (k := k);
           invoke k (sum)

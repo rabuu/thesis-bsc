@@ -6,7 +6,7 @@ scope: source.axcut
 
 contexts:
   main:
-    - match: def|type|exit|let|invoke|create|lit|substitute
+    - match: def|type|exit|let|invoke|create1?|lit|substitute
       scope: keyword
     - match: prd|cns|ext
       scope: keyword
