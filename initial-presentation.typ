@@ -617,6 +617,30 @@
 
   - Only one target backend: x86-64
 
+== Preliminary Benchmark
+
+`Fib` benchmark with prototype:
+#figure(
+  align(center)[
+    #table(
+      columns: 5,
+      align: (left, right, right, right, right),
+      table.header(
+        [Command],
+        [Mean \[s\]],
+        [Min \[s\]],
+        [Max
+          \[s\]],
+        [Relative],
+      ),
+      table.hline(),
+      [`fib_lin  5 39`], [3.133 ± 0.014], [3.116], [3.161], [1.00],
+      [`fib_main 5 39`], [3.514 ± 0.012], [3.499], [3.541], [1.12 ± 0.01],
+    )],
+)
+
+$==>$ 12% faster
+
 == Future Work / Stretch Goals
 
 - Make full use of linear memory management
