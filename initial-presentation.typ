@@ -40,7 +40,7 @@
 == Sequent-Calculus-Compiler Overview
 
 #slide[
-  #figure(image("assets/initial-presentation/scc-overview.svg", width: 100%))
+  #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
 ]
 
 == What Is a Continuation?
@@ -212,9 +212,9 @@
 
 #slide[
   #alternatives[
-    #figure(image("assets/initial-presentation/scc-overview.svg", width: 100%))
+    #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
   ][
-    #figure(image("assets/initial-presentation/scc-overview2.svg", width: 100%))
+    #figure(image("assets/initial-presentation/scc-overview2.png", width: 100%))
   ]
 ]
 
