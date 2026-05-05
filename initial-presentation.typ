@@ -35,7 +35,7 @@
 
 #title-slide()
 
-= Background
+= Introduction
 
 == Sequent-Calculus-Compiler Overview
 
@@ -44,7 +44,7 @@
 ]
 
 == What Is a Continuation?
-#slide(composer: (1fr, 1.2fr))[
+#slide(composer: (1fr, 1.3fr))[
   ```fun
   def sq(x: i64): i64 {
       x * x
@@ -56,37 +56,6 @@
       r
   }
   ```
-][
-  #pause
-  #codly(languages: (fun: (name: "CPS")))
-  ```fun
-  def sq(x: i64, k: i64 → ⊥) {
-      k(x * x)
-  }
-
-  def foo(k: i64 → ⊥) {
-      sq(2, λr =>
-              println(r);
-              k(r))
-  }
-  ```
-  #codly(languages: codly-languages)
-]
-
-#slide(composer: (1fr, 1.1fr))[
-  #codly(languages: (fun: (name: "CPS")))
-  ```fun
-  def sq(x: i64, k: i64 → ⊥) {
-      k(x * x)
-  }
-
-  def foo(k: i64 → ⊥) {
-      sq(2, λr =>
-              println(r);
-              k(r))
-  }
-  ```
-  #codly(languages: codly-languages)
 ][
   #pause
   ```core
@@ -142,12 +111,10 @@
 #slide[
   + Statically tracking linear continuations through all compiler stages
 
-    #pause
     #v(1em)
 
   + Optimize the generated machine code
 
-    #pause
     #v(1em)
 
   + Profit
