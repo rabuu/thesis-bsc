@@ -624,3 +624,33 @@
     #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
   ]
 ]
+
+= Conclusion
+
+== Thesis Goals
+
+- Formalizing the "quantity tracking"
+
+  - Extending the intermediate representations
+
+  - Extending the type systems & type safety proofs
+
+  #v(2em)
+
+- Formal translation from AxCut to RISC-V
+
+  #v(2em)
+
+- Implementation
+
+  - Only one target backend: x86-64
+
+== Future Work / Stretch Goals
+
+- Make full use of linear memory management
+
+  - The backend infrastructure (storing & loading) is there
+
+#v(2em)
+
+- Supporting the other backends in the implementation
