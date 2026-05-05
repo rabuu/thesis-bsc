@@ -60,11 +60,11 @@
   #pause
   #codly(languages: (fun: (name: "CPS")))
   ```fun
-  def sq(x: i64, k: i64 -> !) {
+  def sq(x: i64, k: i64 → ⊥) {
       k(x * x)
   }
 
-  def foo(k: i64 -> !) {
+  def foo(k: i64 → ⊥) {
       sq(2, λr =>
               println(r);
               k(r))
@@ -76,11 +76,11 @@
 #slide(composer: (1fr, 1.1fr))[
   #codly(languages: (fun: (name: "CPS")))
   ```fun
-  def sq(x: i64, k: i64 -> !) {
+  def sq(x: i64, k: i64 → ⊥) {
       k(x * x)
   }
 
-  def foo(k: i64 -> !) {
+  def foo(k: i64 → ⊥) {
       sq(2, λr =>
               println(r);
               k(r))
