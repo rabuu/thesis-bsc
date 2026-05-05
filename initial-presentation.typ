@@ -98,6 +98,34 @@
   ```
 ]
 
+== Control Operators
+
+#slide[
+  ```fun
+  def foo(x: i64, α: cns i64): i64 {
+      if x == 0 {
+          goto α (x)
+      } else {
+          x
+      }
+  }
+
+  def bar(): i64 {
+      label α { foo(1, α) }
+  }
+  ```
+][
+  ```core
+  def foo(x: prd i64, a: cns i64, a0: cns i64) {
+      if x == 0 { ⟨x | a⟩ } else { ⟨x | a0⟩ }
+  }
+
+  def bar(a0: cns i64) {
+      ⟨mu a.foo(1, a, a) | a0⟩
+  }
+  ```
+]
+
 == Example: Fibonacci (Fun)
 
 #slide[
