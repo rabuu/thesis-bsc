@@ -500,14 +500,11 @@
 == Memory Layout: Memory Block
 
 #slide[
-  #alternatives[
-    #figure(image("assets/initial-presentation/codegen/block.png", width: 80%))
-  ][
-    #figure(image(
-      "assets/initial-presentation/codegen/layout1.png",
-      width: 80%,
-    ))
-  ]
+  #figure(image("assets/initial-presentation/codegen/block.png", width: 80%))
+]
+
+#slide[
+  #figure(image("assets/initial-presentation/codegen/layout1.png", width: 80%))
 ]
 
 == Memory Layout: Free List
@@ -529,67 +526,75 @@
 == Storing a Non-Linear Block
 
 #slide[
-  #alternatives[
-    #figure(image("assets/initial-presentation/codegen/store/store1.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store/store2.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store/store3.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store/store4.png"))
-  ]
+  #figure(image("assets/initial-presentation/codegen/store/store1.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store/store2.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store/store3.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store/store4.png"))
 ]
 
 == Modifying the Memory Layout
 
 #slide[
   memory block in use:
-  #alternatives[
-    #figure(image(
-      "assets/initial-presentation/codegen/layout1.png",
-      height: 11%,
-    ))
-  ][
-    #figure(image(
-      "assets/initial-presentation/codegen/layout2.png",
-      height: 11%,
-    ))
-  ]
+  #figure(image(
+    "assets/initial-presentation/codegen/layout1.png",
+    height: 11%,
+  ))
 
   #v(1fr)
   #line(length: 100%)
   #v(1fr)
 
   free list:
-  #alternatives[
-    #figure(image(
-      "assets/initial-presentation/codegen/freelist1.png",
-      height: 50%,
-    ))
-  ][
-    #figure(image(
-      "assets/initial-presentation/codegen/freelist2.png",
-      height: 50%,
-    ))
-  ]
+  #figure(image(
+    "assets/initial-presentation/codegen/freelist1.png",
+    height: 50%,
+  ))
+]
+
+#slide[
+  memory block in use:
+  #figure(image(
+    "assets/initial-presentation/codegen/layout2.png",
+    height: 11%,
+  ))
+
+  #v(1fr)
+  #line(length: 100%)
+  #v(1fr)
+
+  free list:
+  #figure(image(
+    "assets/initial-presentation/codegen/freelist2.png",
+    height: 50%,
+  ))
 ]
 
 == Storing a Linear Block
 
 #slide[
-  #alternatives[
-    #figure(image("assets/initial-presentation/codegen/store1/store1.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store1/store2.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store1/store3.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store1/store4.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store1/store5.png"))
-  ][
-    #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
-  ]
+  #figure(image("assets/initial-presentation/codegen/store1/store1.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store1/store2.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store1/store3.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store1/store4.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store1/store5.png"))
+]
+#slide[
+  #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
 ]
 
 = Conclusion
