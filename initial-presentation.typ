@@ -158,45 +158,45 @@
 == Example: Fibonacci (Core)
 
 #slide[
-  #alternatives[
-    #codly(highlights: (
-      (line: 1, start: 21, end: 21, fill: orange),
-      (line: 8, start: 18, end: 20, fill: orange),
-      (line: 8, start: 42, end: 44, fill: orange),
-    ))
-    ```core
-    def fib(n: prd i64, k: cns i64) {
-        if n == 0 {
-            ⟨0 | k⟩
-        } else {
-            if n == 1 {
-                ⟨1 | k⟩
-            } else {
-                ⟨(μα.fib(n - 1, α)) + (μβ.fib(n - 2, β)) | k⟩
-            }
-        }
-    }
-    ```
-  ][
-    #codly(highlights: (
-      (line: 1, start: 31, end: 31, fill: orange),
-      (line: 8, start: 18, end: 21, fill: orange),
-      (line: 8, start: 42, end: 46, fill: orange),
-    ))
-    ```core
-    def fib(n: prd ω i64, k: cns 1 i64) {
-        if n == 0 {
-            ⟨0 | k⟩
-        } else {
-            if n == 1 {
-                ⟨1 | k⟩
-            } else {
-                ⟨(μ1α.fib(n - 1, α)) + (μ1β.fib(n - 2, β)) | k⟩
-            }
-        }
-    }
-    ```
-  ]
+  #codly(highlights: (
+    (line: 1, start: 21, end: 21, fill: orange),
+    (line: 8, start: 18, end: 20, fill: orange),
+    (line: 8, start: 42, end: 44, fill: orange),
+  ))
+  ```core
+  def fib(n: prd i64, k: cns i64) {
+      if n == 0 {
+          ⟨0 | k⟩
+      } else {
+          if n == 1 {
+              ⟨1 | k⟩
+          } else {
+              ⟨(μα.fib(n - 1, α)) + (μβ.fib(n - 2, β)) | k⟩
+          }
+      }
+  }
+  ```
+]
+
+#slide[
+  #codly(highlights: (
+    (line: 1, start: 31, end: 31, fill: orange),
+    (line: 8, start: 18, end: 21, fill: orange),
+    (line: 8, start: 42, end: 46, fill: orange),
+  ))
+  ```core
+  def fib(n: prd ω i64, k: cns 1 i64) {
+      if n == 0 {
+          ⟨0 | k⟩
+      } else {
+          if n == 1 {
+              ⟨1 | k⟩
+          } else {
+              ⟨(μ1α.fib(n - 1, α)) + (μ1β.fib(n - 2, β)) | k⟩
+          }
+      }
+  }
+  ```
 ]
 
 == Example: Fibonacci (Focusing)
