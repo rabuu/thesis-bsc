@@ -322,12 +322,18 @@
   - reference counting (in constant-time)
 ]
 
+== Memory Layout: Memory Block
+
+#slide[
+  #figure(image("assets/initial-presentation/codegen/layout1.png", width: 80%))
+]
+
 == Advantages of Linearity
 
 #slide[
   Oberservation: there's always exactly one reference to a linearly used memory block
 
-  $-->$ we don't have to care about reference counting
+  $==>$ we don't have to care about reference counting
 
   #v(2em)
 
@@ -336,16 +342,6 @@
   - more space in memory
 
   - less instructions
-]
-
-== Memory Layout: Memory Block
-
-#slide[
-  #figure(image("assets/initial-presentation/codegen/block.png", width: 80%))
-]
-
-#slide[
-  #figure(image("assets/initial-presentation/codegen/layout1.png", width: 80%))
 ]
 
 == Memory Layout: Free List
@@ -379,41 +375,43 @@
   #figure(image("assets/initial-presentation/codegen/store/store4.png"))
 ]
 
-== Modifying the Memory Layout
+== Modifying the Memory Layout (Before)
 
 #slide[
-  memory block in use:
-  #figure(image(
-    "assets/initial-presentation/codegen/layout1.png",
-    height: 11%,
-  ))
-
-  #v(1fr)
-  #line(length: 100%)
-  #v(1fr)
-
   free list:
   #figure(image(
     "assets/initial-presentation/codegen/freelist1.png",
     height: 50%,
   ))
-]
 
-#slide[
+  #v(1fr)
+  #line(length: 100%)
+  #v(1fr)
+
   memory block in use:
   #figure(image(
-    "assets/initial-presentation/codegen/layout2.png",
+    "assets/initial-presentation/codegen/layout1.png",
     height: 11%,
+  ))
+]
+
+== Modifying the Memory Layout (After)
+
+#slide[
+  free list:
+  #figure(image(
+    "assets/initial-presentation/codegen/freelist2.png",
+    height: 50%,
   ))
 
   #v(1fr)
   #line(length: 100%)
   #v(1fr)
 
-  free list:
+  memory block in use:
   #figure(image(
-    "assets/initial-presentation/codegen/freelist2.png",
-    height: 50%,
+    "assets/initial-presentation/codegen/layout2.png",
+    height: 11%,
   ))
 ]
 
@@ -438,6 +436,7 @@
   #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
 ]
 
+#show heading.where(level: 1): set heading(numbering: none)
 = Conclusion
 
 == Thesis Goals
