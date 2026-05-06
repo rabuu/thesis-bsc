@@ -43,30 +43,34 @@
   #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
 ]
 
-== What Is a Continuation?
-#slide(composer: (1fr, 1.3fr))[
+== Linear Continuations
+#slide(composer: (1fr, 1.4fr))[
   ```fun
-  def sq(x: i64): i64 {
-      x * x
+  def f(x: i64): i64 {
+      if x < 0 {
+          0
+      } else {
+          x
+      }
   }
 
-  def foo(): i64 {
-      let r: i64 = sq(2);
-      println(r);
-      r
+  def g(x: i64): i64 {
+      f(2)
   }
   ```
 ][
   #pause
   ```core
-  def sq(x: prd i64, k: cns i64) {
-      ⟨x * x | k⟩
+  def f(x: prd i64, k: cns i64) {
+      if x < 0 {
+          ⟨0 | k⟩
+      } else {
+          ⟨x | k⟩
+      }
   }
 
-  def foo(k: cns i64) {
-      sq(2, ​̃μr.
-              println(r);
-              ⟨r | k⟩)
+  def g(x: prd i64, k: cns i64) {
+      f(2, k)
   }
   ```
 ]
@@ -75,8 +79,8 @@
 
 #slide[
   ```fun
-  def foo(x: i64,
-          α: cns i64): i64 {
+  def f(x: i64,
+        α: cns i64): i64 {
       if x == 0 {
           goto α (x)
       } else {
@@ -84,15 +88,15 @@
       }
   }
 
-  def bar(): i64 {
-      label α { foo(1, α) }
+  def g(): i64 {
+      label α { f(1, α) }
   }
   ```
 ][
   #pause
   ```core
-  def foo(x: prd i64,
-          α: cns i64, k: cns i64) {
+  def f(x: prd i64,
+        α: cns i64, k: cns i64) {
       if x == 0 {
           ⟨x | α⟩
       } else {
@@ -100,8 +104,8 @@
       }
   }
 
-  def bar(k: cns i64) {
-      ⟨μα.foo(1, α, α) | k⟩
+  def g(k: cns i64) {
+      ⟨μα.f(1, α, α) | k⟩
   }
   ```
 ]
