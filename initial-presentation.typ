@@ -239,14 +239,14 @@
     (line: 6, start: 8, end: 12, fill: orange),
   ))
   ```core
-  ⟨μ1c1.
+  ⟨μ1α.
       ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
+          ⟨n - p1 | ​̃μp2.fib(p2, α)⟩
       ⟩
   | ​̃μs1.
-      ⟨μ1c2.
+      ⟨μ1β.
           ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
+              ⟨n - p3 | ​̃μp4.fib(p4, β)⟩
           ⟩
       | ​̃μs2.
           ⟨s1 + s2 | k⟩
@@ -257,21 +257,21 @@
 
 == Example: Fibonacci (AxCut)
 
-#slide(composer: (1fr, 1.3fr))[
-  #set text(size: 15pt)
+#slide(composer: (1fr, 1.2fr))[
+  #set text(size: 16pt)
   #codly(highlights: (
     (line: 1, start: 4, end: 8, fill: orange),
     (line: 6, start: 8, end: 12, fill: orange),
   ))
   ```core
-  ⟨μ1c1.
+  ⟨μ1α.
       ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
+          ⟨n - p1 | ​̃μp2.fib(p2, α)⟩
       ⟩
   | ​̃μs1.
-      ⟨μ1c2.
+      ⟨μ1β.
           ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
+              ⟨n - p3 | ​̃μp4.fib(p4, β)⟩
           ⟩
       | ​̃μs2.
           ⟨s1 + s2 | k⟩
@@ -287,22 +287,22 @@
   ))
   ```axcut
   substitute (n2 := n), (k := k), (n1 := n);
-  create1 c1 = (k, n1) { (s1: ext i64) =>
+  create1 α = (k, n1) { (s1: ext i64) =>
       substitute (n1 := n1), (k := k), (s1 := s1);
-      create1 c2 = (k, s1) { (s2: ext i64) =>
+      create1 β = (k, s1) { (s2: ext i64) =>
           sum ← s1 + s2;
           substitute (sum := sum), (k := k);
           invoke k (sum)
       };
       lit p3 ← 2;
       p4 ← n - p3;
-      substitute (p4 := p4), (c2 := c2);
-      fib(p4, c2)
+      substitute (p4 := p4), (β := β);
+      fib(p4, β)
   };
   lit p1 ← 1;
   p2 ← n - p1;
-  substitute (p2 := p2), (c1 := c1);
-  fib(p2, c1)
+  substitute (p2 := p2), (α := α);
+  fib(p2, α)
   ```
 ]
 
