@@ -195,7 +195,7 @@
   ```
 ]
 
-== Example: Fibonacci (Focusing)
+== Example: Fibonacci (AxCut)
 
 #slide[
   #codly(highlights: (
@@ -216,7 +216,7 @@
   ```
 ]
 
-#slide(composer: (1fr, 1.5fr))[
+#slide(composer: (1fr, 1.2fr))[
   #codly(highlights: (
     (line: 2, start: 5, end: 8, fill: orange),
     (line: 4, start: 5, end: 8, fill: orange),
@@ -227,51 +227,6 @@
     +
     (μ1β.fib(n - 2, β))
   | k⟩
-  ```
-][
-  #codly(highlights: (
-    (line: 1, start: 4, end: 8, fill: orange),
-    (line: 6, start: 8, end: 12, fill: orange),
-  ))
-  ```core
-  ⟨μ1α.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, α)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μ1β.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, β)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
-  ```
-]
-
-== Example: Fibonacci (AxCut)
-
-#slide(composer: (1fr, 1.2fr))[
-  #set text(size: 16pt)
-  #codly(highlights: (
-    (line: 1, start: 4, end: 8, fill: orange),
-    (line: 6, start: 8, end: 12, fill: orange),
-  ))
-  ```core
-  ⟨μ1α.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, α)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μ1β.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, β)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
   ```
 ][
   #set text(size: 15pt)
