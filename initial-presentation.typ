@@ -127,14 +127,10 @@
 #show heading.where(level: 1): set heading(numbering: "1.")
 = Tracking Quantities
 
-== Sequent-Calculus-Compiler Overview, Actually
+== Sequent-Calculus-Compiler Overview
 
 #slide[
-  #alternatives[
-    #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
-  ][
-    #figure(image("assets/initial-presentation/scc-overview2.png", width: 100%))
-  ]
+  #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
 ]
 
 == Example: Fibonacci (Fun)
@@ -233,7 +229,6 @@
   | k⟩
   ```
 ][
-  #pause
   #codly(highlights: (
     (line: 1, start: 4, end: 8, fill: orange),
     (line: 6, start: 8, end: 12, fill: orange),
@@ -280,7 +275,6 @@
   ```
 ][
   #set text(size: 15pt)
-  #pause
   #codly(highlights: (
     (line: 2, start: 1, end: 10, fill: orange),
     (line: 4, start: 5, end: 14, fill: orange),
@@ -335,14 +329,79 @@
 
   $==>$ we don't have to care about reference counting
 
-  #v(2em)
+  #v(1em)
 
   Advantages:
 
   - more space in memory
 
   - less instructions
+
+  #v(1em)
+
+  Challenges:
+
+  - storing to & loading from memory changes
 ]
+
+#show heading.where(level: 1): set heading(numbering: none)
+= Conclusion
+
+== Thesis Goals
+
+- Formalizing the "quantity tracking"
+
+  - Extending the intermediate representations
+
+  - Extending the type systems & type safety proofs
+
+  #v(2em)
+
+- Formal translation from AxCut to RISC-V
+
+  #v(2em)
+
+- Implementation
+
+  - Only one target backend: x86-64
+
+== Preliminary Benchmark
+
+`Fib` benchmark with prototype:
+#figure(
+  align(center)[
+    #table(
+      columns: 5,
+      align: (left, right, right, right, right),
+      table.header(
+        [Command],
+        [Mean \[s\]],
+        [Min \[s\]],
+        [Max
+          \[s\]],
+        [Relative],
+      ),
+      table.hline(),
+      [`fib_lin  5 39`], [3.133 ± 0.014], [3.116], [3.161], [1.00],
+      [`fib_main 5 39`], [3.514 ± 0.012], [3.499], [3.541], [1.12 ± 0.01],
+    )],
+)
+
+$==>$ 12% faster
+
+== Future Work / Stretch Goals
+
+- Make full use of linear memory management
+
+  - The backend infrastructure (storing & loading) is already there
+
+  - Needs some "linearity detection"
+
+#v(2em)
+
+- Supporting more backends in the implementation
+
+= Bonus Slides: Store
 
 == Memory Layout: Free List
 
@@ -436,59 +495,3 @@
   #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
 ]
 
-#show heading.where(level: 1): set heading(numbering: none)
-= Conclusion
-
-== Thesis Goals
-
-- Formalizing the "quantity tracking"
-
-  - Extending the intermediate representations
-
-  - Extending the type systems & type safety proofs
-
-  #v(2em)
-
-- Formal translation from AxCut to RISC-V
-
-  #v(2em)
-
-- Implementation
-
-  - Only one target backend: x86-64
-
-== Preliminary Benchmark
-
-`Fib` benchmark with prototype:
-#figure(
-  align(center)[
-    #table(
-      columns: 5,
-      align: (left, right, right, right, right),
-      table.header(
-        [Command],
-        [Mean \[s\]],
-        [Min \[s\]],
-        [Max
-          \[s\]],
-        [Relative],
-      ),
-      table.hline(),
-      [`fib_lin  5 39`], [3.133 ± 0.014], [3.116], [3.161], [1.00],
-      [`fib_main 5 39`], [3.514 ± 0.012], [3.499], [3.541], [1.12 ± 0.01],
-    )],
-)
-
-$==>$ 12% faster
-
-== Future Work / Stretch Goals
-
-- Make full use of linear memory management
-
-  - The backend infrastructure (storing & loading) is already there
-
-  - Needs some "linearity detection"
-
-#v(2em)
-
-- Supporting more backends in the implementation
