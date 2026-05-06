@@ -44,7 +44,7 @@
 ]
 
 == Linear Continuations
-#slide(composer: (1fr, 1.4fr))[
+#slide(composer: (1fr, 1.2fr))[
   ```fun
   def f(x: i64): i64 {
       if x < 0 {
@@ -131,27 +131,6 @@
 
 #slide[
   #codly(highlights: (
-    (line: 1, start: 21, end: 21, fill: orange),
-    (line: 8, start: 18, end: 20, fill: orange),
-    (line: 8, start: 42, end: 44, fill: orange),
-  ))
-  ```core
-  def fib(n: prd i64, k: cns i64) {
-      if n == 0 {
-          ⟨0 | k⟩
-      } else {
-          if n == 1 {
-              ⟨1 | k⟩
-          } else {
-              ⟨(μα.fib(n - 1, α)) + (μβ.fib(n - 2, β)) | k⟩
-          }
-      }
-  }
-  ```
-]
-
-#slide[
-  #codly(highlights: (
     (line: 1, start: 31, end: 31, fill: orange),
     (line: 8, start: 18, end: 21, fill: orange),
     (line: 8, start: 42, end: 46, fill: orange),
@@ -175,38 +154,6 @@
 
 #slide[
   #codly(highlights: (
-    (line: 8, start: 15, fill: orange),
-  ))
-  ```core
-  def fib(n: prd ω i64, k: cns 1 i64) {
-      if n == 0 {
-          ⟨0 | k⟩
-      } else {
-          if n == 1 {
-              ⟨1 | k⟩
-          } else {
-              ⟨(μ1α.fib(n - 1, α)) + (μ1β.fib(n - 2, β)) | k⟩
-          }
-      }
-  }
-  ```
-]
-
-#slide(composer: (1fr, 1.2fr))[
-  #codly(highlights: (
-    (line: 2, start: 5, end: 8, fill: orange),
-    (line: 4, start: 5, end: 8, fill: orange),
-  ))
-  ```core
-  ⟨
-    (μ1α.fib(n - 1, α))
-    +
-    (μ1β.fib(n - 2, β))
-  | k⟩
-  ```
-][
-  #set text(size: 15pt)
-  #codly(highlights: (
     (line: 2, start: 1, end: 10, fill: orange),
     (line: 4, start: 5, end: 14, fill: orange),
   ))
@@ -224,10 +171,6 @@
       substitute (p4 := p4), (β := β);
       fib(p4, β)
   };
-  lit p1 ← 1;
-  p2 ← n - p1;
-  substitute (p2 := p2), (α := α);
-  fib(p2, α)
   ```
 ]
 
@@ -272,7 +215,7 @@
 
   Challenges:
 
-  - storing to & loading from memory changes
+  - storing to & loading from memory gets more complex
 ]
 
 #show heading.where(level: 1): set heading(numbering: none)
