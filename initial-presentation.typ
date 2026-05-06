@@ -53,10 +53,6 @@
           x
       }
   }
-
-  def g(x: i64): i64 {
-      f(2)
-  }
   ```
 ][
   #pause
@@ -68,44 +64,30 @@
           ⟨x | k⟩
       }
   }
-
-  def g(x: prd i64, k: cns i64) {
-      f(2, k)
-  }
   ```
 ]
 
 == Non-Linear Continuations
 
-#slide[
+#slide(composer: (1fr, 1.2fr))[
   ```fun
-  def f(x: i64,
-        α: cns i64): i64 {
-      if x == 0 {
-          goto α (x)
-      } else {
-          x
-      }
+  def f(α: cns i64): i64 {
+      goto α (0)
   }
 
   def g(): i64 {
-      label α { f(1, α) }
+      label α { f(α) }
   }
   ```
 ][
   #pause
   ```core
-  def f(x: prd i64,
-        α: cns i64, k: cns i64) {
-      if x == 0 {
-          ⟨x | α⟩
-      } else {
-          ⟨x | k⟩
-      }
+  def f(α: cns i64, k: cns i64) {
+      ⟨0 | α⟩
   }
 
   def g(k: cns i64) {
-      ⟨μα.f(1, α, α) | k⟩
+      ⟨μα.f(α, α) | k⟩
   }
   ```
 ]
@@ -126,12 +108,6 @@
 
 #show heading.where(level: 1): set heading(numbering: "1.")
 = Tracking Quantities
-
-== Sequent-Calculus-Compiler Overview
-
-#slide[
-  #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
-]
 
 == Example: Fibonacci (Fun)
 
