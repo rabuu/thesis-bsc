@@ -1,7 +1,7 @@
 #import "@preview/touying:0.7.3": *
 #import themes.metropolis: *
 
-#import "/lib/lib.typ": *
+#import "/lib/lib.typ": syntax
 #import syntax: *
 
 #import "@preview/codly:1.3.0": *
@@ -331,6 +331,8 @@ $==>$ 12% faster
 #v(2em)
 
 - Supporting more backends in the implementation
+
+#show: appendix
 
 = Bonus Slides: Store
 
