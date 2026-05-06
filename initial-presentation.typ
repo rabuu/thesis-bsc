@@ -125,7 +125,17 @@
 ]
 
 #show heading.where(level: 1): set heading(numbering: "1.")
-= Tracking Quantities in the Type System
+= Tracking Quantities
+
+== Sequent-Calculus-Compiler Overview, Actually
+
+#slide[
+  #alternatives[
+    #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
+  ][
+    #figure(image("assets/initial-presentation/scc-overview2.png", width: 100%))
+  ]
+]
 
 == Example: Fibonacci (Fun)
 
@@ -149,20 +159,6 @@
 
 #slide[
   #alternatives[
-    ```core
-    def fib(n: prd i64, k: cns i64) {
-        if n == 0 {
-            ⟨0 | k⟩
-        } else {
-            if n == 1 {
-                ⟨1 | k⟩
-            } else {
-                ⟨(μα.fib(n - 1, α)) + (μβ.fib(n - 2, β)) | k⟩
-            }
-        }
-    }
-    ```
-  ][
     #codly(highlights: (
       (line: 1, start: 21, end: 21, fill: orange),
       (line: 8, start: 18, end: 20, fill: orange),
@@ -183,7 +179,6 @@
     ```
   ][
     #codly(highlights: (
-      (line: 1, start: 16, end: 16, fill: orange),
       (line: 1, start: 31, end: 31, fill: orange),
       (line: 8, start: 18, end: 21, fill: orange),
       (line: 8, start: 42, end: 46, fill: orange),
@@ -201,16 +196,6 @@
         }
     }
     ```
-  ]
-]
-
-== Sequent-Calculus-Compiler Overview, Actually
-
-#slide[
-  #alternatives[
-    #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
-  ][
-    #figure(image("assets/initial-presentation/scc-overview2.png", width: 100%))
   ]
 ]
 
@@ -236,67 +221,6 @@
 ]
 
 #slide(composer: (1fr, 1.5fr))[
-  ```core
-  ⟨
-    (μα.fib(n - 1, α))
-    +
-    (μβ.fib(n - 2, β))
-  | k⟩
-  ```
-][
-  #pause
-  ```core
-  ⟨μc1.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μc2.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
-  ```
-]
-
-#slide(composer: (1fr, 1.5fr))[
-  #codly(highlights: (
-    (line: 2, start: 5, end: 7, fill: orange),
-    (line: 4, start: 5, end: 7, fill: orange),
-  ))
-  ```core
-  ⟨
-    (μα.fib(n - 1, α))
-    +
-    (μβ.fib(n - 2, β))
-  | k⟩
-  ```
-][
-  #codly(highlights: (
-    (line: 1, start: 4, end: 7, fill: orange),
-    (line: 6, start: 8, end: 11, fill: orange),
-  ))
-  ```core
-  ⟨μc1.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μc2.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
-  ```
-]
-
-#slide(composer: (1fr, 1.5fr))[
   #codly(highlights: (
     (line: 2, start: 5, end: 8, fill: orange),
     (line: 4, start: 5, end: 8, fill: orange),
@@ -309,6 +233,7 @@
   | k⟩
   ```
 ][
+  #pause
   #codly(highlights: (
     (line: 1, start: 4, end: 8, fill: orange),
     (line: 6, start: 8, end: 12, fill: orange),
@@ -334,95 +259,6 @@
 
 #slide(composer: (1fr, 1.3fr))[
   #set text(size: 15pt)
-  ```core
-  ⟨μc1.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μc2.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
-  ```
-][
-  #set text(size: 15pt)
-  #pause
-  ```axcut
-  substitute (n2 := n), (k := k), (n1 := n);
-  create c1 = (k, n1) { (s1: ext i64) =>
-      substitute (n1 := n1), (k := k), (s1 := s1);
-      create c2 = (k, s1) { (s2: ext i64) =>
-          sum ← s1 + s2;
-          substitute (sum := sum), (k := k);
-          invoke k (sum)
-      };
-      lit p3 ← 2;
-      p4 ← n - p3;
-      substitute (p4 := p4), (c2 := c2);
-      fib(p4, c2)
-  };
-  lit p1 ← 1;
-  p2 ← n - p1;
-  substitute (p2 := p2), (c1 := c1);
-  fib(p2, c1)
-  ```
-]
-
-#slide(composer: (1fr, 1.3fr))[
-  #set text(size: 15pt)
-  #codly(highlights: (
-    (line: 1, start: 4, end: 7, fill: orange),
-    (line: 6, start: 8, end: 11, fill: orange),
-  ))
-  ```core
-  ⟨μc1.
-      ⟨1 | ​̃μp1.
-          ⟨n - p1 | ​̃μp2.fib(p2, c1)⟩
-      ⟩
-  | ​̃μs1.
-      ⟨μc2.
-          ⟨2 | ​̃μp3.
-              ⟨n - p3 | ​̃μp4.fib(p4, c2)⟩
-          ⟩
-      | ​̃μs2.
-          ⟨s1 + s2 | k⟩
-      ⟩
-  ⟩
-  ```
-][
-  #set text(size: 15pt)
-  #codly(highlights: (
-    (line: 2, start: 1, end: 9, fill: orange),
-    (line: 4, start: 5, end: 13, fill: orange),
-  ))
-  ```axcut
-  substitute (n2 := n), (k := k), (n1 := n);
-  create c1 = (k, n1) { (s1: ext i64) =>
-      substitute (n1 := n1), (k := k), (s1 := s1);
-      create c2 = (k, s1) { (s2: ext i64) =>
-          sum ← s1 + s2;
-          substitute (sum := sum), (k := k);
-          invoke k (sum)
-      };
-      lit p3 ← 2;
-      p4 ← n - p3;
-      substitute (p4 := p4), (c2 := c2);
-      fib(p4, c2)
-  };
-  lit p1 ← 1;
-  p2 ← n - p1;
-  substitute (p2 := p2), (c1 := c1);
-  fib(p2, c1)
-  ```
-]
-
-#slide(composer: (1fr, 1.3fr))[
-  #set text(size: 15pt)
   #codly(highlights: (
     (line: 1, start: 4, end: 8, fill: orange),
     (line: 6, start: 8, end: 12, fill: orange),
@@ -444,6 +280,7 @@
   ```
 ][
   #set text(size: 15pt)
+  #pause
   #codly(highlights: (
     (line: 2, start: 1, end: 10, fill: orange),
     (line: 4, start: 5, end: 14, fill: orange),
