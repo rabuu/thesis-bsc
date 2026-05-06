@@ -645,8 +645,10 @@ $==>$ 12% faster
 
 - Make full use of linear memory management
 
-  - The backend infrastructure (storing & loading) is there
+  - The backend infrastructure (storing & loading) is already there
+
+  - Needs some "linearity detection"
 
 #v(2em)
 
-- Supporting the other backends in the implementation
+- Supporting more backends in the implementation
