@@ -1,5 +1,5 @@
 # My bachelor thesis
-Topic: Linearity of continuations in the [Sequent Calculus Compiler](https://github.com/SequentCalculus/sequent-calculus-compiler).
+Topic: Linear Continuations in the [Sequent Calculus Compiler](https://github.com/SequentCalculus/sequent-calculus-compiler).
 
 The thesis is written in [Typst](https://typst.app) (0.14.2).
 
