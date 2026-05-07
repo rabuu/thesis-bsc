@@ -10,5 +10,7 @@ To build the thesis:
 just compile
 ```
 
-## Fonts
-You need to install `Libertinus Serif` and `Libertinus Sans`.
+## Used Fonts
+- `Libertinus Serif`
+- `Libertinus Sans`
+- `Libertinus Math`
