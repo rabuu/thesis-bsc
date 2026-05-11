@@ -6,7 +6,14 @@
 }
 
 = Abstract
-#lorem(100)
+The Sequent Calculus Compiler (SCC) is a research compiler that uses sequent-calculus-based intermediate representations to compile a functional programming language to native machine code.
+In the SCC, control flow is made explicit through consumer types.
+Continuations are consumers representing the control flow between function calls.
+In standard functional programs, each continuation is used exactly once (linearly),
+which enables simplified memory management in the generated code.
+However, the SCC also supports special control operators that break this linearity assumption.
+This thesis explores how to statically track the linearity of continuations and exploit it to generate more efficient machine code,
+reducing both runtime overhead and memory usage.
 
 #pagebreak()
 
