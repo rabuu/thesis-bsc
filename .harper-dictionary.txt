@@ -1,3 +1,4 @@
+SCC
 codata
 font-math
 font-sans

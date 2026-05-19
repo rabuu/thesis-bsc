@@ -26,7 +26,7 @@ reducing both runtime overhead and memory usage.
 
 #pagebreak-to()
 
-= Acknowlegements
+= Acknowledgments
 #lorem(100)
 
 #pagebreak-to()
