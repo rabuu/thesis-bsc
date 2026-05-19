@@ -7,7 +7,7 @@
 
 == Syntax for Linear Context Bindings
 #bnf(
-  (markhl($rho$), markhl("Quantity")),
+  (markhl($q$), markhl("Quantity")),
   markhl(alt(
     $1$,
     $omega quad "(mostly ommitted)"$,
@@ -16,7 +16,7 @@
   ($Gamma$, "Typing Contexts"),
   alt(
     $empty$,
-    $Gamma, sp v :_markhl(rho)^chi tau$,
+    $Gamma, sp v :_markhl(q)^chi tau$,
   ),
 )
 
@@ -41,7 +41,7 @@
     f2c(p_1 + p_2) & := f2c(p_1) + f2c(p_2) \
     f2c(K(sigma)) & := K(f2c(sigma)) \
     f2c(NEW braces(D_1(Gamma_1) => p_1, ...)) & := NEW braces(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
-    f2c(LABEL alpha braces(p)) &:= mu alpha. f2c(p, with: alpha) \
+    markhl(color: #red, f2c(LABEL sp alpha sp braces(p)) &:= mu alpha. f2c(p, with: alpha)) \
     markhl(f2c(f(sigma)) & := mu_1 alpha. f(f2c(sigma), alpha)) \
     f2c(p) & := mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
   $
