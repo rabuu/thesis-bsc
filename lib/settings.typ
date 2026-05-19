@@ -5,6 +5,6 @@
 #let font-size-normal = 12pt
 #let font-size-chapter = 22pt
 
-#let binding = right
-#let margin-inside = 3.5cm
-#let margin-outside = 2.5cm
+#let binding = left
+#let margin-inside = 2.5cm
+#let margin-outside = 3.5cm
