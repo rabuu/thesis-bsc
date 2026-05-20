@@ -6,7 +6,7 @@
   to: "odd",
   weak: true,
 ) = {
-  set page(header: none, numbering: none)
+  set page(header: none, footer: none, numbering: none)
   pagebreak(to: "odd", weak: true)
 }
 

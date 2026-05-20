@@ -62,7 +62,18 @@
 //
 
 #counter(page).update(1)
-#set page(numbering: "i")
+#set page(
+  numbering: "i",
+  footer: context {
+    let current-page = here().page()
+    let chapters = query(heading.where(level: 1))
+
+    let even = calc.even(here().page())
+    let alignment = if even { left } else { right }
+
+    align(alignment, counter(page).display())
+  },
+)
 
 #include "content/0-frontmatter.typ"
 #pagebreak-to()
@@ -74,21 +85,24 @@
 #counter(page).update(1)
 
 #set page(
-  numbering: "1 / 1",
+  numbering: "1",
   header: context {
     let current-page = here().page()
+    let even = calc.even(here().page())
+
     let chapters = query(heading.where(level: 1))
     if chapters.any(chapter => chapter.location().page() == current-page) {
       return none
     }
 
-    let odd = calc.odd(here().page())
-    let text = if odd {
+    let text = if even {
       hydra(1, skip-starting: false)
     } else {
       hydra(2, skip-starting: false)
     }
-    let alignment = if odd { left } else { right }
+
+    let alignment = if even { left } else { right }
+
     theseus.header.basic(text, alignment: alignment, line: true)
   },
 )
