@@ -1,4 +1,4 @@
-#let _lang(x) = strong(smallcaps(x))
+#let _lang(x) = smallcaps(x)
 
 #let Fun = _lang("Fun")
 #let Core = _lang("Core")
