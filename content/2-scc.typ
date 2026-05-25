@@ -4,7 +4,7 @@
 #import syntax: *
 #show: syntax.syntax-config
 
-= Background
+= The Sequent Calculus Compiler
 
 == The Surface Language #Fun
 
@@ -416,6 +416,14 @@
   $
 ]
 
+== The Focusing Transformation
+
+#todo[TODO]
+
+== The Shrinking Transformation
+
+#todo[TODO]
+
 == The Lower-Level Intermediate Language #AxCut
 
 === Syntax
@@ -445,3 +453,11 @@
     ),
   )
 ]
+
+== Translation from #Core to #AxCut
+
+#todo[TODO]
+
+== Translation from #AxCut to #RISC-V machine code
+
+#todo[TODO]

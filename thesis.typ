@@ -123,7 +123,7 @@
 }
 
 #include "content/1-introduction.typ"
-#include "content/2-background.typ"
+#include "content/2-scc.typ"
 #include "content/9-scratch-area.typ"
 
 #bibliography(
