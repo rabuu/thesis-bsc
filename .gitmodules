@@ -1,0 +1,3 @@
+[submodule "lib/deps/theseus"]
+	path = lib/deps/theseus
+	url = https://github.com/leanderhert/Theseus.git
