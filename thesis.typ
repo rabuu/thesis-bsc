@@ -2,6 +2,7 @@
 #import deps: hydra, theseus
 
 #import hydra: hydra
+#import theseus: appendix
 
 #set document(
   title: meta.title,
@@ -135,6 +136,6 @@
   title: "References",
 )
 
-#show: appendix
+#show: appendix.with(title: none)
 
 #include "content/A-implementation.typ"
