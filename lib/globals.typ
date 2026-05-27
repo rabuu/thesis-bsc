@@ -7,3 +7,7 @@
 
 #let f2c(x, with: none) = $C bracket.l.stroked #x bracket.r.stroked_#with$
 #let a2m(x) = $scr(M) bracket.l.stroked #x bracket.r.stroked$
+
+#let focus(x) = $scr(F)(#x)$
+#let bind(x, c) = $scr(B)(#x)[#c]$
+#let bindargs(x, c) = $scr(L)(#x)[#c]$
