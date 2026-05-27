@@ -20,7 +20,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot) : "Producer"_Fun -> "Producer"_Core$
@@ -36,7 +36,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$
@@ -65,7 +65,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$

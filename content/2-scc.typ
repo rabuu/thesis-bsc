@@ -111,7 +111,7 @@
     )),
   )
 
-  #line(length: 80%)
+  #line(length: 100%)
 
   _Producer Typing:_ $Theta mid Gamma tack p : tau$
   #rule-set(
@@ -193,7 +193,7 @@
     )),
   )
 
-  #line(length: 80%)
+  #line(length: 100%)
 
   _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
   #rule-set(
@@ -310,7 +310,7 @@
   )
   The rules #rn("Var"), #rn("Ctor"), #rn("Plus") are identical to #Fun.
 
-  #line(length: 80%)
+  #line(length: 100%)
 
   Consumer Typing: $Theta mid Gamma tack c :^cns tau$
   #rule-set(
@@ -334,7 +334,7 @@
   )
   The rule #rn("Covar") is identical to #Fun.
 
-  #line(length: 80%)
+  #line(length: 100%)
 
   Statement Typing: $Theta mid Gamma tack s$
   #rule-set(
@@ -376,7 +376,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot) : "Producer"_Fun -> "Producer"_Core$
@@ -391,7 +391,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$
@@ -420,7 +420,7 @@
   $
 ]
 
-#line(length: 80%)
+#line(length: 100%)
 
 #figure[
   $f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$
