@@ -1,10 +1,25 @@
 #import "/lib/lib.typ": *
+#import deps.fletcher
 
 #import prooftree: *
 #import syntax: *
 #show: syntax.syntax-config
 
 = The Sequent Calculus Compiler
+
+== Overview
+
+#figure({
+  import fletcher: diagram, node
+  diagram(
+    debug: false,
+    node-stroke: 1pt,
+    node((0, 0), Fun, stroke: red, fill: red.lighten(65%)),
+    node((1, 0), Core, stroke: green, fill: green.lighten(65%)),
+    node((2, 0), AxCut, stroke: blue, fill: blue.lighten(65%)),
+    node((3, 0), RISC-V, stroke: orange, fill: orange.lighten(65%)),
+  )
+})
 
 == The Surface Language #Fun
 
