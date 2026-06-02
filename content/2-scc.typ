@@ -470,9 +470,7 @@
 ]
 
 == Translation from #Core to #AxCut
-
 #todo[TODO]
 
 == Translation from #AxCut to #RISC-V machine code
-
 #todo[TODO]

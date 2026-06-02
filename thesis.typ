@@ -110,13 +110,13 @@
 
 #set heading(numbering: "1.1")
 
-#show heading: it => {
+#show heading: it => block({
   if it.has("numbering") and it.numbering != none {
     counter(heading).display(it.numbering) + h(1em) + it.body
   } else {
     it
   }
-}
+})
 
 #show heading.where(level: 1): it => {
   pagebreak-to()
