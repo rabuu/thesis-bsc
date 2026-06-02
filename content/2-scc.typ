@@ -527,7 +527,61 @@
 ]
 
 == The Shrinking Transformation
-#todo[TODO]
+
++ Inline all possible pairs of producers and consumers in cuts.
+
++ "Six of these combinations are precluded by typing."
+
++ Removing Renaming:
+  #figure[
+    $
+      shrink(cut(mu alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
+      shrink(cut(y, tilde(mu)x. s)) & := && shrink(s[x mapsto y]) \
+      shrink(cut(K_j (sigma), CASE braces(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+      shrink(cut(NEW braces(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+    $
+  ]
+
++ Removing Critical Pairs:
+  #figure[
+    $
+      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE braces(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
+      "where" &&& DATA T braces(K_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) braces(shrink(s_2)) \
+      "and" &&& Gamma := "freeVars"(shrink(s_2)) \
+      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(NEW braces(D_1(Gamma_1) => cut(mu alpha. j(Gamma), D_1(Gamma_1)), ...), tilde(mu)x. shrink(s_2)) \
+      "where" &&& CODATA T braces(D_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) braces(shrink(s_1)) \
+      "and" &&& Gamma := "freeVars"(shrink(s_1)) \
+    $
+  ]
+
++ Removing Unknown Cuts:
+  #figure[
+    $
+      shrink(cut(x, alpha)_T) & := && cut(x, CASE braces(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
+      "where" &&& DATA T braces(K_1(Gamma_1), ...) in Theta \
+      shrink(cut(x, alpha)_T) & := && cut(NEW braces(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
+      "where" &&& CODATA T braces(D_1(Gamma_1), ...) in Theta \
+    $
+  ]
+
++ Dealing with Built-In Types:
+
+  Define: $DATA "Cont" braces("Ret"(x :^prd i64))$
+
+  #figure[
+    $
+      shrink(cut(mu alpha. s_1, tilde(mu) x. s_2)_i64) & := && cut(mu alpha. shrink(s_1), CASE braces("Ret"(x) => shrink(s_2))) \
+      shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
+      shrink(cut(n, alpha)) & := && cut(n, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+      shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+    $
+    $
+      shrink(Gamma\, alpha :^cns i64) & := && shrink(Gamma), alpha :^cns "Cont" \
+          shrink(Gamma\, v :^chi tau) & := && shrink(Gamma), v :^chi tau
+    $
+  ]
 
 == The Lower-Level Intermediate Language #AxCut
 
