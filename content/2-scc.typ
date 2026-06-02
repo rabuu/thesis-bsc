@@ -9,14 +9,26 @@
 
 == Overview
 #figure({
-  import fletcher: diagram, node
+  import fletcher: diagram, edge, node
+
+  let colored-node(color) = node.with(stroke: color, fill: color.lighten(65%))
+
+  let fun = (0, 0)
+  let core = (2, 0)
+  let axcut = (4, 0)
+  let riscv = (6, 0)
+
   diagram(
     debug: false,
     node-stroke: 1pt,
-    node((0, 0), Fun, stroke: red, fill: red.lighten(65%)),
-    node((1, 0), Core, stroke: green, fill: green.lighten(65%)),
-    node((2, 0), AxCut, stroke: blue, fill: blue.lighten(65%)),
-    node((3, 0), RISC-V, stroke: orange, fill: orange.lighten(65%)),
+    colored-node(red)(fun, Fun),
+    colored-node(green)(core, Core),
+    colored-node(blue)(axcut, AxCut),
+    colored-node(orange)(riscv, RISC-V),
+    edge(fun, core, "-|>", label: $f2c(dot)$),
+    edge(core, axcut, "-|>", label: $c2a(dot)$),
+    edge(axcut, riscv, "-|>", label: $a2m(dot)$),
+    edge(core, core, "-|>", bend: -130deg, label: $focus(dot), shrink(dot)$),
   )
 })
 
