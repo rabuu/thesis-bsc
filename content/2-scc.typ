@@ -8,7 +8,6 @@
 = The Sequent Calculus Compiler
 
 == Overview
-
 #figure({
   import fletcher: diagram, node
   diagram(
@@ -292,7 +291,6 @@
 ]
 
 === Typing Rules
-
 #figure[
   Producer Typing: $Theta mid Gamma tack p :^prd tau$
   #rule-set(
@@ -432,11 +430,9 @@
 ]
 
 == The Focusing Transformation
-
 #todo[TODO]
 
 == The Shrinking Transformation
-
 #todo[TODO]
 
 == The Lower-Level Intermediate Language #AxCut
