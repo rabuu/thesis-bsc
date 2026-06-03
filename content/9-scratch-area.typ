@@ -7,8 +7,8 @@
 
 == Syntax for Linear Context Bindings
 #bnf(
-  (markhl($q$), markhl("Quantity")),
-  markhl(alt(
+  (mark($q$), mark("Quantity")),
+  mark(alt(
     $1$,
     $omega quad "(mostly ommitted)"$,
   )),
@@ -16,7 +16,7 @@
   ($Gamma$, "Typing Contexts"),
   alt(
     $empty$,
-    $Gamma, sp v :_markhl(q)^chi tau$,
+    $Gamma, sp v :_mark(q)^chi tau$,
   ),
 )
 

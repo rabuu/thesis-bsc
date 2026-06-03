@@ -13,9 +13,9 @@
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
   $
-    f2c(DEF f(Gamma) : i64 braces(p)) & := DEF f(Gamma, alpha markhl(:_1^cns) tau) braces(f2c(p, with: alpha)) quad(alpha "fresh") \
+    f2c(DEF f(Gamma) : i64 braces(p)) & := DEF f(Gamma, alpha mark(:_1^cns) tau) braces(f2c(p, with: alpha)) quad(alpha "fresh") \
     f2c(DEF "main"(Gamma) : i64 braces(p)) & := DEF "main"(Gamma) braces(f2c(p, with: tilde(mu)x.EXIT x)) \
-    f2c(CODATA T braces(D_1(Gamma_1): tau_1, ...)) & := CODATA T braces(D_1(Gamma_1, alpha_1 markhl(:_1^cns) tau_1), ...) quad(alpha_1, ... "fresh") \
+    f2c(CODATA T braces(D_1(Gamma_1): tau_1, ...)) & := CODATA T braces(D_1(Gamma_1, alpha_1 mark(:_1^cns) tau_1), ...) quad(alpha_1, ... "fresh") \
     f2c(DATA T braces(K_1(Gamma_1), ...)) & := DATA T braces(K_1(Gamma_1), ...)
   $
 ]
@@ -30,9 +30,11 @@
     f2c(p_1 + p_2) & := f2c(p_1) + f2c(p_2) \
     f2c(K(sigma)) & := K(f2c(sigma)) \
     f2c(NEW braces(D_1(Gamma_1) => p_1, ...)) & := NEW braces(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
-    markhl(color: #red, f2c(LABEL sp alpha sp braces(p)) &:= mu alpha. f2c(p, with: alpha)) \
-    markhl(f2c(f(sigma)) & := mu_1 alpha. f(f2c(sigma), alpha)) \
-    f2c(p) & := mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
+    mark(f2c(f(sigma)) & := mu_1 alpha. f(f2c(sigma), alpha)) \
+    f2c(p) & := #note[Should this be linear?] mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
+  $
+  $
+    erase(f2c(LABEL sp alpha sp braces(p)) & := mu alpha. f2c(p, with: alpha)) \
   $
 ]
 

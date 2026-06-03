@@ -1,7 +1,6 @@
 #import "/lib/lib.typ": *
 #import deps.fletcher
 
-#import prooftree: *
 #import syntax: *
 #show: syntax.syntax-config
 

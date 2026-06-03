@@ -1,4 +1,3 @@
-#import "settings.typ"
 #import "deps.typ": curryst
 #import curryst: prooftree, rule, rule-set
 
