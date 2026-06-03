@@ -197,6 +197,96 @@
 
 == Linearity in #Core
 
+=== Syntax
+#figure[
+  #bnf(
+    ($p$, "Producers"),
+    alt(
+      $var(x)$,
+      $mark(mu_q) alpha. s$,
+      $K(sigma)$,
+      $NEW br(D(Gamma) => s, ...)$,
+    ),
+    alt(
+      $n$,
+      $p + p$,
+    ),
+
+    ($c$, "Consumers"),
+    alt(
+      $covar(alpha)$,
+      $mark(tilde(mu)_q) x. s$,
+      $D(sigma)$,
+      $CASE br(K(Gamma) => s, ...)$,
+    ),
+
+    ($s$, "Statements"),
+    alt(
+      $cut(p, c)$,
+      $IF p equiv 0 br(s) ELSE br(s)$,
+      $f(sigma)$,
+    ),
+    alt(
+      $EXIT p$,
+    ),
+
+    ($sigma$, "Arguments"),
+    alt(
+      $empty$,
+      $sigma, sp p$,
+      $sigma, sp c$,
+    ),
+
+    ($v$, "(Co)Variables"),
+    alt(
+      $var(x)$,
+      $covar(alpha)$,
+    ),
+
+    ($tau$, "Types"),
+    alt(
+      $i64$,
+      $T$,
+    ),
+
+    ($chi$, "Chirality"),
+    alt(
+      $prd$,
+      $cns$,
+    ),
+
+    (mark($q$), highlight("Quantity")),
+    mark(alt(
+      $1$,
+      $omega$,
+    )),
+
+    ($Gamma$, "Typing Contexts"),
+    alt(
+      $empty$,
+      $Gamma, sp v :^chi_mark(q) tau$,
+    ),
+
+    ($pi$, "Polarity"),
+    alt(
+      $DATA$,
+      $CODATA$,
+    ),
+
+    ($delta$, "Declarations"),
+    alt(
+      $DEF f(Gamma) : tau br(p)$,
+      $pi sp T br(K(Gamma), ...)$,
+    ),
+
+    ($Theta$, "Programs"),
+    alt(
+      $empty$,
+      $Theta, sp delta$,
+    ),
+  )
+]
+
 == Translation from #Fun to #Core
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
