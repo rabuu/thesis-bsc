@@ -303,12 +303,23 @@
 
 === Typing Rules
 #figure[
-  Producer Typing: $Theta mid Gamma tack p :^prd tau$
+  _Producer Typing:_ $Theta mid Gamma tack p :^prd tau$
   #rule-set(
+    prooftree(rule(
+      name: rn("Var"),
+      $x :^prd tau in Gamma$,
+      $Gamma tack x :^prd tau$,
+    )),
     prooftree(rule(
       name: rn("Act-R"),
       $Gamma, alpha :^cns tau tack s$,
       $Gamma tack mu a. s :^prd tau$,
+    )),
+    prooftree(rule(
+      name: rn("Ctor"),
+      $DATA T br(..., K(Gamma'), ...) in Theta$,
+      $Theta mid Gamma tack sigma : Gamma'$,
+      $Theta mid Gamma tack K(sigma) :^prd T$,
     )),
     prooftree(rule(
       name: rn("New"),
@@ -316,23 +327,31 @@
       $forall i: Gamma, Gamma_i tack s_i$,
       $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
     )),
+    prooftree(rule(
+      name: rn("Lit"),
+      $Gamma tack n :^prd i64$,
+    )),
+    prooftree(rule(
+      name: rn("Plus"),
+      $Gamma tack p_1 :^prd i64$,
+      $Gamma tack p_2 :^prd i64$,
+      $Gamma tack p_1 + p_2 :^prd i64$,
+    )),
   )
-  The rules #rn("Var"), #rn("Ctor"), #rn("Plus") are identical to #Fun.
 
   #line(length: 100%)
 
-  Consumer Typing: $Theta mid Gamma tack c :^cns tau$
+  _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
   #rule-set(
+    prooftree(rule(
+      name: rn("Covar"),
+      $alpha :^cns tau in Gamma$,
+      $Gamma tack alpha :^cns tau$,
+    )),
     prooftree(rule(
       name: rn("Act-L"),
       $Gamma, x :^prd tau tack s$,
       $Gamma tack tilde(mu)x. s :^cns tau$,
-    )),
-    prooftree(rule(
-      name: rn("Case"),
-      $DATA T br(K_1(Gamma_1), ...) in Theta$,
-      $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
     )),
     prooftree(rule(
       name: rn("Dtor"),
@@ -340,12 +359,17 @@
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack D(sigma) :^cns T$,
     )),
+    prooftree(rule(
+      name: rn("Case"),
+      $DATA T br(K_1(Gamma_1), ...) in Theta$,
+      $forall i: Gamma, Gamma_i tack s_i$,
+      $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+    )),
   )
-  The rule #rn("Covar") is identical to #Fun.
 
   #line(length: 100%)
 
-  Statement Typing: $Theta mid Gamma tack s$
+  _Statement Typing:_ $Theta mid Gamma tack s$
   #rule-set(
     prooftree(rule(
       name: rn("Cut"),
