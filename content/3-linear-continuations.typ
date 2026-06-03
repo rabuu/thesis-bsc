@@ -219,7 +219,7 @@
     f2c(K(sigma)) & := K(f2c(sigma)) \
     f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
     mark(f2c(f(sigma)) & := mu_1 alpha. f(f2c(sigma), alpha)) \
-    f2c(p) & := #note[Should this be linear?] mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
+    mark(f2c(p) & := mu_1 alpha. f2c(p, with: alpha) quad "for all other producers" p) \
   $
   $
     erase(f2c(LABEL sp alpha sp br(p)) & := mu alpha. f2c(p, with: alpha)) \
