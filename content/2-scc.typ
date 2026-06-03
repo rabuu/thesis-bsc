@@ -45,18 +45,18 @@
     alt(
       $n$,
       $p + p$,
-      $IF p equiv 0 braces(p) ELSE braces(p)$,
+      $IF p equiv 0 br(p) ELSE br(p)$,
     ),
     alt(
       $K(sigma)$,
-      $p.CASE braces(K(Gamma) => p, ...)$,
+      $p.CASE br(K(Gamma) => p, ...)$,
     ),
     alt(
       $p.D(sigma)$,
-      $NEW braces(D(Gamma) => p, ...)$,
+      $NEW br(D(Gamma) => p, ...)$,
     ),
     alt(
-      $LABEL alpha braces(p)$,
+      $LABEL alpha br(p)$,
       $GOTO alpha sp (p)$,
     ),
     $EXIT p$,
@@ -85,10 +85,10 @@
     ),
 
     ($delta$, "Declarations"),
-    $DEF f(Gamma) : tau braces(p)$,
+    $DEF f(Gamma) : tau br(p)$,
     alt(
-      $DATA T braces(K(Gamma), ...)$,
-      $CODATA T braces(D(Gamma) : tau, ...)$,
+      $DATA T br(K(Gamma), ...)$,
+      $CODATA T br(D(Gamma) : tau, ...)$,
     ),
 
     ($Theta$, "Programs"),
@@ -151,12 +151,12 @@
       $Gamma tack p : i64$,
       $Gamma tack p_1 : tau$,
       $Gamma tack p_2 : tau$,
-      $Gamma tack IF p equiv 0 braces(p_1) ELSE braces(p_2) : tau$,
+      $Gamma tack IF p equiv 0 br(p_1) ELSE br(p_2) : tau$,
     )),
     prooftree(rule(
       name: rn("Label"),
       $Gamma, alpha :^cns tau tack p : tau$,
-      $Gamma tack LABEL alpha braces(p) : tau$,
+      $Gamma tack LABEL alpha br(p) : tau$,
     )),
     prooftree(rule(
       name: rn("Goto"),
@@ -171,33 +171,33 @@
     )),
     prooftree(rule(
       name: rn("Ctor"),
-      $DATA T braces(..., K(Gamma'), ...) in Theta$,
+      $DATA T br(..., K(Gamma'), ...) in Theta$,
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack K(sigma) : T$,
     )),
     prooftree(rule(
       name: rn("Case"),
-      $DATA T braces(K_1(Gamma_1), ...) in Theta$,
+      $DATA T br(K_1(Gamma_1), ...) in Theta$,
       $Gamma tack p : T$,
       $forall i: Gamma, Gamma_i tack p_i : tau$,
-      $Theta mid Gamma tack p.CASE braces(K_1(Gamma_1) => p_1, ...) : tau$,
+      $Theta mid Gamma tack p.CASE br(K_1(Gamma_1) => p_1, ...) : tau$,
     )),
     prooftree(rule(
       name: rn("Dtor"),
-      $CODATA T braces(..., D(Gamma') : tau, ...) in Theta$,
+      $CODATA T br(..., D(Gamma') : tau, ...) in Theta$,
       $Gamma tack p : T$,
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack p.D(sigma) : tau$,
     )),
     prooftree(rule(
       name: rn("New"),
-      $CODATA T braces(D_1(Gamma_1) : tau_1, ...) in Theta$,
+      $CODATA T br(D_1(Gamma_1) : tau_1, ...) in Theta$,
       $forall i: Gamma, Gamma_i tack p_i : tau_i$,
-      $Theta mid Gamma tack NEW braces(D_1(Gamma_1) => p_1, ...) : T$,
+      $Theta mid Gamma tack NEW br(D_1(Gamma_1) => p_1, ...) : T$,
     )),
     prooftree(rule(
       name: rn("Call"),
-      $DEF f(Gamma') : tau braces(...) in Theta$,
+      $DEF f(Gamma') : tau br(...) in Theta$,
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack f(sigma) : tau$,
     )),
@@ -225,7 +225,7 @@
       $var(x)$,
       $mu alpha. s$,
       $K(sigma)$,
-      $NEW braces(D(Gamma) => s, ...)$,
+      $NEW br(D(Gamma) => s, ...)$,
     ),
     alt(
       $n$,
@@ -237,13 +237,13 @@
       $covar(alpha)$,
       $tilde(mu) x. s$,
       $D(sigma)$,
-      $CASE braces(K(Gamma) => s, ...)$,
+      $CASE br(K(Gamma) => s, ...)$,
     ),
 
     ($s$, "Statements"),
     alt(
       $cut(p, c)$,
-      $IF p equiv 0 braces(s) ELSE braces(s)$,
+      $IF p equiv 0 br(s) ELSE br(s)$,
       $f(sigma)$,
     ),
     alt(
@@ -289,8 +289,8 @@
 
     ($delta$, "Declarations"),
     alt(
-      $DEF f(Gamma) : tau braces(p)$,
-      $pi sp T braces(K(Gamma), ...)$,
+      $DEF f(Gamma) : tau br(p)$,
+      $pi sp T br(K(Gamma), ...)$,
     ),
 
     ($Theta$, "Programs"),
@@ -312,9 +312,9 @@
     )),
     prooftree(rule(
       name: rn("New"),
-      $CODATA T braces(D_1(Gamma_1), ...) in Theta$,
+      $CODATA T br(D_1(Gamma_1), ...) in Theta$,
       $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma tack NEW braces(D_1(Gamma_1) => s_1, ...) :^prd T$,
+      $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
     )),
   )
   The rules #rn("Var"), #rn("Ctor"), #rn("Plus") are identical to #Fun.
@@ -330,13 +330,13 @@
     )),
     prooftree(rule(
       name: rn("Case"),
-      $DATA T braces(K_1(Gamma_1), ...) in Theta$,
+      $DATA T br(K_1(Gamma_1), ...) in Theta$,
       $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma tack CASE braces(K_1(Gamma_1) => s_1, ...) :^cns T$,
+      $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
     )),
     prooftree(rule(
       name: rn("Dtor"),
-      $CODATA T braces(..., D(Gamma'), ...) in Theta$,
+      $CODATA T br(..., D(Gamma'), ...) in Theta$,
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack D(sigma) :^cns T$,
     )),
@@ -358,11 +358,11 @@
       $Gamma tack p :^prd i64$,
       $Gamma tack s_1$,
       $Gamma tack s_2$,
-      $Gamma tack IF p equiv 0 braces(s_1) ELSE braces(s_1)$,
+      $Gamma tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
     )),
     prooftree(rule(
       name: rn("Call"),
-      $DEF f(Gamma') braces(...) in Theta$,
+      $DEF f(Gamma') br(...) in Theta$,
       $Theta mid Gamma tack sigma : Gamma'$,
       $Theta mid Gamma tack f(sigma)$,
     )),
@@ -378,10 +378,10 @@
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
   $
-    f2c(DEF f(Gamma) : i64 braces(p)) & := DEF f(Gamma, alpha :^cns tau) braces(f2c(p, with: alpha)) quad(alpha "fresh") \
-    f2c(DEF "main"(Gamma) : i64 braces(p)) & := DEF "main"(Gamma) braces(f2c(p, with: tilde(mu)x.EXIT x)) \
-    f2c(CODATA T braces(D_1(Gamma_1): tau_1, ...)) & := CODATA T braces(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
-    f2c(DATA T braces(K_1(Gamma_1), ...)) & := DATA T braces(K_1(Gamma_1), ...)
+    f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
+    f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
+    f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
+    f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
   $
 ]
 
@@ -394,8 +394,8 @@
     f2c(n) & := n \
     f2c(p_1 + p_2) & := f2c(p_1) + f2c(p_2) \
     f2c(K(sigma)) & := K(f2c(sigma)) \
-    f2c(NEW braces(D_1(Gamma_1) => p_1, ...)) & := NEW braces(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
-    f2c(LABEL alpha braces(p)) &:= mu alpha. f2c(p, with: alpha) \
+    f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
+    f2c(LABEL alpha br(p)) &:= mu alpha. f2c(p, with: alpha) \
     f2c(p) & := mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
   $
 ]
@@ -410,21 +410,21 @@
     f2c(x, with: c) & := && cut(x, c) \
     f2c(f(sigma), with: c) & := && f(f2c(sigma), c) \
     f2c(EXIT p, with: c) & := && EXIT f2c(p) \
-    f2c(LABEL alpha braces(p), with: c) & := && cut(mu alpha. f2c(p, with: alpha), c) \
+    f2c(LABEL alpha br(p), with: c) & := && cut(mu alpha. f2c(p, with: alpha), c) \
     f2c(GOTO alpha sp (p), with: c) & := && f2c(p, with: alpha) \
     f2c(LET x = p_1\; sp p_2, with: c) & := && f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) \
     f2c(LET x = p_1\; sp p_2, with: c) & := && cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c))\
-    "where" & && p_1 : CODATA T braces(...) \
+    "where" & && p_1 : CODATA T br(...) \
     f2c(K(sigma), with: c) & := && cut(K(f2c(sigma)), c) \
     f2c(p.D(sigma), with: c) & := && f2c(p, with: D(f2c(sigma), c)) \
-    f2c(NEW braces(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW braces(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
-    f2c(p.CASE braces(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: CASE braces(K_1(Gamma_1) => f2c(p_1, with: c_0), ...)) \
+    f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
+    f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: CASE br(K_1(Gamma_1) => f2c(p_1, with: c_0), ...)) \
     "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
-    "with" & && DEF j(Gamma) braces(cut(x, c)) \
+    "with" & && DEF j(Gamma) br(cut(x, c)) \
     "and" & && Gamma := "freeVars"(c), x :^prd tau \
-    f2c(IF p equiv 0 braces(p_1) ELSE braces(p_2), with: c) & := && IF f2c(p) equiv 0 braces(f2c(p_1, with: c_0)) ELSE braces(f2c(p_2, with: c_0)) \
+    f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: c_0)) ELSE br(f2c(p_2, with: c_0)) \
     "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
-    "with" & && DEF j(Gamma) braces(cut(x, c)) \
+    "with" & && DEF j(Gamma) br(cut(x, c)) \
     "and" & && Gamma := "freeVars"(c), x :^prd tau \
   $
 ]
@@ -444,7 +444,7 @@
 #figure[
   $focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$
   $
-    focus(DEF f(Gamma) braces(s)) & := && DEF f(Gamma) braces(focus(s))
+    focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
   $
 ]
 
@@ -457,7 +457,7 @@
     focus(cut(K(sigma), c)) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), focus(c))) \
     focus(cut(p, D(sigma))) & := && bindargs(sigma, lambda overline(a). cut(focus(p), D(overline(a)))) \
     focus(cut(p, c)) & := && cut(focus(p), focus(c)) \
-    focus(IF p equiv 0 braces(s_1) ELSE braces(s_2)) & := && bind(p, lambda a. IF a equiv 0 braces(focus(s_1)) ELSE braces(focus(s_2))) \
+    focus(IF p equiv 0 br(s_1) ELSE br(s_2)) & := && bind(p, lambda a. IF a equiv 0 br(focus(s_1)) ELSE br(focus(s_2))) \
     focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
     focus(EXIT p) & := && bind(p, lambda a. EXIT a)
   $
@@ -470,7 +470,7 @@
   $
     focus(x) & := && x \
     focus(mu alpha. s) & := && mu alpha. focus(s) \
-    focus(NEW braces(D_1(Gamma_1) => s_1, ...)) & := && NEW braces(D_1(Gamma_1) => focus(s_1), ...) \
+    focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
     focus(K(sigma)) &&& "does not occur" \
     focus(n) & := && n \
     focus(p_1 + p_2) &&& "does not occur"
@@ -484,7 +484,7 @@
   $
     focus(alpha) & := && alpha \
     focus(tilde(mu) x. s) & := && tilde(mu) x. focus(s) \
-    focus(CASE braces(K_1(Gamma_1) => s_1, ...)) & := && CASE braces(K_1(Gamma_1) => focus(s_1), ...) \
+    focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
     focus(D(sigma)) &&& "does not occur" \
   $
 ]
@@ -497,7 +497,7 @@
     bind(x, k) & := && k(x) \
     bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
     bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
-    bind(NEW braces(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW braces(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
+    bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
     bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
     bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu) x. k(x))))
   $
@@ -511,7 +511,7 @@
     bind(alpha, k) & := && k(alpha) \
     bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
     bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
-    bind(CASE braces(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE braces(K_1(Gamma_1) => focus(s_1), ...)) \
+    bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
   $
 ]
 
@@ -536,21 +536,21 @@
     $
       shrink(cut(mu alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
       shrink(cut(y, tilde(mu)x. s)) & := && shrink(s[x mapsto y]) \
-      shrink(cut(K_j (sigma), CASE braces(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
-      shrink(cut(NEW braces(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+      shrink(cut(K_j (sigma), CASE br(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+      shrink(cut(NEW br(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
     $
   ]
 
 + Removing Critical Pairs:
   #figure[
     $
-      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE braces(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
-      "where" &&& DATA T braces(K_1(Gamma_1), ...) in Theta \
-      "with" &&& DEF j(Gamma) braces(shrink(s_2)) \
+      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
+      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) br(shrink(s_2)) \
       "and" &&& Gamma := "freeVars"(shrink(s_2)) \
-      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(NEW braces(D_1(Gamma_1) => cut(mu alpha. j(Gamma), D_1(Gamma_1)), ...), tilde(mu)x. shrink(s_2)) \
-      "where" &&& CODATA T braces(D_1(Gamma_1), ...) in Theta \
-      "with" &&& DEF j(Gamma) braces(shrink(s_1)) \
+      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(mu alpha. j(Gamma), D_1(Gamma_1)), ...), tilde(mu)x. shrink(s_2)) \
+      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) br(shrink(s_1)) \
       "and" &&& Gamma := "freeVars"(shrink(s_1)) \
     $
   ]
@@ -558,20 +558,20 @@
 + Removing Unknown Cuts:
   #figure[
     $
-      shrink(cut(x, alpha)_T) & := && cut(x, CASE braces(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
-      "where" &&& DATA T braces(K_1(Gamma_1), ...) in Theta \
-      shrink(cut(x, alpha)_T) & := && cut(NEW braces(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
-      "where" &&& CODATA T braces(D_1(Gamma_1), ...) in Theta \
+      shrink(cut(x, alpha)_T) & := && cut(x, CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
+      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+      shrink(cut(x, alpha)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
+      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
     $
   ]
 
 + Dealing with Built-In Types:
 
-  Define: $DATA "Cont" braces("Ret"(x :^prd i64))$
+  Define: $DATA "Cont" br("Ret"(x :^prd i64))$
 
   #figure[
     $
-      shrink(cut(mu alpha. s_1, tilde(mu) x. s_2)_i64) & := && cut(mu alpha. shrink(s_1), CASE braces("Ret"(x) => shrink(s_2))) \
+      shrink(cut(mu alpha. s_1, tilde(mu) x. s_2)_i64) & := && cut(mu alpha. shrink(s_1), CASE br("Ret"(x) => shrink(s_2))) \
       shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
       shrink(cut(n, alpha)) & := && cut(n, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
       shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
@@ -596,11 +596,11 @@
     ($s$, "Statements"),
     $LET v = X(sigma); sp s$,
     $INVOKE v sp X(sigma)$,
-    $SWITCH v braces(X(Gamma) => s, ...)$,
-    $CREATE v = Gamma braces(X(Gamma) => s, ...); sp s$,
+    $SWITCH v br(X(Gamma) => s, ...)$,
+    $CREATE v = Gamma br(X(Gamma) => s, ...); sp s$,
     $LIT v <- n; sp s$,
     $v <- v + v; sp s$,
-    $IF v equiv 0 braces(s) ELSE braces(s)$,
+    $IF v equiv 0 br(s) ELSE br(s)$,
     $f(sigma)$,
     $SUBSTITUTE[Gamma := sigma]; sp s$,
     $EXIT v$,
@@ -648,7 +648,7 @@
       $v :^prd i64 in Gamma$,
       $Gamma tack s_1$,
       $Gamma tack s_2$,
-      $Gamma tack IF v equiv 0 braces(s_1) ELSE braces(s_2)$,
+      $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
     )),
   )
 
@@ -657,7 +657,7 @@
   #rule-set(
     prooftree(rule(
       name: rn("Call"),
-      $DEF f(Gamma) braces(...) in Theta$,
+      $DEF f(Gamma) br(...) in Theta$,
       $Theta mid Gamma tack f(Gamma)$,
     )),
   )
@@ -677,26 +677,26 @@
   #rule-set(
     prooftree(rule(
       name: $#rn("Let-")pi$,
-      $pi T braces(..., X(Gamma_0), ...) in Theta$,
+      $pi T br(..., X(Gamma_0), ...) in Theta$,
       $Gamma, v:^(chi_1(pi)) T tack s$,
       $Theta mid Gamma, Gamma_0 tack LET v = X(Gamma_0); sp s$,
     )),
     prooftree(rule(
       name: $#rn("Create-")pi$,
-      $pi T braces(X_1(Gamma_1), ...) in Theta$,
+      $pi T br(X_1(Gamma_1), ...) in Theta$,
       $Gamma, v:^(chi_2(pi)) T tack s$,
       $forall i: Gamma_i, Gamma_0 tack s_i$,
-      $Theta mid Gamma, Gamma_0 tack CREATE v = Gamma_0 braces(X_1(Gamma_1) => s_1, ...); sp s$,
+      $Theta mid Gamma, Gamma_0 tack CREATE v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
     )),
     prooftree(rule(
       name: $#rn("Switch-")pi$,
-      $pi T braces(X_1(Gamma_1), ...) in Theta$,
+      $pi T br(X_1(Gamma_1), ...) in Theta$,
       $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma, v :^(chi_1(pi)) T tack SWITCH v braces(X_1(Gamma_1) => s_1, ...)$,
+      $Theta mid Gamma, v :^(chi_1(pi)) T tack SWITCH v br(X_1(Gamma_1) => s_1, ...)$,
     )),
     prooftree(rule(
       name: $#rn("Invoke-")pi$,
-      $pi T braces(..., X(Gamma), ...) in Theta$,
+      $pi T br(..., X(Gamma), ...) in Theta$,
       $Theta mid Gamma, v :^(chi_2(pi)) T tack INVOKE v sp X(Gamma)$,
     )),
   )

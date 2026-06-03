@@ -60,7 +60,7 @@
 
 #let empty = sym.diamond.small
 
-#let braces(..inner) = [{ #inner.pos().join($,$) }]
+#let br(..inner) = [{ #inner.pos().join($,$) }]
 #let cut(p, c) = $chevron.l #p | #c chevron.r$
 
 #let sp = sym.space.nobreak
