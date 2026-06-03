@@ -7,7 +7,7 @@
 
 == Syntax for Linear Context Bindings
 #bnf(
-  (mark($q$), mark("Quantity")),
+  (mark($q$), highlight[Quantity]),
   mark(alt(
     $1$,
     $omega quad "(mostly ommitted)"$,
