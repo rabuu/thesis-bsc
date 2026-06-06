@@ -313,8 +313,6 @@
     f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
     mark(f2c(f(sigma)) & := mu_1 alpha. f(f2c(sigma), alpha)) \
     mark(f2c(p) & := mu_1 alpha. f2c(p, with: alpha) quad "for all other producers" p) \
-  $
-  $
     erase(f2c(LABEL sp alpha sp br(p)) & := mu alpha. f2c(p, with: alpha)) \
   $
 ]
@@ -343,8 +341,6 @@
     "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
     "with" & && DEF j(Gamma) br(cut(x, c)) \
     "and" & && Gamma := "freeVars"(c), x :^prd tau \
-  $
-  $
     erase(f2c(LABEL alpha br(p), with: c) & := && cut(mu alpha. f2c(p, with: alpha), c)) \
     erase(f2c(GOTO alpha sp (p), with: c) & := && f2c(p, with: alpha)) \
   $
@@ -354,11 +350,10 @@
 
 #figure[
   $f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$
+  // @typstyle off
   $
-        f2c(empty) & := empty \
+    f2c(empty) & := empty \
     f2c(sigma\, p) & := f2c(sigma), f2c(p) \
-  $
-  $
     erase(f2c(sigma\, alpha) & := f2c(sigma)\, alpha)
   $
 ]
