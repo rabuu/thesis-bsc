@@ -365,7 +365,89 @@
 
 
 == The Focusing Transformation
-#todo[TODO]
+#figure[
+  $focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$
+  $
+    focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$
+  $
+    focus(cut(p_1 + p_2, c)) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, focus(c)))) \
+    focus(cut(K(sigma), c)) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), focus(c))) \
+    focus(cut(p, D(sigma))) & := && bindargs(sigma, lambda overline(a). cut(focus(p), D(overline(a)))) \
+    focus(cut(p, c)) & := && cut(focus(p), focus(c)) \
+    focus(IF p equiv 0 br(s_1) ELSE br(s_2)) & := && bind(p, lambda a. IF a equiv 0 br(focus(s_1)) ELSE br(focus(s_2))) \
+    focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
+    focus(EXIT p) & := && bind(p, lambda a. EXIT a)
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$
+  $
+    focus(x) & := && x \
+    mark(focus(mu_q alpha. s) & := && mu_q alpha. focus(s)) \
+    focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
+    focus(K(sigma)) &&& "does not occur" \
+    focus(n) & := && n \
+    focus(p_1 + p_2) &&& "does not occur"
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$
+  $
+    focus(alpha) & := && alpha \
+    mark(focus(tilde(mu)_q x. s) & := && tilde(mu)_q x. focus(s)) \
+    focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
+    focus(D(sigma)) &&& "does not occur" \
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
+  $
+    bind(x, k) & := && k(x) \
+    mark(bind(mu_q alpha. s, k) & := && cut(mu_q alpha. focus(s), tilde(mu)_1 x. k(x))) \
+    mark(bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu)_1 x. k(x)))) \
+    mark(bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu)_1 x. k(x))) \
+    mark(bind(n, k) & := && cut(n, tilde(mu)_1 x. k(x))) \
+    mark(bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu)_1 x. k(x)))))
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
+  $
+    bind(alpha, k) & := && k(alpha) \
+    mark(bind(tilde(mu)_q x. s, k) & := && cut(mu_1 alpha. k(alpha), tilde(mu)_q x. focus(s))) \
+    mark(bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu_1 alpha. k(alpha), D(overline(a))))) \
+    mark(bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu_1 alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...))) \
+  $
+]
+
+#line(length: 100%)
+
+#figure[
+  $bindargs(dot, dot) : "Arguments"_Core times ("Context" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
+  $
+    bindargs(empty, k) & := && k(empty) \
+    bindargs(e :: sigma, k) & := && bind(e, lambda a. bindargs(sigma, lambda overline(a). k(a :: overline(a))))
+  $
+]
 
 == The Shrinking Transformation
 #todo[TODO]
