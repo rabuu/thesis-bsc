@@ -287,6 +287,9 @@
   )
 ]
 
+=== Typing Rules
+#todo[TODO]
+
 == Translation from #Fun to #Core
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
@@ -362,9 +365,13 @@
 
 
 == The Focusing Transformation
+#todo[TODO]
 
 == The Shrinking Transformation
+#todo[TODO]
 
 == Linearity in #AxCut
+#todo[TODO]
 
 == Translation from #Core to #AxCut
+#todo[TODO]
