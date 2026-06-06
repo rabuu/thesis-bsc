@@ -295,7 +295,7 @@
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
   $
     f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha mark(:_1^cns) tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
-    f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
+    f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: mark(tilde(mu)_1)x.EXIT x)) \
     f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 mark(:_1^cns) tau_1), ...) quad(alpha_1, ... "fresh") \
     f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
   $
@@ -327,20 +327,22 @@
     f2c(x, with: c) & := && cut(x, c) \
     f2c(f(sigma), with: c) & := && f(f2c(sigma), c) \
     f2c(EXIT p, with: c) & := && EXIT f2c(p) \
-    f2c(LET x = p_1\; sp p_2, with: c) & := && f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) \
-    f2c(LET x = p_1\; sp p_2, with: c) & := && cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c))\
-    "where" & && p_1 : CODATA T br(...) \
+    f2c(LET x = p_1\; sp p_2, with: c) & := && f2c(p_1, with: mark(tilde(mu)_omega)x. f2c(p_2, with: c)) \
+    f2c(LET x = p_1\; sp p_2, with: c) & := && cut(f2c(p_1), mark(tilde(mu)_omega)x. f2c(p_2, with: c))\
+    "where" & && p_1 : CODATA T br(...)
+    #note[Maybe render the both cases more clearly.]\
     f2c(K(sigma), with: c) & := && cut(K(f2c(sigma)), c) \
+    #note[In the new journal paper version, this is different.]
     f2c(p.D(sigma), with: c) & := && f2c(p, with: D(f2c(sigma), c)) \
     f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
     f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: CASE br(K_1(Gamma_1) => f2c(p_1, with: c_0), ...)) \
-    "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
+    "where" & && c_0 equiv mark(tilde(mu)_1)x. j(Gamma)\
     "with" & && DEF j(Gamma) br(cut(x, c)) \
-    "and" & && Gamma := "freeVars"(c), x :^prd tau \
+    "and" & && Gamma := "freeVars"(c), mark(x :^prd_1 tau) \
     f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: c_0)) ELSE br(f2c(p_2, with: c_0)) \
-    "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
+    "where" & && c_0 equiv mark(tilde(mu)_1)x. j(Gamma)\
     "with" & && DEF j(Gamma) br(cut(x, c)) \
-    "and" & && Gamma := "freeVars"(c), x :^prd tau \
+    "and" & && Gamma := "freeVars"(c), mark(x :^prd_1) tau \
     erase(f2c(LABEL alpha br(p), with: c) & := && cut(mu alpha. f2c(p, with: alpha), c)) \
     erase(f2c(GOTO alpha sp (p), with: c) & := && f2c(p, with: alpha)) \
   $
@@ -358,6 +360,7 @@
   $
 ]
 
+#inline-note[TODO: Update with binding functions (see new paper version).]
 
 == The Focusing Transformation
 #figure[
