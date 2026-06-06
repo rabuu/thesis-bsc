@@ -1,3 +1,9 @@
+Appel1991cps:
+  type: book
+  title: Compiling with Continuations
+  author: Appel, Andrew W.
+  date: 1991
+  publisher: Cambridge University Press
 Binder2024grokking:
   type: article
   title: Grokking the Sequent Calculus (Functional Pearl)
@@ -18,4 +24,86 @@ Binder2024grokking:
       location: New York, NY, USA
     issue: ICFP
     volume: 8
+Downen2016:
+  type: article
+  title: Sequent calculus as a compiler intermediate language
+  author:
+  - Downen, Paul
+  - Maurer, Luke
+  - Ariola, Zena M.
+  - Peyton Jones, Simon
+  date: 2016-09
+  page-range: 74-88
+  url: https://doi.org/10.1145/3022670.2951931
+  serial-number:
+    doi: 10.1145/3022670.2951931
+    issn: 0362-1340
+  parent:
+    type: periodical
+    title: SIGPLAN Not.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: 9
+    volume: 51
+Gentzen1935a:
+  type: article
+  title: Untersuchungen über das logische Schließen. I.
+  author: Gentzen, Gerhard
+  date: 1935
+  page-range: 176-210
+  url: https://doi.org/10.1007/BF01201353
+  serial-number:
+    doi: 10.1007/BF01201353
+  parent:
+    type: periodical
+    title: Mathematische Zeitschrift
+    volume: 35
+Gentzen1935b:
+  type: article
+  title: Untersuchungen über das logische Schließen. II.
+  author: Gentzen, Gerhard
+  date: 1935
+  page-range: 405-431
+  url: https://doi.org/10.1007/BF01201363
+  serial-number:
+    doi: 10.1007/BF01201363
+  parent:
+    type: periodical
+    title: Mathematische Zeitschrift
+    volume: 39
+Girard1987:
+  type: article
+  title: Linear Logic
+  author: Girard, Jean-Yves
+  date: 1987
+  page-range: 1-101
+  url: https://doi.org/10.1016/0304-3975(87)90045-4
+  serial-number:
+    issn: 0304-3975
+  parent:
+    type: periodical
+    title: Theoretical Computer Science
+    issue: 1
+    volume: 50
+Schuster2025:
+  type: article
+  title: 'Compiling Classical Sequent Calculus to Stock Hardware: The Duality of Compilation'
+  author:
+  - Schuster, Philipp
+  - Müller, Marius
+  - Ostermann, Klaus
+  - Brachthäuser, Jonathan Immanuel
+  date: 2025-04
+  url: https://doi.org/10.1145/3720507
+  serial-number:
+    doi: 10.1145/3720507
+  parent:
+    type: periodical
+    title: Proc. ACM Program. Lang.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: OOPSLA1
+    volume: 9
 
