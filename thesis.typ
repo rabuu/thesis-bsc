@@ -89,7 +89,7 @@
   numbering: "1",
   header: context {
     let current-page = here().page()
-    let even = calc.even(here().page())
+    let even = calc.even(current-page)
 
     let chapters = query(heading.where(level: 1))
     if chapters.any(chapter => chapter.location().page() == current-page) {
