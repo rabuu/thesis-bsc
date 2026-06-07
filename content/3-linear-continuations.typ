@@ -193,7 +193,7 @@
 ]
 
 === Intuitionistic!
-#todo[Maybe a section about how Fun now loses classical expression and gets intuitionsistic.]
+#inline-note[Maybe a section about how Fun now loses classical expression and gets intuitionsistic.]
 
 == Linearity in #Core
 
