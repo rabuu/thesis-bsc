@@ -504,6 +504,36 @@
   ]
 
 == Linearity in #AxCut
+
+=== Syntax
+#figure[
+  #bnf(
+    ($v$, "(Co)Variables"),
+    alt(
+      $var(x)$,
+      $covar(alpha)$,
+    ),
+
+    ($s$, "Statements"),
+    $mark(LET_q) v = X(sigma); sp s$,
+    $INVOKE v sp X(sigma)$,
+    $SWITCH v br(X(Gamma) => s, ...)$,
+    $mark(CREATE_q) v = Gamma br(X(Gamma) => s, ...); sp s$,
+    $LIT v <- n; sp s$,
+    $v <- v + v; sp s$,
+    $IF v equiv 0 br(s) ELSE br(s)$,
+    $f(sigma)$,
+    $SUBSTITUTE[Gamma := sigma]; sp s$,
+    $EXIT v$,
+    ($sigma$, "Arguments"),
+    alt(
+      $empty$,
+      $sigma, sp v$,
+    ),
+  )
+]
+
+=== Typing Rules
 #todo[TODO]
 
 == Translation from #Core to #AxCut
