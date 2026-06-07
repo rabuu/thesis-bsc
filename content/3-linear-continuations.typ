@@ -448,7 +448,60 @@
 ]
 
 == The Shrinking Transformation
-#todo[TODO]
++ Inline all possible pairs of producers and consumers in cuts.
+
++ "Six of these combinations are precluded by typing."
+
++ Removing Renaming:
+  #figure[
+    $
+      shrink(cut(mark(mu_q) alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
+      shrink(cut(y, mark(tilde(mu)_q)x. s)) & := && shrink(s[x mapsto y]) \
+      shrink(cut(K_j (sigma), CASE br(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+      shrink(cut(NEW br(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+    $
+  ]
+
++ Removing Critical Pairs:
+  #figure[
+    $
+      shrink(cut(mark(mu_q) alpha. s_1, mark(tilde(mu)_tilde(q))x. s_2)_T) & := && cut(mark(mu_q) alpha. shrink(s_1), CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), mark(tilde(mu)_tilde(q))x. j(Gamma)), ...))\
+      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) br(shrink(s_2)) \
+      "and" &&& Gamma := "freeVars"(shrink(s_2)) \
+      shrink(cut(mark(mu_q) alpha. s_1, mark(tilde(mu)_tilde(q))x. s_2)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(mark(mu_q) alpha. j(Gamma), D_1(Gamma_1)), ...), mark(tilde(mu)_tilde(q))x. shrink(s_2)) \
+      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
+      "with" &&& DEF j(Gamma) br(shrink(s_1)) \
+      "and" &&& Gamma := "freeVars"(shrink(s_1)) \
+    $
+  ]
+
++ Removing Unknown Cuts:
+  #figure[
+    $
+      shrink(cut(x, alpha)_T) & := && cut(x, CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
+      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+      shrink(cut(x, alpha)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
+      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
+    $
+  ]
+
++ Dealing with Built-In Types:
+
+  Define: $DATA "Cont" br("Ret"(x :^prd i64))$
+
+  #figure[
+    $
+      shrink(cut(mark(mu_q) alpha. s_1, mark(tilde(mu)_tilde(q)) x. s_2)_i64) & := && cut(mark(mu_q) alpha. shrink(s_1), CASE br("Ret"(x) => shrink(s_2))) \
+      shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
+      shrink(cut(n, alpha)) & := && cut(n, mark(tilde(mu)_1)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+      shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, mark(tilde(mu)_1)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+    $
+    $
+      shrink(Gamma\, alpha :^cns i64) & := && shrink(Gamma), alpha :^cns "Cont" \
+          shrink(Gamma\, v :^chi tau) & := && shrink(Gamma), v :^chi tau
+    $
+  ]
 
 == Linearity in #AxCut
 #todo[TODO]
