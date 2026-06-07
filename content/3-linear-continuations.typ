@@ -391,7 +391,7 @@
   $focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$
   $
     focus(x) & := && x \
-    mark(focus(mu_q alpha. s) & := && mu_q alpha. focus(s)) \
+    focus(mark(mu_q) alpha. s) & := && mark(mu_q) alpha. focus(s) \
     focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
     focus(K(sigma)) &&& "does not occur" \
     focus(n) & := && n \
@@ -405,7 +405,7 @@
   $focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$
   $
     focus(alpha) & := && alpha \
-    mark(focus(tilde(mu)_q x. s) & := && tilde(mu)_q x. focus(s)) \
+    focus(mark(tilde(mu)_q) x. s) & := && mark(tilde(mu)_q) x. focus(s) \
     focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
     focus(D(sigma)) &&& "does not occur" \
   $
@@ -417,11 +417,11 @@
   $bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
   $
     bind(x, k) & := && k(x) \
-    mark(bind(mu_q alpha. s, k) & := && cut(mu_q alpha. focus(s), tilde(mu)_1 x. k(x))) \
-    mark(bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu)_1 x. k(x)))) \
-    mark(bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu)_1 x. k(x))) \
-    mark(bind(n, k) & := && cut(n, tilde(mu)_1 x. k(x))) \
-    mark(bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu)_1 x. k(x)))))
+    bind(mark(mu_q) alpha. s, k) & := && cut(mark(mu_q) alpha. focus(s), mark(tilde(mu)_1) x. k(x)) \
+    bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), mark(tilde(mu)_1) x. k(x))) \
+    bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), mark(tilde(mu)_1) x. k(x)) \
+    bind(n, k) & := && cut(n, mark(tilde(mu)_1) x. k(x)) \
+    bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, mark(tilde(mu)_1) x. k(x))))
   $
 ]
 
@@ -431,9 +431,9 @@
   $bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
   $
     bind(alpha, k) & := && k(alpha) \
-    mark(bind(tilde(mu)_q x. s, k) & := && cut(mu_1 alpha. k(alpha), tilde(mu)_q x. focus(s))) \
-    mark(bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu_1 alpha. k(alpha), D(overline(a))))) \
-    mark(bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu_1 alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...))) \
+    bind(mark(tilde(mu)_q) x. s, k) & := && cut(mark(mu_1) alpha. k(alpha), mark(tilde(mu)_q) x. focus(s)) \
+    bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mark(mu_1) alpha. k(alpha), D(overline(a)))) \
+    bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mark(mu_1) alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
   $
 ]
 
