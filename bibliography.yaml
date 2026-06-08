@@ -24,6 +24,26 @@ Binder2024grokking:
       location: New York, NY, USA
     issue: ICFP
     volume: 8
+Curien2000:
+  type: article
+  title: The duality of computation
+  author:
+  - Curien, Pierre-Louis
+  - Herbelin, Hugo
+  date: 2000-09
+  page-range: 233-243
+  url: https://doi.org/10.1145/357766.351262
+  serial-number:
+    doi: 10.1145/357766.351262
+    issn: 0362-1340
+  parent:
+    type: periodical
+    title: SIGPLAN Not.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: 9
+    volume: 35
 Downen2016:
   type: article
   title: Sequent calculus as a compiler intermediate language
@@ -97,6 +117,18 @@ Mueller2026:
   - Ostermann, Klaus
   - Brachthäuser, Jonathan Immanuel
   date: 2026
+Mueller2026scc:
+  type: misc
+  title: 'SCC - Sequent Calculus Compiler'
+  author:
+  - Müller, Marius
+  - Tzschentke, Marco
+  - Schuster, Philipp
+  - Brachthäuser, Jonathan Immanuel
+  - Ostermann, Klaus
+  - Binder, David
+  date: 2026
+  url: https://github.com/SequentCalculus/sequent-calculus-compiler
 Schuster2025:
   type: article
   title: 'Compiling Classical Sequent Calculus to Stock Hardware: The Duality of Compilation'
@@ -117,4 +149,3 @@ Schuster2025:
       location: New York, NY, USA
     issue: OOPSLA1
     volume: 9
-
