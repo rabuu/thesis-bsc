@@ -1,9 +1,6 @@
 #import "/lib/lib.typ": *
 #import deps.fletcher
 
-#import syntax: *
-#show: syntax.syntax-config
-
 = The Sequent Calculus Compiler
 This chapter provides a brief summary of the Sequent Calculus Compiler (SCC) pipeline @Mueller2026
 since it is foundational for the later chapters that will modify and extend it.

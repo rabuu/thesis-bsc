@@ -1,8 +1,5 @@
 #import "/lib/lib.typ": *
 
-#import syntax: *
-#show: syntax.syntax-config
-
 = Scratch Area
 
 == Syntax for Linear Context Bindings

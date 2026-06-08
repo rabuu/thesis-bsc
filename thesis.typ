@@ -35,6 +35,8 @@
 #show heading: set text(font: settings.font-sans)
 #show heading.where(level: 1): set text(size: settings.font-size-chapter)
 
+#show: syntax-config
+
 //
 // TITLE
 //

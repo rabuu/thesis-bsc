@@ -1,8 +1,5 @@
 #import "/lib/lib.typ": *
 
-#import syntax: *
-#show: syntax-config
-
 = Linear Continuations
 
 == Restricting the Surface Language #Fun
