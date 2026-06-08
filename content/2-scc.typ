@@ -80,80 +80,95 @@ It is designed as an expression-oriented, functional programming language, exten
 #Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it operates.
 
 === Syntax
-#figure[
-  #bnf(
-    ($p$, "Producers / Terms"),
-    alt(
-      var($x$),
-      $LET var(x) = p; sp p$,
-      $f(sigma)$,
-    ),
-    alt(
-      $n$,
-      $p + p$,
-      $IF p equiv 0 br(p) ELSE br(p)$,
-    ),
-    alt(
-      $K(sigma)$,
-      $p.CASE br(K(Gamma) => p, ...)$,
-    ),
-    alt(
-      $p.D(sigma)$,
-      $NEW br(D(Gamma) => p, ...)$,
-    ),
-    alt(
-      $LABEL alpha br(p)$,
-      $GOTO alpha sp (p)$,
-    ),
-    $EXIT p$,
-
-    ($c$, "Consumers"),
-    $alpha$,
-
-    ($tau$, "Types"),
-    alt(
-      $i64$,
-      $T$,
-    ),
-
-    ($sigma$, "Arguments"),
-    alt(
-      $empty$,
-      $sigma, sp p$,
-      $sigma, sp c$,
-    ),
-
-    ($Gamma$, "Typing Contexts"),
-    alt(
-      $empty$,
-      $Gamma, sp x : tau$,
-      $Gamma, sp alpha :^cns tau$,
-    ),
-
-    ($delta$, "Declarations"),
-    $DEF f(Gamma) : tau br(p)$,
-    alt(
-      $DATA T br(K(Gamma), ...)$,
-      $CODATA T br(D(Gamma) : tau, ...)$,
-    ),
-
-    ($Theta$, "Programs"),
-    alt(
-      $empty$,
-      $Theta, sp delta$,
-    ),
-  )
+#definition(title: "Naming Conventions")[
+  The rest of this thesis uses the following naming conventions:
+  - $x,y,...$ are _variable names_,
+  - $alpha, beta, ...$ are _covariable names_,
+  - $T$ is some user-defined _type name_,
+  - $K,D,X$ are _tags_ used for constructors and destructors,
+  - and $f$ is a _label_ used for top-level definitions.
 ]
 
-#todo[
-  supporting common features as top-level (first-order) functions, variables, simple arithmetic expressions and (non-recursive) let-expressions.
+#definition(title: [Syntax of #Fun])[
+  #figure[
+    #bnf(
+      ($p$, "Producers / Terms"),
+      alt(
+        var($x$),
+        $LET var(x) = p; sp p$,
+        $f(sigma)$,
+      ),
+      alt(
+        $n$,
+        $p + p$,
+        $IF p equiv 0 br(p) ELSE br(p)$,
+      ),
+      alt(
+        $K(sigma)$,
+        $p.CASE br(K(Gamma) => p, ...)$,
+      ),
+      alt(
+        $p.D(sigma)$,
+        $NEW br(D(Gamma) => p, ...)$,
+      ),
+      alt(
+        $LABEL alpha br(p)$,
+        $GOTO alpha sp (p)$,
+      ),
+      $EXIT p$,
 
-  Additionally, #Fun supports user-definable algebraic data and codata types.
-  The former is a familiar concept from many popular statically-typed functional programming languages.
-  Algebraic codata types @Hagino1989 @Downen2019codata, however, are less common.
-  Data types are defined by their constructors, which produce elements of the data type, and are consumed by pattern matching.
-  Dually, codata types are defined by their destructors, which consume elements of the codata type, and are produced by copattern matching @Abel2013copattern.
+      ($c$, "Consumers"),
+      $alpha$,
+
+      ($tau$, "Types"),
+      alt(
+        $i64$,
+        $T$,
+      ),
+
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp p$,
+        $sigma, sp c$,
+      ),
+
+      ($Gamma$, "Typing Contexts"),
+      alt(
+        $empty$,
+        $Gamma, sp x : tau$,
+        $Gamma, sp alpha :^cns tau$,
+      ),
+
+      ($delta$, "Declarations"),
+      $DEF f(Gamma) : tau br(p)$,
+      alt(
+        $DATA T br(K(Gamma), ...)$,
+        $CODATA T br(D(Gamma) : tau, ...)$,
+      ),
+
+      ($Theta$, "Programs"),
+      alt(
+        $empty$,
+        $Theta, sp delta$,
+      ),
+    )
+  ]
 ]
+
+#Fun supports standard features such as top-level (first-order) functions, variables, simple arithmetic and conditional expressions, and (non-recursive) let-bindings.
+
+Additionally, there are user-definable algebraic data and codata types.
+Algebraic data types are a familiar concept from many popular statically-typed functional programming languages.
+They are defined by their constructors $K(sigma)$, which produce elements of the data type, and are consumed by pattern matching ($CASE$).
+Dually, the less common algebraic codata types @Hagino1989 @Downen2019codata are defined by their destructors $D(sigma)$, which consume elements of the codata type, and are produced by copattern matching ($NEW$) @Abel2013copattern.
+They are very similar to interfaces in object-oriented programming.
+
+Another very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
+They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the LISP family of programming languages. $LABEL$ captures the current computation context --- called _continuation_ --- and binds it to a covariable.
+With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
+
+#inline-note[This could go further...]
 
 === Typing Rules
 #figure[

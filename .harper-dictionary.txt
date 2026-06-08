@@ -1,5 +1,7 @@
+Dually
 SCC
 codata
+covariable
 font-math
 font-sans
 font-serif

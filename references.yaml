@@ -186,6 +186,25 @@ Mueller2026scc:
   - Binder, David
   date: 2026
   url: https://github.com/SequentCalculus/sequent-calculus-compiler
+Reynolds1972letcc:
+  type: article
+  title: Definitional interpreters for higher-order programming languages
+  author: Reynolds, John C.
+  date: 1972
+  page-range: 717-740
+  url: https://doi.org/10.1145/800194.805852
+  serial-number:
+    doi: 10.1145/800194.805852
+    isbn: '9781450374927'
+  parent:
+    type: proceedings
+    title: Proceedings of the ACM Annual Conference - Volume 2
+    publisher:
+      name: Association for Computing Machinery
+      location: Boston, Massachusetts, USA
+    parent:
+      type: proceedings
+      title: ACM '72
 Schuster2025:
   type: article
   title: 'Compiling Classical Sequent Calculus to Stock Hardware: The Duality of Compilation'
