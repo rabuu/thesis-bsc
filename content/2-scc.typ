@@ -11,7 +11,7 @@ since it is foundational for the later chapters that will modify and extend it.
 == Overview
 The SCC takes a functional programming language, called #Fun, as surface language and compiles it to native machine code.
 The concrete target architecture is not very relevant here and can easily be adapted.
-In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we use #RISC-V in this thesis.
+In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we only consider #RISC-V in this thesis.
 
 The interesting parts of the compiler are the intermediate representations, #Core and #AxCut, which are based on the sequent calculus and thus form the heart of the SCC.
 
