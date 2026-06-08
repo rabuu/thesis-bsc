@@ -86,6 +86,17 @@ Girard1987:
     title: Theoretical Computer Science
     issue: 1
     volume: 50
+Mueller2026:
+  type: article
+  title: 'Compiling with the Sequent Calculus'
+  author:
+  - Müller, Marius
+  - Binder, David
+  - Tzschentke, Marco
+  - Schuster, Philipp
+  - Ostermann, Klaus
+  - Brachthäuser, Jonathan Immanuel
+  date: 2026
 Schuster2025:
   type: article
   title: 'Compiling Classical Sequent Calculus to Stock Hardware: The Duality of Compilation'
