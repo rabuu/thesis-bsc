@@ -7,3 +7,4 @@
 #import "@preview/mannot:0.3.3"
 #import "@preview/fletcher:0.5.8"
 #import "@preview/drafting:0.2.2"
+#import "@preview/theorion:0.6.0"

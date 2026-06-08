@@ -7,3 +7,4 @@
 #import "bnf.typ": alt, bnf
 #import "prooftree.typ": *
 #import "annotation.typ": *
+#import "theorem.typ": *
