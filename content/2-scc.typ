@@ -5,8 +5,19 @@
 #show: syntax.syntax-config
 
 = The Sequent Calculus Compiler
+This chapter provides a brief summary of the Sequent Calculus Compiler (SCC) pipeline @Mueller2026
+since it is foundational for the later chapters that will modify and extend it.
 
 == Overview
+The SCC takes a functional programming language, called #Fun, as surface language and compiles it to native machine code.
+The concrete target architecture is not very relevant here and can easily be adapted.
+In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we use #RISC-V in this thesis.
+
+The interesting parts of the compiler are the intermediate representations, #Core and #AxCut, which are based on the sequent calculus and thus form the heart of the SCC.
+
+Here is an illustration of the complete SCC compilation pipeline,
+where each box represents a compiler stage and the arrows represent the translations between them:
+
 #figure({
   import fletcher: diagram, edge, node
 
@@ -17,21 +28,55 @@
   let axcut = (4, 0)
   let riscv = (6, 0)
 
+  show ref: set text(size: settings.font-size-normal - 3pt)
+
   diagram(
     debug: false,
     node-stroke: 1pt,
-    colored-node(red)(fun, Fun),
-    colored-node(green)(core, Core),
-    colored-node(blue)(axcut, AxCut),
-    colored-node(orange)(riscv, RISC-V),
-    edge(fun, core, "-|>", label: $f2c(dot)$),
-    edge(core, axcut, "-|>", label: $c2a(dot)$),
-    edge(axcut, riscv, "-|>", label: $a2m(dot)$),
-    edge(core, core, "-|>", bend: -130deg, label: $focus(dot), shrink(dot)$),
+    label-sep: 0.2em,
+    colored-node(red)(fun, [#Fun \ @scc:fun]),
+    colored-node(green)(core, [#Core \ @scc:core]),
+    colored-node(blue)(axcut, [#AxCut \ @scc:axcut]),
+    colored-node(orange)(riscv, [#RISC-V \ @scc:codegen]),
+    edge(fun, core, "-|>", label: $f2c(dot)$, label-side: left),
+    edge(fun, core, "-|>", label: [@scc:f2c], label-side: right, stroke: none),
+    edge(core, axcut, "-|>", label: $c2a(dot)$, label-side: left),
+    edge(
+      core,
+      axcut,
+      "-|>",
+      label: [@scc:c2a],
+      label-side: right,
+      stroke: none,
+    ),
+    edge(axcut, riscv, "-|>", label: $a2m(dot)$, label-side: left),
+    edge(
+      axcut,
+      riscv,
+      "-|>",
+      label: [@scc:codegen],
+      label-side: right,
+      stroke: none,
+    ),
+    edge(
+      core,
+      core,
+      "-|>",
+      bend: -125deg,
+      label: [
+        #set align(center)
+        #set par(leading: 0pt)
+
+        $focus(dot), shrink(dot)$ \
+        @scc:focus, @scc:shrink
+      ],
+    ),
   )
 })
 
-== The Surface Language #Fun
+The following sections will explain every stage and translation step-by-step.
+
+== The Surface Language #Fun <scc:fun>
 
 === Syntax
 #figure[
@@ -215,7 +260,7 @@
   )
 ]
 
-== The High-Level Intermediate Language #Core
+== The High-Level Intermediate Language #Core <scc:core>
 
 === Syntax
 #figure[
@@ -398,7 +443,7 @@
   )
 ]
 
-== Translation from #Fun to #Core
+== Translation from #Fun to #Core <scc:f2c>
 #figure[
   $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
   $
@@ -464,7 +509,7 @@
   $
 ]
 
-== The Focusing Transformation
+== The Focusing Transformation <scc:focus>
 #figure[
   $focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$
   $
@@ -549,7 +594,7 @@
   $
 ]
 
-== The Shrinking Transformation
+== The Shrinking Transformation <scc:shrink>
 
 + Inline all possible pairs of producers and consumers in cuts.
 
@@ -606,7 +651,7 @@
     $
   ]
 
-== The Lower-Level Intermediate Language #AxCut
+== The Lower-Level Intermediate Language #AxCut <scc:axcut>
 
 === Syntax
 #figure[
@@ -726,7 +771,7 @@
   )
 ]
 
-== Translation from #Core to #AxCut
+== Translation from #Core to #AxCut <scc:c2a>
 #inline-note[Improve formatting.]
 #figure[
   $c2a(dot) : "Definition"_("Shrunk" Core) -> "Definition"_AxCut$
@@ -776,5 +821,5 @@
   $
 ]
 
-== Translation from #AxCut to #RISC-V machine code
+== Translation from #AxCut to #RISC-V machine code <scc:codegen>
 #todo[TODO]
