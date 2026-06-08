@@ -1,13 +1,13 @@
 #import "deps.typ": theorion
 
-#import theorion: *
-#import theorion.cosmos.simple: *
+#import theorion: definition
+#import theorion.cosmos.simple: definition
 
 #let theorem-config(it) = {
   show: theorion.show-theorion
 
-  set-theorion-numbering("1.1")
-  set-inherited-levels(1)
+  theorion.set-theorion-numbering("1.1")
+  theorion.set-inherited-levels(1)
 
   it
 }
