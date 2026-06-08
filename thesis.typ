@@ -131,7 +131,7 @@
 #include "content/9-scratch-area.typ"
 
 #bibliography(
-  "bibliography.yaml",
+  "references.yaml",
   style: "association-for-computing-machinery",
   title: "References",
 )
