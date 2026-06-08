@@ -1,3 +1,25 @@
+Abel2013copattern:
+  type: article
+  title: 'Copatterns: programming infinite structures by observations'
+  author:
+  - Abel, Andreas
+  - Pientka, Brigitte
+  - Thibodeau, David
+  - Setzer, Anton
+  date: 2013-01
+  page-range: 27-38
+  url: https://doi.org/10.1145/2480359.2429075
+  serial-number:
+    doi: 10.1145/2480359.2429075
+    issn: 0362-1340
+  parent:
+    type: periodical
+    title: SIGPLAN Not.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: 1
+    volume: 48
 Appel1991cps:
   type: book
   title: Compiling with Continuations
@@ -66,6 +88,26 @@ Downen2016sequent:
       location: New York, NY, USA
     issue: 9
     volume: 51
+Downen2019codata:
+  type: article
+  title: Codata in Action
+  author:
+  - Downen, Paul
+  - Sullivan, Zachary
+  - Ariola, Zena M.
+  - Peyton Jones, Simon
+  date: 2019
+  editor: Caires, Luís
+  page-range: 119-146
+  serial-number:
+    isbn: 978-3-030-17184-1
+  parent:
+    type: proceedings
+    title: Programming Languages and Systems
+    publisher:
+      name: Springer International Publishing
+      location: Cham
+
 Gentzen1935a:
   type: article
   title: Untersuchungen über das logische Schließen. I.
@@ -106,6 +148,21 @@ Girard1987:
     title: Theoretical Computer Science
     issue: 1
     volume: 50
+Hagino1989:
+  type: article
+  title: Codatatypes in ML
+  author: Hagino, Tatsuya
+  date: 1989
+  page-range: 629-650
+  url: https://www.sciencedirect.com/science/article/pii/S0747717189800653
+  serial-number:
+    doi: https://doi.org/10.1016/S0747-7171(89)80065-3
+    issn: 0747-7171
+  parent:
+    type: periodical
+    title: Journal of Symbolic Computation
+    issue: 6
+    volume: 8
 Mueller2026:
   type: article
   title: 'Compiling with the Sequent Calculus'

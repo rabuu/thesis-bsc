@@ -77,6 +77,10 @@ where each box represents a compiler stage and the arrows represent the translat
 The following sections will explain every stage and translation step-by-step.
 
 == The Surface Language #Fun <scc:fun>
+Every compiler needs a surface language: the language in which its input programs are written, typically by a human.
+In the case of the SCC, this language is called #Fun @Binder2024grokking.
+It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
+#Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it operates.
 
 === Syntax
 #figure[
@@ -142,6 +146,16 @@ The following sections will explain every stage and translation step-by-step.
       $Theta, sp delta$,
     ),
   )
+]
+
+#todo[
+  supporting common features as top-level (first-order) functions, variables, simple arithmetic expressions and (non-recursive) let-expressions.
+
+  Additionally, #Fun supports user-definable algebraic data and codata types.
+  The former is a familiar concept from many popular statically-typed functional programming languages.
+  Algebraic codata types @Hagino1989 @Downen2019codata, however, are less common.
+  Data types are defined by their constructors, which produce elements of the data type, and are consumed by pattern matching.
+  Dually, codata types are defined by their destructors, which consume elements of the codata type, and are produced by copattern matching @Abel2013copattern.
 ]
 
 === Typing Rules
