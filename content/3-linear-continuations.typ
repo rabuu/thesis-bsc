@@ -173,7 +173,7 @@
       name: rn("Goto"),
       $Gamma tack p : tau$,
       $alpha :^cns tau in Gamma$,
-      $Gamma tack GOTO alpha sp (p) : tau$,
+      $Gamma tack GOTO alpha sp (p) : tau'$,
     ))),
   )
 

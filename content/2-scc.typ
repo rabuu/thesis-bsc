@@ -233,7 +233,7 @@ With $GOTO$ such a computation context can be invoked, resulting in non-local co
       name: rn("Goto"),
       $Gamma tack p : tau$,
       $alpha :^cns tau in Gamma$,
-      $Gamma tack GOTO alpha sp (p) : tau$,
+      $Gamma tack GOTO alpha sp (p) : tau'$,
     )),
     prooftree(rule(
       name: rn("Exit"),
