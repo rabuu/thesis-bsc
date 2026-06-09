@@ -485,18 +485,18 @@
 
 + Dealing with Built-In Types:
 
-  Define: $DATA "Cont" br("Ret"(x :^prd i64))$
+  Define: $DATA "Cont" br("Ret"(x mark(:^prd_omega) i64))$
 
   #figure[
     $
       shrink(cut(mark(mu_q) alpha. s_1, mark(tilde(mu)_tilde(q)) x. s_2)_i64) & := && cut(mark(mu_q) alpha. shrink(s_1), CASE br("Ret"(x) => shrink(s_2))) \
       shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
-      shrink(cut(n, alpha)) & := && cut(n, mark(tilde(mu)_1)x. cut("Ret"(x), alpha)) quad(x "fresh") \
-      shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, mark(tilde(mu)_1)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+      shrink(cut(n, alpha)) & := && cut(n, mark(tilde(mu)_omega)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+      shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, mark(tilde(mu)_omega)x. cut("Ret"(x), alpha)) quad(x "fresh") \
     $
     $
-      shrink(Gamma\, alpha :^cns i64) & := && shrink(Gamma), alpha :^cns "Cont" \
-          shrink(Gamma\, v :^chi tau) & := && shrink(Gamma), v :^chi tau
+      shrink(Gamma\, alpha mark(:^cns_q) i64) & := && shrink(Gamma), alpha mark(:^cns_q) "Cont" \
+      shrink(Gamma\, v mark(:^chi_q) tau) & := && shrink(Gamma), v mark(:^chi_q) tau
     $
   ]
 
