@@ -414,6 +414,7 @@
   $bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
   $
     bind(x, k) & := && k(x) \
+    #note[Not sure the linear (tilde)mu's are valid...]
     bind(mark(mu_q) alpha. s, k) & := && cut(mark(mu_q) alpha. focus(s), mark(tilde(mu)_1) x. k(x)) \
     bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), mark(tilde(mu)_1) x. k(x))) \
     bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), mark(tilde(mu)_1) x. k(x)) \
