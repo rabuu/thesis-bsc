@@ -171,30 +171,26 @@ With $GOTO$ such a computation context can be invoked, resulting in non-local co
 #inline-note[This could go further...]
 
 === Typing Rules
-#figure[
-  _Argument Typing:_ $Theta mid Gamma tack sigma : Gamma'$
-  #rule-set(
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _1$),
-      $Theta mid Gamma tack empty : empty$,
-    )),
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _2$),
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack p : tau$,
-      $Theta mid Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
-    )),
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _3$),
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack c :^cns tau$,
-      $Theta mid Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
-    )),
-  )
+The typing rules for #Fun are shown in @fig:scc:fun:typing.
+To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
+We assume that all types and names that are used in the program are well-defined and unique.
 
-  #line(length: 100%)
+There are three judgement forms for producers, consumers, and argument lists, respectively.
+The judgement $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
+and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
+Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer for $tau$.
+The judgement $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
+In many rules, the global context $Theta$ is not referenced.
+If that is the case, it is omitted to improve readability.
 
-  _Producer Typing:_ $Theta mid Gamma tack p : tau$
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Typing rules for #Fun.],
+)[
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Producer Typing: $Theta mid Gamma tack p : tau$
+  ])
   #rule-set(
     prooftree(rule(
       name: rn("Var"),
@@ -274,9 +270,10 @@ With $GOTO$ such a computation context can be invoked, resulting in non-local co
     )),
   )
 
-  #line(length: 100%)
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Consumer Typing: $Theta mid Gamma tack c :^cns tau$
+  ])
 
-  _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
   #rule-set(
     prooftree(rule(
       name: rn("Covar"),
@@ -284,7 +281,36 @@ With $GOTO$ such a computation context can be invoked, resulting in non-local co
       $Gamma tack alpha :^cns tau$,
     )),
   )
-]
+
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Argument Typing: $Theta mid Gamma tack sigma : Gamma'$
+  ])
+  #rule-set(
+    column-gutter: 2em,
+    prooftree(rule(
+      name: rn($#smallcaps("Arg") _1$),
+      $Gamma tack empty : empty$,
+    )),
+    prooftree(rule(
+      name: rn($#smallcaps("Arg") _2$),
+      $Gamma tack sigma : Gamma'$,
+      $Gamma tack p : tau$,
+      $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
+    )),
+    prooftree(rule(
+      name: rn($#smallcaps("Arg") _3$),
+      $Gamma tack sigma : Gamma'$,
+      $Gamma tack c :^cns tau$,
+      $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
+    )),
+  )
+] <fig:scc:fun:typing>
+
+Most of the rules are standard.
+Interesting are the control operators.
+In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
+If there is a covariable in the current context, #rn("Goto") can be used to invoke it. Here, the argument must be of the same type as the consumer covariable. The expression as whole, however, can have an arbitrary type $tau'$ because the computation will not continue here.
+Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
 == The High-Level Intermediate Language #Core <scc:core>
 
