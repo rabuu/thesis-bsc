@@ -427,8 +427,22 @@ Hence, each binding is annotated with its _chirality_, i.e. whether it is a prod
 Also, since destructors no longer have a return type, the definition of data and codata types is perfectly symmetric.
 
 === Typing Rules
-#figure[
-  _Producer Typing:_ $Theta mid Gamma tack p :^prd tau$
+@fig:scc:core:typing shows the typing rules for #Core.
+Again, the well-formedness of declarations is assumed implicitly, and the global context $Theta$ is omitted where possible.
+
+For every syntactic category, there is a typing judgment form: $Theta mid Gamma tack p :^prd tau$ means that $p$ is a producer of type $tau$ in the context $Gamma$.
+Analogously for $Theta mid Gamma tack c :^cns tau$ is $c$ a consumer of type $tau$.
+And $Theta mid Gamma tack s$ means that $s$ is a well-typed statement.
+Since statements represent computation, they do not have a return type.
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Typing rules for #Core.],
+)[
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Producer Typing: $Theta mid Gamma tack p :^prd tau$
+  ])
   #rule-set(
     prooftree(rule(
       name: rn("Var"),
@@ -439,6 +453,16 @@ Also, since destructors no longer have a return type, the definition of data and
       name: rn("Act-R"),
       $Gamma, alpha :^cns tau tack s$,
       $Gamma tack mu a. s :^prd tau$,
+    )),
+    prooftree(rule(
+      name: rn("Lit"),
+      $Gamma tack n :^prd i64$,
+    )),
+    prooftree(rule(
+      name: rn("Plus"),
+      $Gamma tack p_1 :^prd i64$,
+      $Gamma tack p_2 :^prd i64$,
+      $Gamma tack p_1 + p_2 :^prd i64$,
     )),
     prooftree(rule(
       name: rn("Ctor"),
@@ -452,21 +476,11 @@ Also, since destructors no longer have a return type, the definition of data and
       $forall i: Gamma, Gamma_i tack s_i$,
       $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
     )),
-    prooftree(rule(
-      name: rn("Lit"),
-      $Gamma tack n :^prd i64$,
-    )),
-    prooftree(rule(
-      name: rn("Plus"),
-      $Gamma tack p_1 :^prd i64$,
-      $Gamma tack p_2 :^prd i64$,
-      $Gamma tack p_1 + p_2 :^prd i64$,
-    )),
   )
 
-  #line(length: 100%)
-
-  _Consumer Typing:_ $Theta mid Gamma tack c :^cns tau$
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Consumer Typing: $Theta mid Gamma tack c :^cns tau$
+  ])
   #rule-set(
     prooftree(rule(
       name: rn("Covar"),
@@ -492,9 +506,9 @@ Also, since destructors no longer have a return type, the definition of data and
     )),
   )
 
-  #line(length: 100%)
-
-  _Statement Typing:_ $Theta mid Gamma tack s$
+  #align(right, block(inset: 0.5em, stroke: 1pt)[
+    Statement Typing: $Theta mid Gamma tack s$
+  ])
   #rule-set(
     prooftree(rule(
       name: rn("Cut"),
@@ -521,7 +535,9 @@ Also, since destructors no longer have a return type, the definition of data and
       $Gamma tack EXIT p$,
     )),
   )
-]
+] <fig:scc:core:typing>
+
+#inline-note[Explain rules. Symmetry. Etc.]
 
 == Translation from #Fun to #Core <scc:f2c>
 #figure[
