@@ -313,90 +313,118 @@ If there is a covariable in the current context, #rn("Goto") can be used to invo
 Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
 == The High-Level Intermediate Language #Core <scc:core>
+The next step of the compilation pipeline is the intermediate representation #Core.
+It is an extension of the $lambda mu tilde(mu)$-calculus @Curien2000, a term assignment system for classical sequent calculus @Gentzen1935a,
+equipped with integer arithmetic, top-level function definitions, and algebraic data and codata types. The translation from #Fun to #Core is covered in @scc:f2c.
 
 === Syntax
-#figure[
-  #bnf(
-    ($p$, "Producers"),
-    alt(
-      $var(x)$,
-      $mu alpha. s$,
-      $K(sigma)$,
-      $NEW br(D(Gamma) => s, ...)$,
-    ),
-    alt(
-      $n$,
-      $p + p$,
-    ),
+#definition(title: [Syntax of #Core])[
+  #figure[
+    #bnf(
+      ($p$, "Producers"),
+      alt(
+        $var(x)$,
+        $mu alpha. s$,
+      ),
+      alt(
+        $n$,
+        $p + p$,
+      ),
+      alt(
+        $K(sigma)$,
+        $NEW br(D(Gamma) => s, ...)$,
+      ),
 
-    ($c$, "Consumers"),
-    alt(
-      $covar(alpha)$,
-      $tilde(mu) x. s$,
-      $D(sigma)$,
-      $CASE br(K(Gamma) => s, ...)$,
-    ),
+      ($c$, "Consumers"),
+      alt(
+        $covar(alpha)$,
+        $tilde(mu) x. s$,
+      ),
+      alt(
+        $D(sigma)$,
+        $CASE br(K(Gamma) => s, ...)$,
+      ),
 
-    ($s$, "Statements"),
-    alt(
-      $cut(p, c)$,
-      $IF p equiv 0 br(s) ELSE br(s)$,
-      $f(sigma)$,
-    ),
-    alt(
-      $EXIT p$,
-    ),
+      ($s$, "Statements"),
+      alt(
+        $cut(p, c)$,
+      ),
+      alt(
+        $IF p equiv 0 br(s) ELSE br(s)$,
+      ),
+      alt(
+        $f(sigma)$,
+        $EXIT p$,
+      ),
 
-    ($sigma$, "Arguments"),
-    alt(
-      $empty$,
-      $sigma, sp p$,
-      $sigma, sp c$,
-    ),
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp p$,
+        $sigma, sp c$,
+      ),
 
-    ($v$, "(Co)Variables"),
-    alt(
-      $var(x)$,
-      $covar(alpha)$,
-    ),
+      ($v$, "(Co)Variables"),
+      alt(
+        $var(x)$,
+        $covar(alpha)$,
+      ),
 
-    ($tau$, "Types"),
-    alt(
-      $i64$,
-      $T$,
-    ),
+      ($tau$, "Types"),
+      alt(
+        $i64$,
+        $T$,
+      ),
 
-    ($chi$, "Chirality"),
-    alt(
-      $prd$,
-      $cns$,
-    ),
+      ($chi$, "Chirality"),
+      alt(
+        $prd$,
+        $cns$,
+      ),
 
-    ($Gamma$, "Typing Contexts"),
-    alt(
-      $empty$,
-      $Gamma, sp v :^chi tau$,
-    ),
+      ($Gamma$, "Typing Contexts"),
+      alt(
+        $empty$,
+        $Gamma, sp v :^chi tau$,
+      ),
 
-    ($pi$, "Polarity"),
-    alt(
-      $DATA$,
-      $CODATA$,
-    ),
+      ($pi$, "Polarity"),
+      alt(
+        $DATA$,
+        $CODATA$,
+      ),
 
-    ($delta$, "Declarations"),
-    alt(
-      $DEF f(Gamma) : tau br(p)$,
-      $pi sp T br(K(Gamma), ...)$,
-    ),
+      ($delta$, "Declarations"),
+      alt(
+        $DEF f(Gamma) br(s)$,
+        $pi sp T br(X(Gamma), ...)$,
+      ),
 
-    ($Theta$, "Programs"),
-    alt(
-      $empty$,
-      $Theta, sp delta$,
-    ),
-  )
+      ($Theta$, "Programs"),
+      alt(
+        $empty$,
+        $Theta, sp delta$,
+      ),
+    )
+  ]
 ]
+
+In sequent-calculus-based languages, like #Core, we distinguish three different syntactic categories: producers, consumers and statements.
+Producers represent the data of a program, similar to regular terms.
+Consumers are a first-class representation of evaluation contexts.
+In contrast to #Fun, pattern matches and destructor invocations in #Core are separated from the value they act on, and appear as self-contained consumers.
+Computation happens in the third syntactic category of statements.
+Most importantly, in a _cut_ $cut(p, c)$ a producer and a consumer interact.
+The $mu$ and $tilde(mu)$ operators are used to abstract producers and consumers.
+#note[Awkward paragraph. Rephrase..]
+
+Note that top-level functions and codata destructors no longer specify a return type. Instead, an additional consumer argument, the _continuation_, takes its place.
+#note[More on that later...]
+
+Special about the sequent-calculus-based representation is the symmetry of producers and consumers.
+In the typing environments, which also serve as parameter lists, both variables and covariables are tracked.
+Hence, each binding is annotated with its _chirality_, i.e. whether it is a producer or consumer.
+Also, since destructors no longer have a return type, the definition of data and codata types is perfectly symmetric.
 
 === Typing Rules
 #figure[

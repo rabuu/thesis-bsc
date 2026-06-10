@@ -2,6 +2,7 @@ Dually
 SCC
 codata
 covariable
+covariables
 font-math
 font-sans
 font-serif
