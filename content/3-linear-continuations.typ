@@ -285,7 +285,115 @@
 ]
 
 === Typing Rules
-#todo[TODO]
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+)[
+  #judgment-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+
+  #rule-set(
+    manual-grouping: true,
+    (
+      mark(prooftree(rule(
+        name: rn("Var"),
+        $x :^prd_q tack x :^prd tau$,
+      ))),
+      prooftree(rule(
+        name: rn("Act-R"),
+        $Gamma, alpha mark(:^cns_q) tau tack s$,
+        $Gamma tack mark(mu_q) a. s :^prd tau$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Lit"),
+        $Gamma tack n :^prd i64$,
+      )),
+      prooftree(rule(
+        name: rn("Plus"),
+        $mark(Gamma_1) tack p_1 :^prd i64$,
+        $mark(Gamma_2) tack p_2 :^prd i64$,
+        $mark(Gamma_1 plus.o Gamma_2) tack p_1 + p_2 :^prd i64$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Ctor"),
+        $DATA T br(..., K(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack K(sigma) :^prd T$,
+      )),
+      prooftree(rule(
+        name: rn("New"),
+        $CODATA T br(D_1(Gamma_1), ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack s_i$,
+        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
+      )),
+    ),
+  )
+
+  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+
+  #rule-set(
+    manual-grouping: true,
+    (
+      mark(prooftree(rule(
+        name: rn("Covar"),
+        $alpha :^cns_q tack alpha :^cns tau$,
+      ))),
+      prooftree(rule(
+        name: rn("Act-L"),
+        $Gamma, x mark(:^prd_q) tau tack s$,
+        $Gamma tack mark(tilde(mu)_q) x. s :^cns tau$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Dtor"),
+        $CODATA T br(..., D(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack D(sigma) :^cns T$,
+      )),
+      prooftree(rule(
+        name: rn("Case"),
+        $DATA T br(K_1(Gamma_1), ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack s_i$,
+        $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+      )),
+    ),
+  )
+
+  #judgment-box[Statement Typing: $Theta mid Gamma tack s$]
+
+  #rule-set(
+    prooftree(rule(
+      name: rn("Cut"),
+      $mark(Gamma_1) tack p :^prd tau$,
+      $mark(Gamma_2) tack c :^cns tau$,
+      $mark(Gamma_1 plus.o Gamma_2) tack cut(p, c)$,
+    )),
+    prooftree(rule(
+      name: rn("IfZ"),
+      $mark(Gamma_1) tack p :^prd i64$,
+      $mark(Gamma_2) tack s_1$,
+      $mark(Gamma_2) tack s_2$,
+      $mark(Gamma_1 plus.o Gamma_2) tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+    )),
+    prooftree(rule(
+      name: rn("Call"),
+      $DEF f(Gamma') br(...) in Theta$,
+      $Theta mid Gamma tack sigma : Gamma'$,
+      $Theta mid Gamma tack f(sigma)$,
+    )),
+    prooftree(rule(
+      name: rn("Exit"),
+      $Gamma tack p :^prd i64$,
+      $Gamma tack EXIT p$,
+    )),
+  )
+]
+
+#inline-note[Structural rules.]
 
 == Translation from #Fun to #Core
 #figure[
