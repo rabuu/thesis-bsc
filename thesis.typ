@@ -13,6 +13,7 @@
   paper: "a4",
   binding: settings.binding,
   margin: (
+    y: settings.margin-y,
     inside: settings.margin-inside,
     outside: settings.margin-outside,
   ),
