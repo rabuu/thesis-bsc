@@ -393,7 +393,7 @@
   )
 ]
 
-#inline-note[Structural rules.]
+#inline-note[Structural rules. Rules for arguments.]
 
 == Translation from #Fun to #Core
 #figure[
