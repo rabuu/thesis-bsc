@@ -188,9 +188,8 @@ If that is the case, it is omitted to improve readability.
   supplement: "Figure",
   caption: [Typing rules for #Fun.],
 )[
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Producer Typing: $Theta mid Gamma tack p : tau$
-  ])
+  #judgment-box[Producer Typing: $Theta mid Gamma tack p : tau$]
+
   #rule-set(
     prooftree(rule(
       name: rn("Var"),
@@ -270,9 +269,7 @@ If that is the case, it is omitted to improve readability.
     )),
   )
 
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Consumer Typing: $Theta mid Gamma tack c :^cns tau$
-  ])
+  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
 
   #rule-set(
     prooftree(rule(
@@ -282,9 +279,8 @@ If that is the case, it is omitted to improve readability.
     )),
   )
 
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Argument Typing: $Theta mid Gamma tack sigma : Gamma'$
-  ])
+  #judgment-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+
   #rule-set(
     column-gutter: 2em,
     prooftree(rule(
@@ -440,75 +436,84 @@ Since statements represent computation, they do not have a return type.
   supplement: "Figure",
   caption: [Typing rules for #Core.],
 )[
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Producer Typing: $Theta mid Gamma tack p :^prd tau$
-  ])
+  #judgment-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+
   #rule-set(
-    prooftree(rule(
-      name: rn("Var"),
-      $x :^prd tau in Gamma$,
-      $Gamma tack x :^prd tau$,
-    )),
-    prooftree(rule(
-      name: rn("Act-R"),
-      $Gamma, alpha :^cns tau tack s$,
-      $Gamma tack mu a. s :^prd tau$,
-    )),
-    prooftree(rule(
-      name: rn("Lit"),
-      $Gamma tack n :^prd i64$,
-    )),
-    prooftree(rule(
-      name: rn("Plus"),
-      $Gamma tack p_1 :^prd i64$,
-      $Gamma tack p_2 :^prd i64$,
-      $Gamma tack p_1 + p_2 :^prd i64$,
-    )),
-    prooftree(rule(
-      name: rn("Ctor"),
-      $DATA T br(..., K(Gamma'), ...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack K(sigma) :^prd T$,
-    )),
-    prooftree(rule(
-      name: rn("New"),
-      $CODATA T br(D_1(Gamma_1), ...) in Theta$,
-      $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
-    )),
+    manual-grouping: true,
+    (
+      prooftree(rule(
+        name: rn("Var"),
+        $x :^prd tau in Gamma$,
+        $Gamma tack x :^prd tau$,
+      )),
+      prooftree(rule(
+        name: rn("Act-R"),
+        $Gamma, alpha :^cns tau tack s$,
+        $Gamma tack mu a. s :^prd tau$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Lit"),
+        $Gamma tack n :^prd i64$,
+      )),
+      prooftree(rule(
+        name: rn("Plus"),
+        $Gamma tack p_1 :^prd i64$,
+        $Gamma tack p_2 :^prd i64$,
+        $Gamma tack p_1 + p_2 :^prd i64$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Ctor"),
+        $DATA T br(..., K(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack K(sigma) :^prd T$,
+      )),
+      prooftree(rule(
+        name: rn("New"),
+        $CODATA T br(D_1(Gamma_1), ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack s_i$,
+        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
+      )),
+    ),
   )
 
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Consumer Typing: $Theta mid Gamma tack c :^cns tau$
-  ])
+  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+
   #rule-set(
-    prooftree(rule(
-      name: rn("Covar"),
-      $alpha :^cns tau in Gamma$,
-      $Gamma tack alpha :^cns tau$,
-    )),
-    prooftree(rule(
-      name: rn("Act-L"),
-      $Gamma, x :^prd tau tack s$,
-      $Gamma tack tilde(mu)x. s :^cns tau$,
-    )),
-    prooftree(rule(
-      name: rn("Dtor"),
-      $CODATA T br(..., D(Gamma'), ...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack D(sigma) :^cns T$,
-    )),
-    prooftree(rule(
-      name: rn("Case"),
-      $DATA T br(K_1(Gamma_1), ...) in Theta$,
-      $forall i: Gamma, Gamma_i tack s_i$,
-      $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
-    )),
+    manual-grouping: true,
+    (
+      prooftree(rule(
+        name: rn("Covar"),
+        $alpha :^cns tau in Gamma$,
+        $Gamma tack alpha :^cns tau$,
+      )),
+      prooftree(rule(
+        name: rn("Act-L"),
+        $Gamma, x :^prd tau tack s$,
+        $Gamma tack tilde(mu)x. s :^cns tau$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Dtor"),
+        $CODATA T br(..., D(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack D(sigma) :^cns T$,
+      )),
+      prooftree(rule(
+        name: rn("Case"),
+        $DATA T br(K_1(Gamma_1), ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack s_i$,
+        $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+      )),
+    ),
   )
 
-  #align(right, block(inset: 0.5em, stroke: 1pt)[
-    Statement Typing: $Theta mid Gamma tack s$
-  ])
+  #judgment-box[Statement Typing: $Theta mid Gamma tack s$]
+
   #rule-set(
     prooftree(rule(
       name: rn("Cut"),
