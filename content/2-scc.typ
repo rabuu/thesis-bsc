@@ -165,7 +165,7 @@ Dually, the less common algebraic codata types @Hagino1989 @Downen2019codata are
 They are very similar to interfaces in object-oriented programming.
 
 Another very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
-They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the LISP family of programming languages. $LABEL$ captures the current computation context --- called _continuation_ --- and binds it to a covariable.
+They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the LISP family of programming languages. $LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
 With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
 
 #inline-note[This could go further...]
