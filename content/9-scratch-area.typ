@@ -1,4 +1,5 @@
 #import "/lib/lib.typ": *
+#import deps: cetz
 
 = Scratch Area
 
@@ -42,3 +43,41 @@ $
   &&& l_3: ADDI TODO HEAP 32 \
   && l_2: & \
 $
+
+=== Diagrams
+#figure(cetz.canvas({
+  import cetz.draw: *
+
+  let slot(n, offset: (0, 0), open: false) = {
+    let (dx, dy) = offset
+    let (x, y) = (dx + n, dy)
+    let nw = (x, y)
+    let ne = (x + 1, y)
+    let sw = (x, y - 1)
+    let se = (x + 1, y - 1)
+
+    line(nw, ne)
+    line(sw, se)
+
+    if n == 0 {
+      line(nw, sw)
+    }
+
+    if not open {
+      let dash = if calc.even(n) {
+        "dashed"
+      } else {
+        "solid"
+      }
+      line(se, ne, stroke: (dash: dash))
+    }
+  }
+
+  let slots(n, offset: (0, 0)) = {
+    for i in range(0, n) {
+      slot(i, offset: offset)
+    }
+  }
+
+  slots(8)
+}))
