@@ -305,7 +305,7 @@ If that is the case, it is omitted to improve readability.
 Most of the rules are standard.
 Interesting are the control operators.
 In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
-If there is a covariable in the current context, #rn("Goto") can be used to invoke it. Here, the argument must be of the same type as the consumer covariable. The expression as whole, however, can have an arbitrary type $tau'$ because the computation will not continue here.
+If there is a covariable in the current context, #rn("Goto") can be used to invoke it. Here, the argument must be of the same type as the consumer covariable. The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue here.
 Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
 == The High-Level Intermediate Language #Core <scc:core>
