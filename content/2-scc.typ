@@ -922,5 +922,5 @@ Since statements represent computation, they do not have a return type.
   $
 ]
 
-== Translation from #AxCut to #RISC-V machine code <scc:codegen>
+== Code Generation <scc:codegen>
 #todo[TODO]

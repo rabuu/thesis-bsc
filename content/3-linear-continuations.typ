@@ -2,6 +2,9 @@
 
 = Linear Continuations
 
+== What is a Continuation?
+#todo[TODO]
+
 == Restricting the Surface Language #Fun
 
 === Syntax
