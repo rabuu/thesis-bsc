@@ -2,10 +2,13 @@
 
 #import cetz.draw: *
 
+#let ddd = $dot dot dot$
+
 #let slot(
   n,
-  data: none,
   offset: (0, 0),
+  data: none,
+  label: none,
   fields: false,
   size: 1,
   open-left: false,
@@ -34,11 +37,17 @@
     let center = (x + size / 2, y - size / 2)
     content(center, [#data])
   }
+
+  if label != none {
+    let pos = (x + size / 2, y + size / 2 - size / 10)
+    content(pos, [#label], anchor: "north")
+  }
 }
 
 #let slots(
   n,
   data: (),
+  labels: (),
   offset: (0, 0),
   fields: false,
   size: 1,
@@ -47,11 +56,13 @@
 ) = {
   for i in range(0, n) {
     let data = data.at(i, default: none)
+    let label = labels.at(i, default: none)
     let open-left = open-left and i == 0
     let open-right = open-right and i == n - 1
     slot(
       i,
       data: data,
+      label: label,
       offset: offset,
       fields: fields,
       size: size,
