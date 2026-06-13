@@ -8,3 +8,4 @@
 #import "prooftree.typ": *
 #import "annotation.typ": *
 #import "theorem.typ": *
+#import "diagram.typ"
