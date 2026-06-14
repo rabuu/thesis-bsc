@@ -12,7 +12,7 @@
   inset: 0.5em,
   stroke: 1pt,
   it,
-) = align(right, block(inset: inset, stroke: stroke, it))
+) = align(left, block(inset: inset, stroke: stroke, it))
 
 #let big-figure(..args) = {
   show figure: set block(breakable: true)
