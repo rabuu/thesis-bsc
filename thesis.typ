@@ -1,5 +1,5 @@
 #import "lib/lib.typ": *
-#import deps: hydra, theseus
+#import deps: hydra, scaffolder, theseus
 
 #import hydra: hydra
 #import theseus: appendix
@@ -17,6 +17,7 @@
     inside: settings.margin-inside,
     outside: settings.margin-outside,
   ),
+  background: scaffolder.scaffolding(),
 )
 
 #set text(
