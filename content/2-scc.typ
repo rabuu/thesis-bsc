@@ -188,7 +188,7 @@ If that is the case, it is omitted to improve readability.
   supplement: "Figure",
   caption: [Typing rules for #Fun.],
 )[
-  #judgment-box[Producer Typing: $Theta mid Gamma tack p : tau$]
+  #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
 
   #rule-set(
     prooftree(rule(
@@ -269,7 +269,7 @@ If that is the case, it is omitted to improve readability.
     )),
   )
 
-  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
 
   #rule-set(
     prooftree(rule(
@@ -279,7 +279,7 @@ If that is the case, it is omitted to improve readability.
     )),
   )
 
-  #judgment-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+  #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
 
   #rule-set(
     column-gutter: 2em,
@@ -436,7 +436,7 @@ Since statements represent computation, they do not have a return type.
   supplement: "Figure",
   caption: [Typing rules for #Core.],
 )[
-  #judgment-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+  #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
   #rule-set(
     manual-grouping: true,
@@ -480,7 +480,7 @@ Since statements represent computation, they do not have a return type.
     ),
   )
 
-  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
 
   #rule-set(
     manual-grouping: true,
@@ -512,7 +512,7 @@ Since statements represent computation, they do not have a return type.
     ),
   )
 
-  #judgment-box[Statement Typing: $Theta mid Gamma tack s$]
+  #def-box[Statement Typing: $Theta mid Gamma tack s$]
 
   #rule-set(
     prooftree(rule(

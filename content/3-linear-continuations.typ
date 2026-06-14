@@ -203,7 +203,7 @@
   kind: "Figure",
   supplement: "Figure",
 )[
-  #judgment-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+  #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
   #rule-set(
     manual-grouping: true,
@@ -246,7 +246,7 @@
     ),
   )
 
-  #judgment-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
 
   #rule-set(
     manual-grouping: true,
@@ -277,7 +277,7 @@
     ),
   )
 
-  #judgment-box[Statement Typing: $Theta mid Gamma tack s$]
+  #def-box[Statement Typing: $Theta mid Gamma tack s$]
 
   #rule-set(
     prooftree(rule(
