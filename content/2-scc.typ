@@ -563,8 +563,8 @@ Since statements represent computation, they do not have a return type.
   #def-box[$f2c(dot) : "Producer"_Fun -> "Producer"_Core$]
   #stack(dir: ltr, spacing: 2em)[
     $
-                      f2c(x) & := x \
-      f2c(LABEL alpha br(p)) & := mu alpha. f2c(p, with: alpha) \
+             f2c(x) & := x \
+      f2c(K(sigma)) & := K(f2c(sigma)) \
     $
   ][
     $
@@ -573,8 +573,8 @@ Since statements represent computation, they do not have a return type.
     $
   ]
   $
-    f2c(K(sigma)) &:= K(f2c(sigma)) \
     f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
+    f2c(LABEL alpha br(p)) & := mu alpha. f2c(p, with: alpha) \
     f2c(p) &:= mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
   $
 
@@ -583,17 +583,18 @@ Since statements represent computation, they do not have a return type.
     $
                       f2c(x, with: c) & := cut(x, c) \
                       f2c(n, with: c) & := cut(n, c) \
-      f2c(LABEL alpha br(p), with: c) & := cut(mu alpha. f2c(p, with: alpha), c) \
                f2c(K(sigma), with: c) & := cut(K(f2c(sigma)), c) \
                f2c(f(sigma), with: c) & := f(f2c(sigma), c) \
+      f2c(LABEL alpha br(p), with: c) & := cut(mu alpha. f2c(p, with: alpha), c) \
     $
   ][
     $
       #hide[$f2c(x, with: c) := cut(x, c)$] \
       f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
-      f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
+      #note[bindvals not yet defined]
       f2c(p.D(sigma), with: c) & := bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
       f2c(EXIT p, with: c) & := EXIT f2c(p) \
+      f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
     $
   ]
   $
@@ -603,9 +604,9 @@ Since statements represent computation, they do not have a return type.
     ) \
     f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
     f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: c_0) quad "where" c_0 equiv CASE br(K_1(Gamma_1) => f2c(p_1, with: tilde(mu)x. j(Gamma)), ...) \
-    "with" DEF j(Gamma) br(cut(x, c)) quad &&& "and" Gamma := "freeVars"(c), x :^prd tau \
+    "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
     f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: tilde(mu)x. j(Gamma))) ELSE br(f2c(p_2, with: tilde(mu)x. j(Gamma))) \
-    "with" DEF j(Gamma) br(cut(x, c)) quad &&& "and" Gamma := "freeVars"(c), x :^prd tau \
+    "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
   $
 
   #def-box[$f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$]
