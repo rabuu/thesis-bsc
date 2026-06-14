@@ -175,11 +175,11 @@ The typing rules for #Fun are shown in @fig:scc:fun:typing.
 To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
 We assume that all types and names that are used in the program are well-defined and unique.
 
-There are three judgement forms for producers, consumers, and argument lists, respectively.
-The judgement $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
+There are three judgment forms for producers, consumers, and argument lists, respectively.
+The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
 and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
 Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer for $tau$.
-The judgement $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
+The judgment $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
 In many rules, the global context $Theta$ is not referenced.
 If that is the case, it is omitted to improve readability.
 
