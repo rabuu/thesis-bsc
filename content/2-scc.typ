@@ -545,20 +545,20 @@ Since statements represent computation, they do not have a return type.
 #inline-note[Explain rules. Symmetry. Etc.]
 
 == Translation from #Fun to #Core <scc:f2c>
-#figure[
-  $f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$
+#big-figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Translation from #Fun to #Core.],
+)[
+  #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
   $
     f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
     f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
     f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
     f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $f2c(dot) : "Producer"_Fun -> "Producer"_Core$
+  #def-box[$f2c(dot) : "Producer"_Fun -> "Producer"_Core$]
   $
     f2c(x) & := x \
     f2c(n) & := n \
@@ -568,12 +568,8 @@ Since statements represent computation, they do not have a return type.
     f2c(LABEL alpha br(p)) &:= mu alpha. f2c(p, with: alpha) \
     f2c(p) & := mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$
+  #def-box[$f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$]
   $
     f2c(n, with: c) & := && cut(n, c) \
     f2c(p_1 + p_2, with: c) & := && cut(f2c(p_1) + f2c(p_2), c) \
@@ -582,11 +578,12 @@ Since statements represent computation, they do not have a return type.
     f2c(EXIT p, with: c) & := && EXIT f2c(p) \
     f2c(LABEL alpha br(p), with: c) & := && cut(mu alpha. f2c(p, with: alpha), c) \
     f2c(GOTO alpha sp (p), with: c) & := && f2c(p, with: alpha) \
-    f2c(LET x = p_1\; sp p_2, with: c) & := && f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) \
-    f2c(LET x = p_1\; sp p_2, with: c) & := && cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c))\
-    "where" & && p_1 : CODATA T br(...) \
+    f2c(LET x = p_1\; sp p_2, with: c) & := && cases(
+      cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c)) quad & "if" p_1: CODATA T br(...),
+      f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) quad & "otherwise",
+    ) \
     f2c(K(sigma), with: c) & := && cut(K(f2c(sigma)), c) \
-    f2c(p.D(sigma), with: c) & := && f2c(p, with: D(f2c(sigma), c)) \
+    f2c(p.D(sigma), with: c) & := && bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
     f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
     f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: CASE br(K_1(Gamma_1) => f2c(p_1, with: c_0), ...)) \
     "where" & && c_0 equiv tilde(mu)x. j(Gamma)\
@@ -597,16 +594,12 @@ Since statements represent computation, they do not have a return type.
     "with" & && DEF j(Gamma) br(cut(x, c)) \
     "and" & && Gamma := "freeVars"(c), x :^prd tau \
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$
+  #def-box[$f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$]
   $
-            f2c(empty) & := empty \
-        f2c(sigma\, p) & := f2c(sigma), f2c(p) \
-    f2c(sigma\, alpha) & := f2c(sigma), alpha
+    f2c(empty) := empty quad quad
+    f2c(sigma\, p) := f2c(sigma), f2c(p) quad quad
+    f2c(sigma\, alpha) := f2c(sigma), alpha
   $
 ]
 
