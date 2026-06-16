@@ -198,111 +198,211 @@
 == Restricting #Core
 #todo[TODO]
 
+=== Syntax
+#definition(title: [Syntax of #Core])[
+  #figure[
+    #bnf(
+      ($p$, "Producers"),
+      alt(
+        $var(x)$,
+        $mu alpha. s$,
+      ),
+      alt(
+        $n$,
+        $p + p$,
+      ),
+      alt(
+        $K(sigma)$,
+        $NEW br(D(Gamma; alpha :^cns tau) => s, ...)$,
+      ),
+
+      ($c$, "Consumers"),
+      alt(
+        $covar(alpha)$,
+        $tilde(mu) x. s$,
+      ),
+      alt(
+        $D(sigma; c)$,
+        $CASE br(K(Gamma) => s, ...)$,
+      ),
+
+      ($s$, "Statements"),
+      alt(
+        $cut(p, c)$,
+      ),
+      alt(
+        $IF p equiv 0 br(s) ELSE br(s)$,
+      ),
+      alt(
+        $f(sigma; c)$,
+        $EXIT p$,
+      ),
+
+      ($tau$, "Types"),
+      alt(
+        $i64$,
+        $T$,
+      ),
+
+      ($chi$, "Chirality"),
+      alt(
+        $prd$,
+        $cns$,
+      ),
+
+      ($sigma$, "Arguments (Producer)"),
+      alt(
+        $empty$,
+        $sigma, sp p$,
+      ),
+
+      ($Gamma$, "Typing Contexts (Producer)"),
+      alt(
+        $empty$,
+        $Gamma, sp x :^prd tau$,
+      ),
+
+      ($Delta$, "Typing Contexts (Consumer)"),
+      alt(
+        $empty$,
+        $alpha :^cns tau$,
+      ),
+
+      ($pi$, "Polarity"),
+      alt(
+        $DATA$,
+        $CODATA$,
+      ),
+
+      ($delta$, "Declarations"),
+      alt(
+        $DEF f(Gamma; Delta) br(s)$,
+      ),
+      alt(
+        $DATA sp T br(K(Gamma), ...)$,
+      ),
+      alt(
+        $CODATA sp T br(D(Gamma;Delta), ...)$,
+      ),
+
+      ($Theta$, "Programs"),
+      alt(
+        $empty$,
+        $Theta, sp delta$,
+      ),
+    )
+  ]
+]
+
 === Typing Rules
 #figure(
   kind: "Figure",
   supplement: "Figure",
+  caption: [Typing rules for #Core.],
 )[
-  #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+  #def-box[Producer Typing: $Theta mid Gamma;Delta tack p :^prd tau$]
 
   #rule-set(
     manual-grouping: true,
     (
-      mark(prooftree(rule(
+      prooftree(rule(
         name: rn("Var"),
-        $x :^prd_q tack x :^prd tau$,
-      ))),
+        $x :^prd tau in Gamma$,
+        $Gamma;Delta tack x :^prd tau$,
+      )),
       prooftree(rule(
         name: rn("Act-R"),
-        $Gamma, alpha mark(:^cns_q) tau tack s$,
-        $Gamma tack mark(mu_q) a. s :^prd tau$,
+        $Gamma; alpha :^cns tau tack s$,
+        $Gamma; empty tack mu a. s :^prd tau$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Lit"),
-        $Gamma tack n :^prd i64$,
+        $Gamma;Delta tack n :^prd i64$,
       )),
       prooftree(rule(
         name: rn("Plus"),
-        $mark(Gamma_1) tack p_1 :^prd i64$,
-        $mark(Gamma_2) tack p_2 :^prd i64$,
-        $mark(Gamma_1 plus.o Gamma_2) tack p_1 + p_2 :^prd i64$,
+        $Gamma;Delta_1 tack p_1 :^prd i64$,
+        $Gamma;Delta_2 tack p_2 :^prd i64$,
+        $Gamma;Delta_1 plus.o Delta_2 tack p_1 + p_2 :^prd i64$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Ctor"),
         $DATA T br(..., K(Gamma'), ...) in Theta$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack K(sigma) :^prd T$,
+        $Theta mid Gamma;Delta tack sigma : Gamma'$,
+        $Theta mid Gamma;Delta tack K(sigma) :^prd T$,
       )),
       prooftree(rule(
         name: rn("New"),
-        $CODATA T br(D_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
+        $CODATA T br(D_1(Gamma_1;alpha :^cns tau), ...) in Theta$,
+        $forall i: Gamma, Gamma_i;alpha :^cns tau tack s_i$,
+        $Theta mid Gamma;empty tack NEW br(D_1(Gamma_1,alpha :^cns tau) => s_1, ...) :^prd T$,
       )),
     ),
   )
 
-  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+  #def-box[Consumer Typing: $Theta mid Gamma;Delta tack c :^cns tau$]
 
   #rule-set(
     manual-grouping: true,
     (
-      mark(prooftree(rule(
+      prooftree(rule(
         name: rn("Covar"),
-        $alpha :^cns_q tack alpha :^cns tau$,
-      ))),
+        $Gamma; alpha :^cns tau tack alpha :^cns tau$,
+      )),
       prooftree(rule(
         name: rn("Act-L"),
-        $Gamma, x mark(:^prd_q) tau tack s$,
-        $Gamma tack mark(tilde(mu)_q) x. s :^cns tau$,
+        $Gamma, x :^prd tau; Delta tack s$,
+        $Gamma;Delta tack tilde(mu)x. s :^cns tau$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Dtor"),
-        $CODATA T br(..., D(Gamma'), ...) in Theta$,
+        $CODATA T br(..., D(Gamma'; alpha :^cns tau), ...) in Theta$,
         $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack D(sigma) :^cns T$,
+        $Theta mid Gamma; Delta tack c :^cns tau$,
+        $Theta mid Gamma; Delta tack D(sigma,c) :^cns T$,
       )),
       prooftree(rule(
         name: rn("Case"),
         $DATA T br(K_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+        $forall i: Gamma, Gamma_i; Delta tack s_i$,
+        $Theta mid Gamma; Delta tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
       )),
     ),
   )
 
-  #def-box[Statement Typing: $Theta mid Gamma tack s$]
+  #def-box[Statement Typing: $Theta mid Gamma; Delta tack s$]
 
   #rule-set(
     prooftree(rule(
       name: rn("Cut"),
-      $mark(Gamma_1) tack p :^prd tau$,
-      $mark(Gamma_2) tack c :^cns tau$,
-      $mark(Gamma_1 plus.o Gamma_2) tack cut(p, c)$,
+      $Gamma; Delta_1 tack p :^prd tau$,
+      $Gamma; Delta_2 tack c :^cns tau$,
+      $Gamma; Delta_1 plus.o Delta_2 tack cut(p, c)$,
     )),
     prooftree(rule(
       name: rn("IfZ"),
-      $mark(Gamma_1) tack p :^prd i64$,
-      $mark(Gamma_2) tack s_1$,
-      $mark(Gamma_2) tack s_2$,
-      $mark(Gamma_1 plus.o Gamma_2) tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+      $Gamma; Delta_1 tack p :^prd i64$,
+      $Gamma; Delta_2 tack s_1$,
+      $Gamma; Delta_2 tack s_2$,
+      $Gamma; Delta_1 plus.o Delta_2 tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
     )),
     prooftree(rule(
       name: rn("Call"),
-      $DEF f(Gamma') br(...) in Theta$,
+      $DEF f(Gamma'; alpha :^cns tau) br(...) in Theta$,
       $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack f(sigma)$,
+      $Theta mid Gamma; Delta tack c :^cns tau$,
+      $Theta mid Gamma; Delta tack f(sigma, c)$,
     )),
     prooftree(rule(
       name: rn("Exit"),
-      $Gamma tack p :^prd i64$,
-      $Gamma tack EXIT p$,
+      $Gamma; Delta tack p :^prd i64$,
+      $Gamma; Delta tack EXIT p$,
     )),
   )
 ]
