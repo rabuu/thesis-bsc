@@ -618,17 +618,48 @@ Since statements represent computation, they do not have a return type.
 ]
 
 == The Focusing Transformation <scc:focus>
-#figure[
-  $focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [The binding functions used for the focusing transformation.],
+)[
+  #def-box[$bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
   $
-    focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
+    bind(x, k) & := && k(x) \
+    bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
+    bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
+    bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
+    bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
+    bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu) x. k(x))))
+  $
+
+  #def-box[$bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
+  $
+    bind(alpha, k) & := && k(alpha) \
+    bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
+    bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
+    bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
+  $
+
+  #def-box[$bindargs(dot, dot) : "Args"_Core times ("Context" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
+  $
+    bindargs(empty, k) & := && k(empty) \
+    bindargs(e :: sigma, k) & := && bind(e, lambda a. bindargs(sigma, lambda overline(a). k(a :: overline(a))))
   $
 ]
 
-#line(length: 100%)
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [The focusing transformation.],
+)[
+  #def-box[$focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$]
+  $
+    focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
+  $
 
-#figure[
-  $focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$
+  #def-box[$focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$]
   $
     focus(cut(p_1 + p_2, c)) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, focus(c)))) \
     focus(cut(K(sigma), c)) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), focus(c))) \
@@ -638,12 +669,8 @@ Since statements represent computation, they do not have a return type.
     focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
     focus(EXIT p) & := && bind(p, lambda a. EXIT a)
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$
+  #def-box[$focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$]
   $
     focus(x) & := && x \
     focus(mu alpha. s) & := && mu alpha. focus(s) \
@@ -652,53 +679,13 @@ Since statements represent computation, they do not have a return type.
     focus(n) & := && n \
     focus(p_1 + p_2) &&& "does not occur"
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$
+  #def-box[$focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$]
   $
     focus(alpha) & := && alpha \
     focus(tilde(mu) x. s) & := && tilde(mu) x. focus(s) \
     focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
     focus(D(sigma)) &&& "does not occur" \
-  $
-]
-
-#line(length: 100%)
-
-#figure[
-  $bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
-  $
-    bind(x, k) & := && k(x) \
-    bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
-    bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
-    bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
-    bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
-    bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu) x. k(x))))
-  $
-]
-
-#line(length: 100%)
-
-#figure[
-  $bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
-  $
-    bind(alpha, k) & := && k(alpha) \
-    bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
-    bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
-    bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
-  $
-]
-
-#line(length: 100%)
-
-#figure[
-  $bindargs(dot, dot) : "Arguments"_Core times ("Context" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$
-  $
-    bindargs(empty, k) & := && k(empty) \
-    bindargs(e :: sigma, k) & := && bind(e, lambda a. bindargs(sigma, lambda overline(a). k(a :: overline(a))))
   $
 ]
 
