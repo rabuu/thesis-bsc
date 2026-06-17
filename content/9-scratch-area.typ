@@ -1,6 +1,8 @@
 #import "/lib/lib.typ": *
 #import deps: cetz
 
+#show heading: set heading(outlined: false)
+
 = Scratch Area
 
 == Syntax for Linear Context Bindings
