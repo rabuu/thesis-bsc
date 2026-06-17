@@ -1043,7 +1043,7 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
 === Virtual Tables & Jump Tables
 #todo[TODO]
 
-=== Memory Management: Load, Store, Release, Acquire
+=== Memory Management
 #figure[
   $
     LOAD r sp Gamma & := && RELEASE r \
