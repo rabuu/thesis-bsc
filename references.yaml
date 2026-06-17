@@ -163,6 +163,25 @@ Hagino1989:
     title: Journal of Symbolic Computation
     issue: 6
     volume: 8
+Lam2024:
+  type: article
+  title: Being Lazy When It Counts
+  author:
+  - Lam, Chun Kit
+  - Parreaux, Lionel
+  date: 2024
+  editor:
+  - Gibbons, Jeremy
+  - Miller, Dale
+  page-range: 188-216
+  serial-number:
+    isbn: 978-981-97-2300-3
+  parent:
+    type: proceedings
+    title: Functional and Logic Programming
+    publisher:
+      name: Springer Nature Singapore
+      location: Singapore
 Mueller2026:
   type: article
   title: 'Compiling with the Sequent Calculus'
@@ -225,3 +244,16 @@ Schuster2025:
       location: New York, NY, USA
     issue: OOPSLA1
     volume: 9
+Waterman2014riscv:
+  type: report
+  title: 'The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Version 2.0'
+  author:
+  - Waterman, Andrew
+  - Lee, Yunsup
+  - Patterson, David A.
+  - Asanović, Krste
+  date: 2014-05
+  url: http://www2.eecs.berkeley.edu/Pubs/TechRpts/2014/EECS-2014-54.html
+  serial-number:
+    serial: UCB/EECS-2014–54
+  genre: technical report

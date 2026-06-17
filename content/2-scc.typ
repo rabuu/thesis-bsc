@@ -909,4 +909,115 @@ Since statements represent computation, they do not have a return type.
 ]
 
 == Code Generation <scc:codegen>
-#todo[TODO]
+
+=== The Target Language #RISC-V
+We use the following subset of #RISC-V @Waterman2014riscv as target for the code generation.
+
+#definition(title: [Syntax of #RISC-V])[
+  #figure[
+    #bnf(
+      ($I$, "Instructions"),
+      alt(
+        $l:$,
+        $ADD r sp r sp r$,
+        $ADDI r sp r sp i$,
+        $MV r sp r$,
+      ),
+      alt(
+        $LI r sp i$,
+        $LA r sp l$,
+        $LW r sp i sp r$,
+        $SW r sp i sp r$,
+      ),
+      alt(
+        $JUMP o$,
+        $JR r sp o$,
+        $BEQ r sp r sp o$,
+        $ECALL$,
+      ),
+
+      ($r$, "Registers"),
+      alt(
+        $#reg(0)$,
+        $#reg(1)$,
+        $...$,
+        $#reg(31)$,
+      ),
+
+      ($l$, "Labels"),
+      alt(
+        $#lab(0)$,
+        $#lab(1)$,
+        $...$,
+      ),
+
+      ($i$, "Immediates"),
+      alt(
+        $#imm(0)$,
+        $#imm(1)$,
+        $...$,
+      ),
+
+      ($o$, "Offsets"),
+      alt(
+        $l$,
+        $i$,
+      ),
+    )
+  ]
+]
+
+=== Overview
+#inline-note[
+  - Definitions are Labels, Calls are Direct Jumps
+  - Explicit Substitutions are Parallel Moves
+  - Externs are System Calls and Hardware Instructions
+  - Constructors are Tags, Fields are Memory Blocks, Pattern Matches are Jump Tables
+  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
+  - $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
+  - Constant-time lazy reference counting @Lam2024
+  - Share increases refcount, erase decreases refcount
+]
+
+=== Translation from #AxCut to #RISC-V
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Translation from #AxCut to #RISC-V.],
+)[
+  #set math.lr(size: 1em)
+
+  #def-box[$a2m(dot) : "Definition"_AxCut -> I^*$]
+  $
+    a2m(DEF f(Gamma) br(s)) & := && f: a2m(s)
+  $
+
+  #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
+  $
+    a2m(f(Gamma)) & := && JUMP f \
+    a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
+    & && ERASE [Gamma' := sigma] \
+    & && MOVE [Gamma' := sigma] \
+    & && a2m(s) \
+    a2m(EXIT v) & := && LI #reg(17) #imm(93) \
+    & && MV #reg(10) (REG_2 sp v) \
+    & && ECALL \
+    a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
+    & && a2m(s) \
+    a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 v_1) sp (REG_2 sp v_2) \
+    & && a2m(s) \
+    a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
+    & && #hide[$l:$] a2m(s_2) \
+    & && l: a2m(s_1) \
+    a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+    & && LI (REG_2 sp v) sp (INDEX X) \
+    & && a2m(s) \
+    a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+    & && LA (REG_2 sp v) sp l \
+    & && a2m(s) \
+    & && l: VTABLE b sp Gamma_0 \
+    a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
+    & && l: JTABLE b sp Gamma \
+    a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+  $
+]

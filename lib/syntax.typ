@@ -35,25 +35,33 @@
 #let STOREV = _macro("StoreV")
 #let REG = _macro("Reg")
 #let OFFSET = _macro("Offset")
+#let INDEX = _macro("Index")
 #let VTABLE = _macro("VTable")
+#let JTABLE = _macro("JTable")
 #let ACQUIRE = _macro("Acquire")
+#let SHARE = _macro("Share")
+#let ERASE = _macro("Erase")
+#let MOVE = _macro("Move")
 #let ERASEFIELDS = _macro("EraseFields")
 
-// registers
+// RISC-V
 #let reg(num) = raw("x" + str(num))
 #let TEMP = _reg("temp")
 #let HEAP = _reg("heap")
 #let TODO = _reg("todo")
-
-// RISC-V
+#let lab(num) = raw("l" + str(num))
+#let imm(num) = text(fill: purple, raw(str(num)))
 #let LI = _rv("li")
 #let LA = _rv("la")
 #let SW = _rv("sw")
 #let LW = _rv("lw")
 #let MV = _rv("mv")
 #let BEQ = _rv("beq")
+#let ADD = _rv("add")
 #let ADDI = _rv("addi")
 #let JUMP = _rv("j")
+#let JR = _rv("jr")
+#let ECALL = _rv("ecall")
 
 #let var(x) = $#x$
 #let covar(a) = $#a$
