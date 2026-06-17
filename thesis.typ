@@ -47,24 +47,28 @@
 // TITLE
 //
 
-#theseus.title.se-tuebingen(
-  author: meta.author,
-  title: meta.title-linebreak,
-  title-unformatted: meta.title,
-  thesis-type-title: meta.thesis-type-title,
-  university: meta.university,
-  department: meta.department,
-  institute: meta.institute,
-  student-id: meta.student-id,
-  submission-date: meta.submission-date,
-  period: [Thesis period: #meta.period],
-  reviewer: (
-    name: meta.reviewer,
-    department: meta.reviewer-department,
-    university: meta.reviewer-university,
-  ),
-  backside: true,
-)
+#{
+  set page(margin: (x: settings.margin-outside))
+
+  theseus.title.se-tuebingen(
+    author: meta.author,
+    title: meta.title-linebreak,
+    title-unformatted: meta.title,
+    thesis-type-title: meta.thesis-type-title,
+    university: meta.university,
+    department: meta.department,
+    institute: meta.institute,
+    student-id: meta.student-id,
+    submission-date: meta.submission-date,
+    period: [Thesis period: #meta.period],
+    reviewer: (
+      name: meta.reviewer,
+      department: meta.reviewer-department,
+      university: meta.reviewer-university,
+    ),
+    backside: true,
+  )
+}
 
 //
 // FRONTMATTER
