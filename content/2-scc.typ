@@ -866,17 +866,15 @@ Since statements represent computation, they do not have a return type.
 
 == Translation from #Core to #AxCut <scc:c2a>
 #inline-note[Improve formatting.]
-#figure[
-  $c2a(dot) : "Definition"_("Shrunk" Core) -> "Definition"_AxCut$
+#big-figure[
+  #set math.lr(size: 1em)
+
+  #def-box[$c2a(dot) : "Definition"_("Shrunk" Core) -> "Definition"_AxCut$]
   $
     c2a(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(c2a(s, ctx: Gamma))
   $
-]
 
-#line(length: 100%)
-
-#figure[
-  $c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$
+  #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
   $
     c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
     &&& LET x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, x) \
@@ -892,10 +890,6 @@ Since statements represent computation, they do not have a return type.
     c2a(cut(NEW br(D_1(Gamma_1) => s_1, ...), alpha), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
     &&& SWITCH alpha br(D_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
     "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
-  $
-]
-#figure[
-  $
     c2a(cut(mu alpha. s, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
     &&& CREATE alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
     &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, alpha) \
