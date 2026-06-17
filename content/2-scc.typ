@@ -980,6 +980,19 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
 ]
 
 === Translation from #AxCut to #RISC-V
+#definition(title: "Auxiliary Definitions")[
+  - $REG_1 sp v$ is the first register of a variable $v$.
+  - $REG_2 sp v$ is the second register of a variable $v$.
+  - $INDEX X$ is the index of the constructor/destructor $X$ in its signature, multiplied by four.
+  - $OFFSET_1 sp v$ is the first memory offset for $v$ in the environment.
+  - $OFFSET_2 sp v$ is the second memory offset for $v$ in the environment.
+  - #todo[$MOVE [Gamma' := sigma]$ is ...]
+  - #todo[...]
+  - $TEMP$ is a reserved register for temporaries.
+  - $TODO$ is a reserved register for the lazy free list.
+  - $HEAP$ is a reserved register for the linear free list.
+]
+
 #figure(
   kind: "Figure",
   supplement: "Figure",
@@ -1019,5 +1032,51 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
     a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
     & && l: JTABLE b sp Gamma \
     a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+  $
+]
+
+=== Share & Erase
+#inline-note[
+  I think this can be skipped or moved to an appendix.
+]
+
+=== Virtual Tables & Jump Tables
+#todo[TODO]
+
+=== Memory Management: Load, Store, Release, Acquire
+#figure[
+  $
+    LOAD r sp Gamma & := && RELEASE r \
+    & && LOADV r sp Gamma \
+    LOADV r sp (Gamma, v:^chi tau) & := && LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r \
+    & && LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r \
+    & && LOADV r sp Gamma \
+    STORE r sp Gamma & := && STOREV r sp Gamma \
+    & && ACQUIRE r \
+    STOREV (Gamma, v:^chi tau) & := && SW (REG_2 sp v) sp (OFFSET_2 sp v) sp HEAP \
+    & && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
+    & && STOREV r sp Gamma \
+    RELEASE r & := && LW TEMP #imm(0) sp r \
+    &&& BEQ TEMP #reg(0) l_1 \
+    &&& #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
+    &&& #hide[$l_1:$] SW TEMP #imm(0) sp r \
+    &&& #hide[$l_1:$] SHAREFIELDS r \
+    &&& #hide[$l_1:$] JUMP l_2 \
+    &&& l_1: SW HEAP #imm(0) sp r \
+    &&& #hide[$l_1:$] MV HEAP r \
+    &&& l_2: \
+    ACQUIRE r & := && MV r HEAP \
+    &&& LW HEAP #imm(0) HEAP \
+    &&& BEQ HEAP #reg(0) l_1 \
+    &&& #hide[$l_1:$] SW #reg(0) #imm(0) sp r \
+    &&& #hide[$l_1:$] JUMP l_2 \
+    &&& l_1: MV HEAP TODO \
+    &&& #hide[$l_1:$] LW TODO #imm(0) TODO \
+    &&& #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
+    &&& #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(0) HEAP \
+    &&& #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
+    &&& #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
+    &&& #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
+    &&& l_2: \
   $
 ]

@@ -31,18 +31,22 @@
 #let SUBSTITUTE = _kw("substitute")
 
 // codegen macros
+#let LOAD = _macro("Load")
+#let LOADV = _macro("LoadV")
 #let STORE = _macro("Store")
 #let STOREV = _macro("StoreV")
+#let ACQUIRE = _macro("Acquire")
+#let RELEASE = _macro("Release")
 #let REG = _macro("Reg")
 #let OFFSET = _macro("Offset")
 #let INDEX = _macro("Index")
 #let VTABLE = _macro("VTable")
 #let JTABLE = _macro("JTable")
-#let ACQUIRE = _macro("Acquire")
 #let SHARE = _macro("Share")
+#let SHAREFIELDS = _macro("ShareFields")
 #let ERASE = _macro("Erase")
-#let MOVE = _macro("Move")
 #let ERASEFIELDS = _macro("EraseFields")
+#let MOVE = _macro("Move")
 
 // RISC-V
 #let reg(num) = raw("x" + str(num))
