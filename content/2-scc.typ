@@ -77,7 +77,7 @@ The following sections will explain every stage and translation step-by-step.
 Every compiler needs a surface language: the language in which its input programs are written, typically by a human.
 In the case of the SCC, this language is called #Fun @Binder2024grokking.
 It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
-#Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it operates.
+#Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it functions.
 
 === Syntax
 #definition(title: "Naming Conventions")[
@@ -165,7 +165,8 @@ Dually, the less common algebraic codata types @Hagino1989 @Downen2019codata are
 They are very similar to interfaces in object-oriented programming.
 
 Another very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
-They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the LISP family of programming languages. $LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
+They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the Scheme family of programming languages.
+$LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
 With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
 
 #inline-note[This could go further...]
