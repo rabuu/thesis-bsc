@@ -316,7 +316,80 @@
 ]
 
 === Typing Rules
-#todo[TODO]
+#figure[
+  #def-box[Statement Typing: $Theta mid Gamma tack s$]
+  #rule-set(
+    manual-grouping: true,
+    (
+      prooftree(rule(
+        name: $#rn("Let-")pi$,
+        $pi T br(..., X(Gamma_0), ...) in Theta$,
+        $Gamma, mark(v :^(chi_1(pi))_q) T tack s$,
+        $Theta mid Gamma, Gamma_0 tack mark(LET_q) sp v = X(Gamma_0); sp s$,
+      )),
+      prooftree(rule(
+        name: $#rn("Create-")pi$,
+        $pi T br(X_1(Gamma_1), ...) in Theta$,
+        $Gamma, mark(v :^(chi_2(pi))_q) T tack s$,
+        $forall i: Gamma_i, Gamma_0 tack s_i$,
+        $Theta mid Gamma, Gamma_0 tack mark(CREATE_q) sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+      )),
+      prooftree(rule(
+        name: $#rn("Switch-")pi$,
+        $pi T br(X_1(Gamma_1), ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack s_i$,
+        $Theta mid Gamma, mark(v :^(chi_1(pi))_q) T tack mark(SWITCH_q) sp v br(X_1(Gamma_1) => s_1, ...)$,
+      )),
+      prooftree(rule(
+        name: $#rn("Invoke-")pi$,
+        $pi T br(..., X(Gamma), ...) in Theta$,
+        $Theta mid Gamma, mark(v :^(chi_2(pi))_q) T tack INVOKE v sp X(Gamma)$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Substitute"),
+        $Gamma tack sigma : Gamma'$,
+        $Gamma' tack s$,
+        inline-note[linear bindings cannot be shared or erased],
+        $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("Lit"),
+        $Gamma, v:^prd i64 tack s$,
+        $Gamma tack LIT v <- n; sp s$,
+      )),
+      prooftree(rule(
+        name: rn("Plus"),
+        $v_1 :^prd i64 in Gamma$,
+        $v_2 :^prd i64 in Gamma$,
+        $Gamma, v :^prd i64 tack s$,
+        $Gamma tack v <- v_1 + v_2; sp s$,
+      )),
+    ),
+    (
+      prooftree(rule(
+        name: rn("IfZ"),
+        $v :^prd i64 in Gamma$,
+        $Gamma tack s_1$,
+        $Gamma tack s_2$,
+        $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
+      )),
+      prooftree(rule(
+        name: rn("Call"),
+        $DEF f(Gamma) br(...) in Theta$,
+        $Theta mid Gamma tack f(Gamma)$,
+      )),
+      prooftree(rule(
+        name: rn("Exit"),
+        $v :^prd i64 in Gamma$,
+        $Gamma tack EXIT v$,
+      )),
+    ),
+  )
+]
 
 == Translation from #Core to #AxCut
 #todo[TODO]
