@@ -25,3 +25,24 @@ This not only increases the memory space we can use for actual data, but also re
 
 == Linear Memory Management
 #inline-note[$STORE_1$, $LOAD_1$, $ACQUIRE_1$, $RELEASE_1$]
+
+== Translation from #AxCut to #RISC-V
+#figure[
+  #set math.lr(size: 1em)
+
+  #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
+  $
+    a2m(mark(LET_q) sp v = X(Gamma_0)\; s) & := && mark(STORE_q) sp (REG_1 sp v) sp Gamma_0 \
+    & && LI (REG_2 sp v) sp (INDEX X) \
+    & && a2m(s) \
+    a2m(mark(CREATE_q) sp v = Gamma_0 sp b\; s) & := && mark(STORE_q) sp (REG_1 sp v) sp Gamma_0 \
+    & && LA (REG_2 sp v) sp l \
+    & && a2m(s) \
+    & && l: mark(VTABLE_q) sp b sp Gamma_0 \
+    a2m(mark(SWITCH_q) sp v sp b) & := && JR (REG_2 sp v) sp l \
+    & && l: mark(JTABLE_q) sp b sp Gamma \
+    a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+  $
+]
+
+#inline-note[$VTABLE$ and $JTABLE$ are missing.]
