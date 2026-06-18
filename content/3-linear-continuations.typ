@@ -6,6 +6,7 @@
 #todo[TODO]
 
 == Which Continuations are Linear?
+#todo[TODO]
 
 == Restricting the Surface Language #Fun
 
@@ -54,7 +55,7 @@
 ]
 
 === Intuitionistic!
-#inline-note[Maybe a section about how Fun now loses classical expression and gets intuitionsistic.]
+#inline-note[Maybe a section about how Fun now loses classical expression and gets intuitionistic.]
 
 == Restricting #Core
 #todo[TODO]
@@ -267,6 +268,9 @@
 ]
 
 #inline-note[Structural rules. Rules for arguments.]
+
+=== Linearity & Intuitionistic
+#inline-note[This resembles Gentzen's LJ :O]
 
 == Translation from #Fun to #Core
 #todo[TODO]
