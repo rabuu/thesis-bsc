@@ -189,7 +189,7 @@ We assume that all types and names that are used in the program are well-defined
 There are three judgment forms for producers, consumers, and argument lists, respectively.
 The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
 and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
-Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer for $tau$.
+Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer of $tau$.
 The judgment $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
 In many rules, the global context $Theta$ is not referenced.
 If that is the case, it is omitted to improve readability.
@@ -316,7 +316,9 @@ If that is the case, it is omitted to improve readability.
 Most of the rules are standard.
 Interesting are the control operators.
 In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
-If there is a covariable in the current context, #rn("Goto") can be used to invoke it. Here, the argument must be of the same type as the consumer covariable. The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue here.
+If there is a covariable in the current context, #rn("Goto") can be used to invoke it.
+Here, the argument must be of the same type as the consumer covariable.
+The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
 Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
 == The High-Level Intermediate Language #Core <scc:core>
