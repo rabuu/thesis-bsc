@@ -5,7 +5,7 @@
 #let AxCut = _lang("AxCut")
 #let RISC-V = _lang("RISC-V")
 
-#let f2c(x, with: none) = $C bracket.l.stroked #x bracket.r.stroked_#with$
+#let f2c(x, with: none) = $scr(C) bracket.l.stroked #x bracket.r.stroked_#with$
 #let bindval(x, c) = $scr(B)_v (#x)[#c]$
 #let bindvals(x, c) = $scr(L)_v (#x)[#c]$
 
