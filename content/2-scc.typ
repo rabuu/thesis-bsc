@@ -92,7 +92,7 @@ Here, we establish a nomenclature that is valid for the rest of this thesis.
   - $T$ is some user-defined _type name_,
   - $K,D,X$ are _tags_ used for constructors and destructors,
   - and $f$ is a _label_ used for top-level definitions.
-]
+] <naming>
 
 With these conventions in place, we can define the syntax of the surface language.
 
@@ -322,11 +322,19 @@ The expression as a whole, however, is allowed to have any type $tau'$ because t
 Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
 == The High-Level Intermediate Language #Core <scc:core>
-The next step of the compilation pipeline is the intermediate representation #Core.
+The next stage in the compilation pipeline is the intermediate representation #Core.
 It is an extension of the $lambda mu tilde(mu)$-calculus @Curien2000, a term assignment system for classical sequent calculus @Gentzen1935a,
-equipped with integer arithmetic, top-level function definitions, and algebraic data and codata types. The translation from #Fun to #Core is covered in @scc:f2c.
+equipped with integer arithmetic, top-level function definitions, and algebraic data and codata types.
+
+While remaining at a relatively high level of abstraction, #Core makes the order and structure of computation very explicit by reifying control flow in the language.
+This is similar to continuation-passing style (CPS) @Appel1991cps --- widely used in compilers for functional languages ---
+which introduces functions that explicitly represent the current computation context.
+In #Core, this is instead achieved by making computation contexts a first-class construct, called _consumers_, in direct symmetry with _producers_, which represent the data that consumers act on.
 
 === Syntax
+Many constructs of #Fun can be found in #Core as well, but adapted for the symmetric structure of #Core.
+The naming conventions from @naming hold here, too.
+
 #definition(title: [Syntax of #Core])[
   #figure[
     #bnf(
@@ -418,31 +426,43 @@ equipped with integer arithmetic, top-level function definitions, and algebraic 
   ]
 ]
 
-In sequent-calculus-based languages, like #Core, we distinguish three different syntactic categories: producers, consumers and statements.
-Producers represent the data of a program, similar to regular terms.
-Consumers are a first-class representation of evaluation contexts.
-In contrast to #Fun, pattern matches and destructor invocations in #Core are separated from the value they act on, and appear as self-contained consumers.
-Computation happens in the third syntactic category of statements.
-Most importantly, in a _cut_ $cut(p, c)$ a producer and a consumer interact.
-The $mu$ and $tilde(mu)$ operators are used to abstract producers and consumers.
-#note[Awkward paragraph. Rephrase..]
+There are three separate syntactic categories in #Core: producers, consumers and statements.
+As already said earlier, producers make up the data of a program and consumers are first-class evaluation contexts.
+Statements are the place where actual computation happens.
+#note[I don't like this sentence:] This can mean a conditional, a function call, terminating the program, or a so-called _cut_ $cut(p, c)$ where a producer and a consumer interact.
 
-Note that top-level functions and codata destructors no longer specify a return type. Instead, an additional consumer argument, the _continuation_, takes its place.
-#note[More on that later...]
+Special about the sequent-calculus-based representation is the almost perfect symmetry of producers and consumers.
+Only the built-in integers and arithmetic on them #note[Explain why only +, but already in #Fun] do not have consumer counterparts.
 
-Special about the sequent-calculus-based representation is the symmetry of producers and consumers.
-In the typing environments, which also serve as parameter lists, both variables and covariables are tracked.
+But for algebraic (co)data types, the symmetry is very obvious.
+In contrast to #Fun, pattern matches and destructor invocations in #Core are separated from the value they act on and appear as independent consumers.
+This means there are constructors and copattern matches as producers for data and codata types, respectively,
+and corresponding pattern matches and destructors as consumers.
+
+Central to the $lambda mu tilde(mu)$-calculus, and thus #Core, are the abstraction operators $mu$ and $tilde(mu)$.
+The producer $mu alpha. s$ captures the current consumer and binds it to the covariable $alpha$ for the scope of its body $s$.
+Dually, the consumer $tilde(mu) x. s$ can also capture the current producer and bind it to the variable $x$ in $s$.
+#note[Example or further explanation needed.]
+
+In #Core, we have to keep track of both variable and covariable bindings in the typing environments, which also serve as parameter lists.
 Hence, each binding is annotated with its _chirality_, i.e. whether it is a producer or consumer.
-Also, since destructors no longer have a return type, the definition of data and codata types is perfectly symmetric.
+#note[But this is the same as in #Fun.]
+
+Another notable aspect of #Core is that top-level definitions and codata destructors no longer specify a return type.
+Instead, it is replaced by an additional consumer argument, the function's _continuation_.
+Returning from a function in #Core is then equivalent to passing a value to this continuation,
+and therefore a special case of the general interaction between producers and consumers.
+Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
 === Typing Rules
 @fig:scc:core:typing shows the typing rules for #Core.
 Again, the well-formedness of declarations is assumed implicitly, and the global context $Theta$ is omitted where possible.
 
-For every syntactic category, there is a typing judgment form: $Theta mid Gamma tack p :^prd tau$ means that $p$ is a producer of type $tau$ in the context $Gamma$.
-Analogously for $Theta mid Gamma tack c :^cns tau$ is $c$ a consumer of type $tau$.
-And $Theta mid Gamma tack s$ means that $s$ is a well-typed statement.
-Since statements represent computation, they do not have a return type.
+For every syntactic category, there is a typing judgment form:
+$Theta mid Gamma tack p :^prd tau$ means that $p$ is a producer of type $tau$ in the context $Gamma$
+and, analogously, $Theta mid Gamma tack c :^cns tau$ means that $c$ is a consumer of type $tau$.
+Lastly, $Theta mid Gamma tack s$ denotes that $s$ is a well-typed statement.
+Statements, representing computation, do not have return types themselves.
 
 #figure(
   kind: "Figure",
@@ -555,7 +575,26 @@ Since statements represent computation, they do not have a return type.
   )
 ] <fig:scc:core:typing>
 
-#inline-note[Explain rules. Symmetry. Etc.]
+Most of the rules exist similarly in #Fun (@fig:scc:fun:typing).
+We present all of them here to, again, highlight the symmetry of #Core. #note[And maybe for the contrast to later.]
+Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
+all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
+
+Concerning (co)data types, the only differences to the rules of #Fun are that (co)pattern matches now have statements as branch bodies
+and destructors no longer have a special return type.
+
+New are the two activation rules.
+The right activation rule #rn("Act-R") types a producer $mu alpha. s$ which abstracts over a consumer in the body statement.
+And, dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ which abstracts over a producer in its body.
+In both cases, the type of the abstracted (co)variable must match the type of the abstraction, but with switched chirality.
+
+The statement judgments differ from their corresponding #Fun rules in that they do not yield any return type.
+In #rn("IfZ") only the condition producer must have a specific type, i.e. $i64$, while the branches are now statements themselves.
+Calls to top-level definitions do not have a return type, so they become statements, too.
+Also, $EXIT$ is a good fit for a statement that does not return anything and only represents computation.
+
+The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
+This guarantees that they can meaningfully interact.
 
 == Translation from #Fun to #Core <scc:f2c>
 #figure(

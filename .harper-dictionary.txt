@@ -1,8 +1,10 @@
-Dually
 SCC
+chirality
 codata
+copattern
 covariable
 covariables
+dually
 font-math
 font-sans
 font-serif
