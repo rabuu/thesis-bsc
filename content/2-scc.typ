@@ -674,6 +674,58 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
 
 == The Focusing Transformation <scc:focus>
 
+=== The Focused Fragment
+#definition(title: [Focused #Core])[
+  #figure[
+    #bnf(
+      ($p$, "Producers"),
+      alt(
+        $var(x)$,
+        $mu alpha. s$,
+      ),
+      alt(
+        $n$,
+        $highlight(x) + highlight(x)$,
+      ),
+      alt(
+        $K(sigma)$,
+        $NEW br(D(Gamma) => s, ...)$,
+      ),
+
+      ($c$, "Consumers"),
+      alt(
+        $covar(alpha)$,
+        $tilde(mu) x. s$,
+      ),
+      alt(
+        $D(sigma)$,
+        $CASE br(K(Gamma) => s, ...)$,
+      ),
+
+      ($s$, "Statements"),
+      alt(
+        $cut(p, c)$,
+      ),
+      alt(
+        $IF sp highlight(x) equiv 0 br(s) ELSE br(s)$,
+      ),
+      alt(
+        $f(sigma)$,
+        $EXIT sp highlight(x)$,
+      ),
+
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp highlight(x)$,
+        $sigma, sp highlight(alpha)$,
+      ),
+    )
+  ]
+]
+
+=== The Transformation
+
 #figure(
   kind: "Figure",
   supplement: "Figure",
@@ -745,6 +797,48 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
 ]
 
 == The Shrinking Transformation <scc:shrink>
+
+=== The Shrunk Fragment
+
+#definition(title: [Shrunk #Core])[
+  #figure[
+    #bnf(
+      ($s$, "Statements"),
+      alt(
+        $cut(K(sigma), alpha)$,
+        $cut(K(sigma), tilde(mu) x. s)$,
+        $cut(x, D(sigma))$,
+        $cut(mu alpha. s, D(sigma))$,
+      ),
+      alt(
+        $cut(x, CASE br(K(Gamma) => s, ...))$,
+        $cut(mu alpha. s, CASE br(K(Gamma) => s, ...))$,
+      ),
+      alt(
+        $cut(NEW br(D(Gamma) => s, ...), alpha)$,
+        $cut(NEW br(D(Gamma) => s, ...), tilde(mu)x. s)$,
+      ),
+      alt(
+        $cut(n, tilde(mu)x. s)$,
+        $cut(x + x, tilde(mu)x. s)$,
+      ),
+      alt(
+        $IF x equiv 0 br(s) ELSE br(s)$,
+        $f(sigma)$,
+        $EXIT x$,
+      ),
+
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp x$,
+        $sigma, sp alpha$,
+      ),
+    )
+  ]
+]
+
+=== The Transformation
 
 + Inline all possible pairs of producers and consumers in cuts.
 

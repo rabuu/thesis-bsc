@@ -28,3 +28,4 @@
 // math annotations
 #let mark = deps.mannot.markhl.with(color: yellow)
 #let erase = mannot-mark-fixed.with(color: gray)
+#let highlight = deps.mannot.markhl.with(color: gray, outset: 0.2em)
