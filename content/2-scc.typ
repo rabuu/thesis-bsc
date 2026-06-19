@@ -597,6 +597,9 @@ The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cu
 This guarantees that they can meaningfully interact.
 
 == Translation from #Fun to #Core <scc:f2c>
+Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
+this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
+
 #figure(
   kind: "Figure",
   supplement: "Figure",
