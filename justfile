@@ -5,15 +5,20 @@ SYNC_PATH := "~/uni/ba/thesis.pdf"
 
 alias c := compile
 alias w := watch
+alias e := edit
 alias o := open
 alias wo := watch-open
 alias fmt := format
+alias s := sync
 
 compile:
 	typst compile {{ENTRY}}
 
 watch:
 	typst watch {{ENTRY}}
+
+edit:
+	$EDITOR {{ENTRY}}
 
 open:
 	{{VIEWER}} {{ARTIFACT}} &
