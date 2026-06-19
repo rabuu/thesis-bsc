@@ -76,7 +76,7 @@ where each box represents a compiler stage and the arrows represent the translat
 The following sections will explain every stage and translation step-by-step.
 
 == The Surface Language #Fun <scc:fun>
-Every compiler needs a surface language: the language of its source programs, typically written by a human #footnote[Or, increasingly, by a large language model.].
+Every compiler needs a surface language: the language of its source programs, typically written by a human #footnote[Or, increasingly, by some large language model. #note[Weird, remove this.]].
 In the case of the SCC, this language is called #Fun @Binder2024grokking.
 It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
 #Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it functions.
