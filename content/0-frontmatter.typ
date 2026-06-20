@@ -52,4 +52,4 @@ In this work, these improvements are only applied specifically to continuations,
 #show outline.entry.where(level: 1): set block(above: 1.35em)
 #show outline.entry.where(level: 1): set text(weight: "semibold")
 
-#outline(depth: 2)
+#outline(depth: 3)
