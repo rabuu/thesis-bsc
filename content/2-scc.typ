@@ -161,7 +161,7 @@ With these conventions in place, we can define the syntax of the surface languag
       ),
     )
   ]
-]
+] <def:scc:fun>
 
 #Fun supports standard features such as top-level (first-order) functions, variables, simple arithmetic and conditional expressions, and (non-recursive) let-bindings.
 

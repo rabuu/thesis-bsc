@@ -9,49 +9,54 @@
 #todo[TODO]
 
 == Restricting the Surface Language #Fun
+As we have seen, correctly identifying which continuations are used linearly is much harder for programs using non-local control flow.
+Therefore, we restrict the optimization that this thesis explores to a certain subset of #Fun programs,
+i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
+
+This restrictions leaves us with a less interesting but much more predictable language where control flow is completely implicit.
+And because of this implicitness we can be sure that every continuation is perfectly linear.
 
 === Syntax
-#figure[
-  #bnf(
-    ($p$, "Producers / Terms"),
-    alt(
-      var($x$),
-      $LET var(x) = p; sp p$,
-      $f(sigma)$,
-    ),
-    alt(
-      $n$,
-      $p + p$,
-      $IF p equiv 0 br(p) ELSE br(p)$,
-    ),
-    alt(
-      $K(sigma)$,
-      $p.CASE br(K(Gamma) => p, ...)$,
-    ),
-    alt(
-      $p.D(sigma)$,
-      $NEW br(D(Gamma) => p, ...)$,
-    ),
-    $EXIT p$,
-    erase(alt(
-      $LABEL alpha br(p)$,
-      $GOTO alpha sp (p)$,
-    )),
+The syntax of this restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
+By removing $LABEL$ and $GOTO$ from the language, we also lose the need for explicit covariables, and hence consumers in general.
 
-    ($sigma$, "Arguments"),
-    alt(
-      $empty$,
-      $sigma, sp p$,
-      erase($sigma, sp c$),
-    ),
+#definition(title: [Restricted #Fun])[
+  #figure[
+    #bnf(
+      ($p$, "Producers / Terms"),
+      alt(
+        var($x$),
+        $LET var(x) = p; sp p$,
+        $f(sigma)$,
+      ),
+      alt(
+        $n$,
+        $p + p$,
+        $IF p equiv 0 br(p) ELSE br(p)$,
+      ),
+      alt(
+        $K(sigma)$,
+        $p.CASE br(K(Gamma) => p, ...)$,
+      ),
+      alt(
+        $p.D(sigma)$,
+        $NEW br(D(Gamma) => p, ...)$,
+      ),
+      $EXIT p$,
 
-    ($Gamma$, "Typing Contexts"),
-    alt(
-      $empty$,
-      $Gamma, sp x : tau$,
-      erase($Gamma, sp alpha :^cns tau$),
-    ),
-  )
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp p$,
+      ),
+
+      ($Gamma$, "Typing Contexts"),
+      alt(
+        $empty$,
+        $Gamma, sp x : tau$,
+      ),
+    )
+  ]
 ]
 
 === Intuitionistic!
