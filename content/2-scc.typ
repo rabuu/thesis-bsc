@@ -1078,9 +1078,12 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
 ]
 
 == Code Generation <sec:scc:codegen>
+The final step of the SCC is code generation, translating #AxCut into native machine code.
+For the purposes of this thesis, #RISC-V @Waterman2014riscv was chosen as the target architecture due to its simplicity.
+The translation works nearly identically for other architectures since it only relies on ubiquitous assembly concepts and does not apply any techniques or optimizations that depend on a particular instruction set.
 
 === The Target Language #RISC-V
-We use the following subset of #RISC-V @Waterman2014riscv as target for the code generation.
+This is the subset of #RISC-V used as target of the code generation:
 
 #definition(title: [Syntax of #RISC-V])[
   #figure[
@@ -1135,6 +1138,29 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
     )
   ]
 ] <def:scc:riscv>
+
+In #RISC-V, there are 32 registers, each containing one word.
+The register #reg(0) always contains the value 0, all other registers can be used freely.
+A program consists of a list of instructions.
+Labels can be attached to instructions and then be referenced by other instructions.
+
+With $ADD$ and $ADDI$, the two values of the second and third operand are added:
+For $ADD$, that is the contents of two registers, for $ADDI$ the contents of a register and an immediate value.
+The sum is put into the register specified by the first operand.
+$MV$ copies the contents of the second register into the first.
+The $LI$ and $LA$ instructions directly load values into a register.
+For $LI$, that is an immediate integer value, and for $LA$ an instruction address, given by a label.
+
+$LW$ and $SW$ are responsible for memory access.
+Both of them compute a memory address by adding an offset, given by the immediate operand, to the value in the third operand's register.
+Then, $LW$ loads the memory word at this address into its first operand's register, and $SW$ writes the contents of the first register to the memory address.
+
+There are three instructions for jumping.
+The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
+The conditional branching instruction $BEQ$ compares the values of its two register operands: if they are equal, it jumps to the given destination, otherwise the execution just continues.
+
+Lastly, $ECALL$ is used to make a system call.
+Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
 === Overview
 #inline-note[
