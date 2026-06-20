@@ -323,7 +323,7 @@ Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, a
 
 == The High-Level Intermediate Language #Core <scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
-It is an extension of the $lambda mu tilde(mu)$-calculus @Curien2000, a term assignment system for classical sequent calculus @Gentzen1935a,
+It is an extension of the $lambda mu tilde(mu)$-calculus @Curien2000, a term assignment system for Gentzen's classical sequent calculus LK @Gentzen1935a,
 equipped with integer arithmetic, top-level function definitions, and algebraic data and codata types.
 
 While remaining at a relatively high level of abstraction, #Core makes the order and structure of computation very explicit by reifying control flow in the language.
