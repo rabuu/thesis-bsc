@@ -62,102 +62,129 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
 === Intuitionistic!
 #inline-note[Maybe a section about how Fun now loses classical expression and gets intuitionistic.]
 
+=== Typing?
+#inline-note[This boring but I should add some note.]
+
 == Restricting #Core
-#todo[TODO]
+The goal is now to retain the information about linear continuations that we gained by restricting #Fun,
+to finally use it to optimize code generation.
+But in #Core there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply forbid.
+Instead, all continuations are explicit now, and we must structurally ensure that they are used linearly.
+
+The key idea here is that, coming from #Fun, every continuation and consumer must be linear anyway,
+since in #Fun there is just no way to construct something that would result in a nonlinear usage of consumers.
+
+In theory, it would suffice to keep #Core and the translation to it as is, remembering that every continuation must be linear.
+But to make the correctness of the following optimization obvious,
+we identify the subset of #Core that can result from the restricted version of #Fun.
 
 === Syntax
-#figure[
-  #bnf(
-    ($p$, "Producers"),
-    alt(
-      $var(x)$,
-      $mu alpha. s$,
-    ),
-    alt(
-      $n$,
-      $p + p$,
-    ),
-    alt(
-      $K(sigma)$,
-      $NEW br(D(Gamma; alpha :^cns tau) => s, ...)$,
-    ),
+We will show in @sec:lin:f2c that restricted #Fun can be translated to the following restricted fragment of #Core.
+Note that it is a strict subset of @def:scc:core.
 
-    ($c$, "Consumers"),
-    alt(
-      $covar(alpha)$,
-      $tilde(mu) x. s$,
-    ),
-    alt(
-      $D(sigma; c)$,
-      $CASE br(K(Gamma) => s, ...)$,
-    ),
+#definition(title: [Restricted #Core])[
+  #figure[
+    #bnf(
+      ($p$, "Producers"),
+      alt(
+        $var(x)$,
+        $mu alpha. s$,
+      ),
+      alt(
+        $n$,
+        $p + p$,
+      ),
+      alt(
+        $K(sigma)$,
+        $NEW br(D(Gamma, alpha :^cns tau) => s, ...)$,
+      ),
 
-    ($s$, "Statements"),
-    alt(
-      $cut(p, c)$,
-    ),
-    alt(
-      $IF p equiv 0 br(s) ELSE br(s)$,
-    ),
-    alt(
-      $f(sigma; c)$,
-      $EXIT p$,
-    ),
+      ($c$, "Consumers"),
+      alt(
+        $covar(alpha)$,
+        $tilde(mu) x. s$,
+      ),
+      alt(
+        $D(sigma, c)$,
+        $CASE br(K(Gamma) => s, ...)$,
+      ),
 
-    ($tau$, "Types"),
-    alt(
-      $i64$,
-      $T$,
-    ),
+      ($s$, "Statements"),
+      alt(
+        $cut(p, c)$,
+      ),
+      alt(
+        $IF p equiv 0 br(s) ELSE br(s)$,
+      ),
+      alt(
+        $f(sigma, c)$,
+        $EXIT p$,
+      ),
 
-    ($chi$, "Chirality"),
-    alt(
-      $prd$,
-      $cns$,
-    ),
+      ($tau$, "Types"),
+      alt(
+        $i64$,
+        $T$,
+      ),
 
-    ($sigma$, "Arguments (Producer)"),
-    alt(
-      $empty$,
-      $sigma, sp p$,
-    ),
+      ($chi$, "Chirality"),
+      alt(
+        $prd$,
+        $cns$,
+      ),
 
-    ($Gamma$, "Typing Contexts (Producer)"),
-    alt(
-      $empty$,
-      $Gamma, sp x :^prd tau$,
-    ),
+      ($sigma$, "Arguments (Producer)"),
+      alt(
+        $empty$,
+        $sigma, sp p$,
+      ),
 
-    ($Delta$, "Typing Contexts (Consumer)"),
-    alt(
-      $empty$,
-      $alpha :^cns tau$,
-    ),
+      ($Gamma$, "Typing Contexts (Producer)"),
+      alt(
+        $empty$,
+        $Gamma, sp x :^prd tau$,
+      ),
 
-    ($pi$, "Polarity"),
-    alt(
-      $DATA$,
-      $CODATA$,
-    ),
+      ($Delta$, "Typing Contexts (Consumer)"),
+      alt(
+        $empty$,
+        $alpha :^cns tau$,
+      ),
 
-    ($delta$, "Declarations"),
-    alt(
-      $DEF f(Gamma; Delta) br(s)$,
-    ),
-    alt(
-      $DATA sp T br(K(Gamma), ...)$,
-    ),
-    alt(
-      $CODATA sp T br(D(Gamma;Delta), ...)$,
-    ),
+      ($pi$, "Polarity"),
+      alt(
+        $DATA$,
+        $CODATA$,
+      ),
 
-    ($Theta$, "Programs"),
-    alt(
-      $empty$,
-      $Theta, sp delta$,
-    ),
-  )
+      ($delta$, "Declarations"),
+      alt(
+        $DEF f(Gamma, Delta) br(s)$,
+      ),
+      alt(
+        $DATA sp T br(K(Gamma), ...)$,
+      ),
+      alt(
+        $CODATA sp T br(D(Gamma, Delta), ...)$,
+      ),
+
+      ($Theta$, "Programs"),
+      alt(
+        $empty$,
+        $Theta, sp delta$,
+      ),
+    )
+  ]
 ]
+
+In #Core programs that are translated from the restricted fragment of #Fun,
+all covariables and consumer arguments must stem from the translation process.
+In argument and parameter lists, they are exactly the added arguments that correspond to the implicit continuation in #Fun.
+
+Here, this is made explicit by splitting arguments, parameters, and typing contexts into parts for producers and consumers, respectively.
+In this restricted version of #Core, every top-level definition --- except the special entry point `main` which is omitted here ---
+and every destructor has exactly one consumer argument at the end.
+And constructors cannot have any consumer field.
 
 === Typing Rules
 #figure(
@@ -165,7 +192,7 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
   supplement: "Figure",
   caption: [Typing rules for #Core.],
 )[
-  #def-box[Producer Typing: $Theta mid Gamma;Delta tack p :^prd tau$]
+  #def-box[Producer Typing: $Theta mid Gamma, Delta tack p :^prd tau$]
 
   #rule-set(
     manual-grouping: true,
@@ -173,101 +200,101 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
       prooftree(rule(
         name: rn("Var"),
         $x :^prd tau in Gamma$,
-        $Gamma;Delta tack x :^prd tau$,
+        $Gamma, Delta tack x :^prd tau$,
       )),
       prooftree(rule(
         name: rn("Act-R"),
-        $Gamma; alpha :^cns tau tack s$,
-        $Gamma; empty tack mu a. s :^prd tau$,
+        $Gamma, alpha :^cns tau tack s$,
+        $Gamma tack mu a. s :^prd tau$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Lit"),
-        $Gamma;Delta tack n :^prd i64$,
+        $Gamma, Delta tack n :^prd i64$,
       )),
       prooftree(rule(
         name: rn("Plus"),
-        $Gamma;Delta_1 tack p_1 :^prd i64$,
-        $Gamma;Delta_2 tack p_2 :^prd i64$,
-        $Gamma;Delta_1 plus.o Delta_2 tack p_1 + p_2 :^prd i64$,
+        $Gamma, Delta_1 tack p_1 :^prd i64$,
+        $Gamma, Delta_2 tack p_2 :^prd i64$,
+        $Gamma, Delta_1 plus.o Delta_2 tack p_1 + p_2 :^prd i64$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Ctor"),
         $DATA T br(..., K(Gamma'), ...) in Theta$,
-        $Theta mid Gamma;Delta tack sigma : Gamma'$,
-        $Theta mid Gamma;Delta tack K(sigma) :^prd T$,
+        $Theta mid Gamma, Delta tack sigma : Gamma'$,
+        $Theta mid Gamma, Delta tack K(sigma) :^prd T$,
       )),
       prooftree(rule(
         name: rn("New"),
-        $CODATA T br(D_1(Gamma_1;alpha :^cns tau), ...) in Theta$,
-        $forall i: Gamma, Gamma_i;alpha :^cns tau tack s_i$,
-        $Theta mid Gamma;empty tack NEW br(D_1(Gamma_1; alpha :^cns tau) => s_1, ...) :^prd T$,
+        $CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau), ...) in Theta$,
+        $forall i: Gamma, Gamma_i, alpha_i :^cns tau tack s_i$,
+        $Theta mid Gamma tack NEW br(D_1(Gamma_1, alpha_1 :^cns tau) => s_1, ...) :^prd T$,
       )),
     ),
   )
 
-  #def-box[Consumer Typing: $Theta mid Gamma;Delta tack c :^cns tau$]
+  #def-box[Consumer Typing: $Theta mid Gamma, Delta tack c :^cns tau$]
 
   #rule-set(
     manual-grouping: true,
     (
       prooftree(rule(
         name: rn("Covar"),
-        $Gamma; alpha :^cns tau tack alpha :^cns tau$,
+        $Gamma, alpha :^cns tau tack alpha :^cns tau$,
       )),
       prooftree(rule(
         name: rn("Act-L"),
-        $Gamma, x :^prd tau; Delta tack s$,
-        $Gamma;Delta tack tilde(mu)x. s :^cns tau$,
+        $Gamma, x :^prd tau, Delta tack s$,
+        $Gamma, Delta tack tilde(mu)x. s :^cns tau$,
       )),
     ),
     (
       prooftree(rule(
         name: rn("Dtor"),
-        $CODATA T br(..., D(Gamma'; alpha :^cns tau), ...) in Theta$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma; Delta tack c :^cns tau$,
-        $Theta mid Gamma; Delta tack D(sigma;c) :^cns T$,
+        $CODATA T br(..., D(Gamma', alpha :^cns tau), ...) in Theta$,
+        $Theta mid Gamma, Delta_1 tack sigma : Gamma'$,
+        $Theta mid Gamma, Delta_2 tack c :^cns tau$,
+        $Theta mid Gamma, Delta_1 plus.o Delta_2 tack D(sigma, c) :^cns T$,
       )),
       prooftree(rule(
         name: rn("Case"),
         $DATA T br(K_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i; Delta tack s_i$,
-        $Theta mid Gamma; Delta tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+        $forall i: Gamma, Gamma_i, Delta tack s_i$,
+        $Theta mid Gamma, Delta tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
       )),
     ),
   )
 
-  #def-box[Statement Typing: $Theta mid Gamma; Delta tack s$]
+  #def-box[Statement Typing: $Theta mid Gamma, Delta tack s$]
 
   #rule-set(
     prooftree(rule(
       name: rn("Cut"),
-      $Gamma; Delta_1 tack p :^prd tau$,
-      $Gamma; Delta_2 tack c :^cns tau$,
-      $Gamma; Delta_1 plus.o Delta_2 tack cut(p, c)$,
+      $Gamma, Delta_1 tack p :^prd tau$,
+      $Gamma, Delta_2 tack c :^cns tau$,
+      $Gamma, Delta_1 plus.o Delta_2 tack cut(p, c)$,
     )),
     prooftree(rule(
       name: rn("IfZ"),
-      $Gamma; Delta_1 tack p :^prd i64$,
-      $Gamma; Delta_2 tack s_1$,
-      $Gamma; Delta_2 tack s_2$,
-      $Gamma; Delta_1 plus.o Delta_2 tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+      $Gamma, Delta_1 tack p :^prd i64$,
+      $Gamma, Delta_2 tack s_1$,
+      $Gamma, Delta_2 tack s_2$,
+      $Gamma, Delta_1 plus.o Delta_2 tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
     )),
     prooftree(rule(
       name: rn("Call"),
-      $DEF f(Gamma'; alpha :^cns tau) br(...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma; Delta tack c :^cns tau$,
-      $Theta mid Gamma; Delta tack f(sigma; c)$,
+      $DEF f(Gamma', alpha :^cns tau) br(...) in Theta$,
+      $Theta mid Gamma, Delta_1 tack sigma : Gamma'$,
+      $Theta mid Gamma, Delta_2 tack c :^cns tau$,
+      $Theta mid Gamma, Delta_1 plus.o Delta_2 tack f(sigma, c)$,
     )),
     prooftree(rule(
       name: rn("Exit"),
-      $Gamma; Delta tack p :^prd i64$,
-      $Gamma; Delta tack EXIT p$,
+      $Gamma, Delta tack p :^prd i64$,
+      $Gamma, Delta tack EXIT p$,
     )),
   )
 ]
@@ -277,7 +304,7 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
 === Linearity & Intuitionistic
 #inline-note[This resembles Gentzen's LJ :O]
 
-== Translation from #Fun to #Core
+== Translation from #Fun to #Core <sec:lin:f2c>
 #todo[TODO]
 
 == Focusing & Shrinking

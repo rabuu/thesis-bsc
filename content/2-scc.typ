@@ -424,7 +424,7 @@ The naming conventions from @naming hold here, too.
       ),
     )
   ]
-]
+] <def:scc:core>
 
 There are three separate syntactic categories in #Core: producers, consumers and statements.
 As already said earlier, producers make up the data of a program and consumers are first-class evaluation contexts.
