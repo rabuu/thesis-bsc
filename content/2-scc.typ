@@ -1162,84 +1162,132 @@ The conditional branching instruction $BEQ$ compares the values of its two regis
 Lastly, $ECALL$ is used to make a system call.
 Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
-=== Overview
+=== The Model
 #inline-note[
-  - Definitions are Labels, Calls are Direct Jumps
-  - Explicit Substitutions are Parallel Moves
-  - Externs are System Calls and Hardware Instructions
-  - Constructors are Tags, Fields are Memory Blocks, Pattern Matches are Jump Tables
-  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
-  - $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
+  - $Gamma$ is registers
+  - A variable living in $Gamma$ takes up two registers
+  - $REG_1$, $REG_2$
+  - Memory blocks and their layout
   - Constant-time lazy reference counting @Lam2024
-  - Share increases refcount, erase decreases refcount
 ]
 
 === Translation from #AxCut to #RISC-V
-#definition(title: "Auxiliary Definitions")[
-  - $REG_1 sp v$ is the first register of a variable $v$.
-  - $REG_2 sp v$ is the second register of a variable $v$.
-  - $INDEX X$ is the index of the constructor/destructor $X$ in its signature, multiplied by four.
-  - $OFFSET_1 sp v$ is the first memory offset for $v$ in the environment.
-  - $OFFSET_2 sp v$ is the second memory offset for $v$ in the environment.
-  - #todo[$MOVE [Gamma' := sigma]$ is ...]
-  - #todo[...]
-  - $TEMP$ is a reserved register for temporaries.
-  - $TODO$ is a reserved register for the lazy free list.
-  - $HEAP$ is a reserved register for the linear free list.
-]
+The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
+Each #AxCut construct is explained separately.
 
-#figure(
-  kind: "Figure",
-  supplement: "Figure",
-  caption: [Translation from #AxCut to #RISC-V.],
-  block(width: 100%)[
-    #set math.lr(size: 1em)
-
-    #def-box[$a2m(dot) : "Definition"_AxCut -> I^*$]
-    $
-      a2m(DEF f(Gamma) br(s)) & := && f: a2m(s)
-    $
-
-    #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
-    $
-      a2m(f(Gamma)) & := && JUMP f \
-      a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
-      & && ERASE [Gamma' := sigma] \
-      & && MOVE [Gamma' := sigma] \
-      & && a2m(s) \
-      a2m(EXIT v) & := && LI #reg(17) #imm(93) \
-      & && MV #reg(10) (REG_2 sp v) \
-      & && ECALL \
-      a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
-      & && a2m(s) \
-      a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 v_1) sp (REG_2 sp v_2) \
-      & && a2m(s) \
-      a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
-      & && #hide[$l:$] a2m(s_2) \
-      & && l: a2m(s_1) \
-      a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-      & && LI (REG_2 sp v) sp (INDEX X) \
-      & && a2m(s) \
-      a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-      & && LA (REG_2 sp v) sp l \
-      & && a2m(s) \
-      & && l: VTABLE b sp Gamma_0 \
-      a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
-      & && l: JTABLE b sp Gamma \
-      a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
-    $
-  ],
-) <fig:scc:a2m>
-
-=== Share & Erase
 #inline-note[
-  I think this can be skipped or moved to an appendix.
+  TODO:
+  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
+  - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
+  - Share increases refcount, erase decreases refcount
 ]
 
-=== Virtual Tables & Jump Tables
-#todo[TODO]
+==== Programs, Top-Level Definitions, and Calls
+An #AxCut program is a list of type declarations and top-level definitions.
+Since type declarations have no computational relevance, only the definitions are translated to machine code.
+This is as easy as attaching the definition label to the first instruction of the translated body statement.
+$ a2m(DEF f(Gamma) br(s)) & := && f: a2m(s) $
+A call to top-level definition can now be translated as an unconditional jump to the definition's label.
+$ a2m(f(Gamma)) := JUMP f $
+The parameters $Gamma$ are just the current state of the registers and thus handled by #AxCut's $SUBSTITUTE$ statement.
 
-=== Memory Management
+==== Substitutions
+The current context in #AxCut corresponds to the register values in the machine.
+It is the job of the $SUBSTITUTE$ statements to prepare the registers for the subsequent statements which means reordering the contents of the registers.
+If this involves dropping or duplicating variables that point to heap-allocated data, it must also modify the reference count of that data.
+
+The reordering is achieved by a parallel moves algorithm @Rideau2008parallelmoves written as $MOVE$ that is not further explained here.
+
+#inline-note[$SHARE$ and $ERASE$]
+
+$
+  a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
+                                          &    && ERASE [Gamma' := sigma] \
+                                          &    && MOVE [Gamma' := sigma] \
+                                          &    && a2m(s)
+$
+
+==== Machine Integers, Conditionals, and Termination
+The use of extern constructs translates to hardware instructions and system calls.
+For integer literals and arithmetic expressions, this is a simple application of the primitive machine instructions.
+$
+  a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
+  & && a2m(s) \
+  a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 sp v_1) sp (REG_2 sp v_2) \
+  & && a2m(s) \
+$
+
+An $IF$ statement in #AxCut translates to a conditional branch.
+For that, we introduce a fresh label $l$.
+$
+  a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
+                                         &    && #hide[$l:$] a2m(s_2) \
+                                         &    && l: a2m(s_1) \
+$
+
+And lastly, the $EXIT$ statement results in a system call to terminate the program.
+The exact requirements for a system call depend on the operating system.
+This is an exemplary translation for the Linux Kernel which requires the system call number #imm(93) in #reg(17) and the argument in #reg(10).
+$
+  a2m(EXIT v) & := && LI #reg(17) #imm(93) \
+              &    && MV #reg(10) (REG_2 sp v) \
+              &    && ECALL \
+$
+
+==== Let-Bindings and Pattern Matches
+A $LET$-binding in #AxCut binds a constructor or destructor to a variable.
+In the machine code, the fields of the constructor (or destructor) are stored in newly allocated memory using $STORE$ which is explained later in @sec:scc:codegen:mem.
+The registers that were occupied by those fields are free use to again.
+Instead, a new variable is created in the registers. It consists of a pointer to the stored memory block and the index of the constructor (or destructor) tag.
+$
+  a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+                              &    && LI (REG_2 sp v) sp (INDEX X) \
+                              &    && a2m(s)
+$
+The index of the constructor (or destructor) is an offset value for the jump table that is explained next.
+It is calculated by multiplying the position of the constructor (or destructor) in its type declaration by four.
+
+$LET$-bound variables in #AxCut are consumed by pattern matches using the $SWITCH$ statement.
+The translation function turns a $SWITCH$ statement into an indirect jump into a so-called jump table.
+
+Jump tables are defined as follows. Here the labels $l_i$ are fresh.
+$
+  JTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma & := && JUMP l_1 \
+  &&& JUMP l_2 \
+  &&& ... \
+  &&& JTABLEB { X_1(Gamma_1) => s_1, ... } sp Gamma sp (l_1, l_2, ...) \
+  JTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma sp (l_1, l_2, ...) & := && l_1: LOAD (REG_1 sp x) sp Gamma_1 \
+  &&& #hide[$l_1:$] a2m(s_1) \
+  &&& JTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
+$
+
+With this definition of jump tables, the translation of $SWITCH$ statements is easy.
+$
+  a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
+                     &    && l: JTABLE b sp Gamma
+$
+The variable which the pattern match acts on has two components:
+the pointer to the fields of the constructor or destructor that were stored in memory and the tag index.
+Firstly, the tag index is used to get to the correct $JUMP$ instruction, and then the jump table itself is generated.
+In every branch the fields are loaded back into the registers. This is done using a the variable that stand after $Gamma$, above called $x$, which is exactly the variable $v$ which holds the memory pointer.
+
+#inline-note[This needs more work. Examples would be good.]
+
+==== Objects and Invocations
+The $CREATE$ instruction is similar to the $LET$ instruction in that it also creates a new variable.
+But in contrast to binding a constructor or destructor to a variable, it creates a closure object.
+
+#inline-note[Unfinished!]
+
+$
+  a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+                                   &    && LA (REG_2 sp v) sp l \
+                                   &    && a2m(s) \
+                                   &    && l: VTABLE b sp Gamma_0 \
+         a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+$
+
+=== Memory Management <sec:scc:codegen:mem>
 #figure[
   $
     LOAD r sp Gamma & := && RELEASE r \

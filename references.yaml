@@ -224,6 +224,24 @@ Reynolds1972letcc:
     parent:
       type: proceedings
       title: ACM '72
+Rideau2008parallelmoves:
+  type: article
+  title: 'Tilting at Windmills with Coq: Formal Verification of a Compilation Algorithm for Parallel Moves'
+  author:
+  - Rideau, Laurence
+  - Serpette, Bernard Paul
+  - Leroy, Xavier
+  date: 2008-05-01
+  page-range: 307-326
+  url: https://doi.org/10.1007/s10817-007-9096-8
+  serial-number:
+    doi: 10.1007/s10817-007-9096-8
+    issn: 1573-0670
+  parent:
+    type: periodical
+    title: Journal of Automated Reasoning
+    issue: 4
+    volume: 40
 Schuster2025:
   type: article
   title: 'Compiling Classical Sequent Calculus to Stock Hardware: The Duality of Compilation'
