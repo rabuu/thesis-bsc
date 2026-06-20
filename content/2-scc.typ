@@ -441,7 +441,7 @@ and corresponding pattern matches and destructors as consumers.
 
 Central to the $lambda mu tilde(mu)$-calculus, and thus #Core, are the abstraction operators $mu$ and $tilde(mu)$.
 The producer $mu alpha. s$ captures the current consumer and binds it to the covariable $alpha$ for the scope of its body $s$.
-Dually, the consumer $tilde(mu) x. s$ can also capture the current producer and bind it to the variable $x$ in $s$.
+Dually, the consumer $tilde(mu) x. s$ captures the current producer and binds it to the variable $x$ in $s$.
 #note[Example or further explanation needed.]
 
 In #Core, we have to keep track of both variable and covariable bindings in the typing environments, which also serve as parameter lists.
@@ -589,16 +589,17 @@ And, dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x
 In both cases, the type of the abstracted (co)variable must match the type of the abstraction, but with switched chirality.
 
 The statement judgments differ from their corresponding #Fun rules in that they do not yield any return type.
-In #rn("IfZ") only the condition producer must have a specific type, i.e. $i64$, while the branches are now statements themselves.
+In #rn("IfZ") only the condition producer must have a specific type, namely $i64$, while the branches are now statements themselves.
 Calls to top-level definitions do not have a return type, so they become statements, too.
-Also, $EXIT$ is a good fit for a statement that does not return anything and only represents computation.
-
+In contrast to #Fun, where the $EXIT$ expression has an arbitrary type, in #Core it is a statement because it represents a computation.
 The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
 This guarantees that they can meaningfully interact.
 
 == Translation from #Fun to #Core <scc:f2c>
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
 this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
+
+#inline-note[Longer introduction. bindvals.]
 
 #figure(
   kind: "Figure",
