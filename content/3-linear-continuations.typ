@@ -121,18 +121,6 @@ Note that it is a strict subset of @def:scc:core.
         $EXIT p$,
       ),
 
-      ($tau$, "Types"),
-      alt(
-        $i64$,
-        $T$,
-      ),
-
-      ($chi$, "Chirality"),
-      alt(
-        $prd$,
-        $cns$,
-      ),
-
       ($sigma$, "Arguments (Producer)"),
       alt(
         $empty$,
@@ -151,12 +139,6 @@ Note that it is a strict subset of @def:scc:core.
         $alpha :^cns tau$,
       ),
 
-      ($pi$, "Polarity"),
-      alt(
-        $DATA$,
-        $CODATA$,
-      ),
-
       ($delta$, "Declarations"),
       alt(
         $DEF f(Gamma, Delta) br(s)$,
@@ -166,12 +148,6 @@ Note that it is a strict subset of @def:scc:core.
       ),
       alt(
         $CODATA sp T br(D(Gamma, Delta), ...)$,
-      ),
-
-      ($Theta$, "Programs"),
-      alt(
-        $empty$,
-        $Theta, sp delta$,
       ),
     )
   ]
@@ -315,12 +291,6 @@ And constructors cannot have any consumer field.
 === Syntax
 #figure[
   #bnf(
-    ($v$, "(Co)Variables"),
-    alt(
-      $var(x)$,
-      $covar(alpha)$,
-    ),
-
     ($q$, "Quantities"),
     alt(
       $omega$,
@@ -328,22 +298,11 @@ And constructors cannot have any consumer field.
     ),
 
     ($s$, "Statements"),
-    $mark(LET_q) v = X(sigma); sp s$,
-    $mark(CREATE_q) v = Gamma br(X(Gamma) => s, ...); sp s$,
-    $mark(SWITCH_q) v br(X(Gamma) => s, ...)$,
+    $...$,
+    $highlight(LET_q) sp v = X(sigma); sp s$,
+    $highlight(CREATE_q) sp v = Gamma br(X(Gamma) => s, ...); sp s$,
+    $highlight(SWITCH_q) sp v br(X(Gamma) => s, ...)$,
     $INVOKE v sp X(sigma)$,
-    $LIT v <- n; sp s$,
-    $v <- v + v; sp s$,
-    $IF v equiv 0 br(s) ELSE br(s)$,
-    $f(sigma)$,
-    $EXIT v$,
-    $SUBSTITUTE[Gamma := sigma]; sp s$,
-
-    ($sigma$, "Arguments"),
-    alt(
-      $empty$,
-      $sigma, sp v$,
-    ),
   )
 ]
 
