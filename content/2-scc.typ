@@ -332,7 +332,7 @@ which introduces functions that explicitly represent the current computation con
 In #Core, this is instead achieved by making computation contexts a first-class construct, called _consumers_, in direct symmetry with _producers_, which represent the data that consumers act on.
 
 === Syntax
-Many constructs of #Fun can be found in #Core as well, but adapted for the symmetric structure of #Core.
+Many constructs of #Fun can be found in #Core as well, but adapted for its symmetric structure.
 The naming conventions from @naming hold here, too.
 
 #definition(title: [Syntax of #Core])[
