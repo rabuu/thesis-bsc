@@ -1,6 +1,6 @@
 #import "/lib/lib.typ": *
 
-= Optimizing Code Generation
+= Optimizing Code Generation <ch:codegen>
 #inline-note[Chapter Introduction...]
 
 == The Key Observation

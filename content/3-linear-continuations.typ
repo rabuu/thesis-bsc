@@ -1,12 +1,23 @@
 #import "/lib/lib.typ": *
 
 = Linear Continuations <ch:lin>
+The goal of this chapter is to identify linear continuations throughout all stages of the SCC.
+We do this to, ultimately, improve the quality of the generated machine code which is described in @ch:codegen.
+But before that, we need to collect the information when exactly this optimization is applicable.
+
+The SCC handles control flow in a very general way by leveraging the symmetric properties of data and computation contexts inherited from sequent calculus.
+This naturally allows for very powerful and flexible handling of control flow.
+The idea of this thesis is that in many program this power and flexibility is not needed because control flow is simple.
+And we do not want to sacrifice performance and memory usage in these cases.
+
+#inline-note[
+  Example in #AxCut might be nice.
+]
 
 == What is a Continuation?
-#todo[TODO]
+Very broadly speaking, a continuation is something that answers to the question "what happens next?".
 
-== Which Continuations are Linear?
-#todo[TODO]
+#inline-note[Maybe an example for every stage?]
 
 == Restricting the Surface Language #Fun
 As we have seen, correctly identifying which continuations are used linearly is much harder for programs using non-local control flow.
@@ -15,8 +26,6 @@ i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
 
 This restrictions leaves us with a less interesting but much more predictable language where control flow is completely implicit.
 And because of this implicitness we can be sure that every continuation is perfectly linear.
-
-=== Syntax
 The syntax of this restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
 By removing $LABEL$ and $GOTO$ from the language, we also lose the need for explicit covariables, and hence consumers in general.
 
@@ -76,10 +85,7 @@ since in #Fun there is just no way to construct something that would result in a
 
 In theory, it would suffice to keep #Core and the translation to it as is, remembering that every continuation must be linear.
 But to make the correctness of the following optimization obvious,
-we identify the subset of #Core that can result from the restricted version of #Fun.
-
-=== Syntax
-We will show in @sec:lin:f2c that restricted #Fun can be translated to the following restricted fragment of #Core.
+we identify the fragment of #Core that can result from the restricted version of #Fun.
 Note that it is a strict subset of @def:scc:core.
 
 #definition(title: [Restricted #Core])[
@@ -281,15 +287,11 @@ And constructors cannot have any consumer field.
 === Linearity & Intuitionistic
 #inline-note[This resembles Gentzen's LJ :O]
 
-== Translation from #Fun to #Core <sec:lin:f2c>
-#todo[TODO]
-
-== Focusing & Shrinking
+=== Focusing & Shrinking
 #todo[TODO]
 
 == Linearity in #AxCut
 
-=== Syntax
 #definition(title: [#AxCut with Linearity Annotations])[
   #figure[
     #bnf(
