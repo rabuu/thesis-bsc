@@ -1,12 +1,12 @@
 #import "/lib/lib.typ": *
 #import deps.fletcher
 
-= The Sequent Calculus Compiler
+= The Sequent Calculus Compiler <ch:scc>
 This chapter provides a summary of the entire Sequent Calculus Compiler (SCC) pipeline as described by Müller et al. @Mueller2026,
 and serves as the foundation for the subsequent chapters that will modify and extend it.
 The presentation follows the original paper closely, adapted here to establish the notation and terminology used throughout this thesis.
 
-== Overview
+== Overview <sec:scc:overview>
 The SCC compiles a functional programming language, called #Fun, to native machine code.
 The concrete target architecture is not very relevant here and can easily be adapted.
 In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we only consider #RISC-V in this thesis.
@@ -33,18 +33,25 @@ where each box represents a compiler stage and the arrows represent the translat
     debug: false,
     node-stroke: 1pt,
     label-sep: 0.2em,
-    colored-node(red)(fun, [#Fun \ @scc:fun]),
-    colored-node(green)(core, [#Core \ @scc:core]),
-    colored-node(blue)(axcut, [#AxCut \ @scc:axcut]),
-    colored-node(orange)(riscv, [#RISC-V \ @scc:codegen]),
+    colored-node(red)(fun, [#Fun \ @sec:scc:fun]),
+    colored-node(green)(core, [#Core \ @sec:scc:core]),
+    colored-node(blue)(axcut, [#AxCut \ @sec:scc:axcut]),
+    colored-node(orange)(riscv, [#RISC-V \ @sec:scc:codegen]),
     edge(fun, core, "-|>", label: $f2c(dot)$, label-side: left),
-    edge(fun, core, "-|>", label: [@scc:f2c], label-side: right, stroke: none),
+    edge(
+      fun,
+      core,
+      "-|>",
+      label: [@sec:scc:f2c],
+      label-side: right,
+      stroke: none,
+    ),
     edge(core, axcut, "-|>", label: $c2a(dot)$, label-side: left),
     edge(
       core,
       axcut,
       "-|>",
-      label: [@scc:c2a],
+      label: [@sec:scc:c2a],
       label-side: right,
       stroke: none,
     ),
@@ -53,7 +60,7 @@ where each box represents a compiler stage and the arrows represent the translat
       axcut,
       riscv,
       "-|>",
-      label: [@scc:codegen],
+      label: [@sec:scc:codegen],
       label-side: right,
       stroke: none,
     ),
@@ -67,7 +74,7 @@ where each box represents a compiler stage and the arrows represent the translat
         #set par(leading: 0pt)
 
         $focus(dot), shrink(dot)$ \
-        @scc:focus, @scc:shrink
+        @sec:scc:focus, @sec:scc:shrink
       ],
     ),
   )
@@ -75,7 +82,7 @@ where each box represents a compiler stage and the arrows represent the translat
 
 The following sections will explain every stage and translation step-by-step.
 
-== The Surface Language #Fun <scc:fun>
+== The Surface Language #Fun <sec:scc:fun>
 Every compiler needs a surface language: the language of its source programs, typically written by a human #footnote[Or, increasingly, by some large language model. #note[Weird, remove this.]].
 In the case of the SCC, this language is called #Fun @Binder2024grokking.
 It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
@@ -198,120 +205,121 @@ If that is the case, it is omitted to improve readability.
   kind: "Figure",
   supplement: "Figure",
   caption: [Typing rules for #Fun.],
-)[
-  #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
+  block(width: 100%)[
+    #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
 
-  #rule-set(
-    prooftree(rule(
-      name: rn("Var"),
-      $x : tau in Gamma$,
-      $Gamma tack x : tau$,
-    )),
-    prooftree(rule(
-      name: rn("Lit"),
-      $Gamma tack n : i64$,
-    )),
-    prooftree(rule(
-      name: rn("Let"),
-      $Gamma tack p_1 : tau_1$,
-      $Gamma, sp x:tau_1 tack p_2 : tau_2$,
-      $Gamma tack LET x = p_1; sp p_2 : tau_2$,
-    )),
-    prooftree(rule(
-      name: rn("Plus"),
-      $Gamma tack p_1 : i64$,
-      $Gamma tack p_2 : i64$,
-      $Gamma tack p_1 + p_2 : i64$,
-    )),
-    prooftree(rule(
-      name: rn("IfZ"),
-      $Gamma tack p : i64$,
-      $Gamma tack p_1 : tau$,
-      $Gamma tack p_2 : tau$,
-      $Gamma tack IF p equiv 0 br(p_1) ELSE br(p_2) : tau$,
-    )),
-    prooftree(rule(
-      name: rn("Label"),
-      $Gamma, alpha :^cns tau tack p : tau$,
-      $Gamma tack LABEL alpha br(p) : tau$,
-    )),
-    prooftree(rule(
-      name: rn("Goto"),
-      $Gamma tack p : tau$,
-      $alpha :^cns tau in Gamma$,
-      $Gamma tack GOTO alpha sp (p) : tau'$,
-    )),
-    prooftree(rule(
-      name: rn("Exit"),
-      $Gamma tack p : i64$,
-      $Gamma tack EXIT p : tau$,
-    )),
-    prooftree(rule(
-      name: rn("Ctor"),
-      $DATA T br(..., K(Gamma'), ...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack K(sigma) : T$,
-    )),
-    prooftree(rule(
-      name: rn("Case"),
-      $DATA T br(K_1(Gamma_1), ...) in Theta$,
-      $Gamma tack p : T$,
-      $forall i: Gamma, Gamma_i tack p_i : tau$,
-      $Theta mid Gamma tack p.CASE br(K_1(Gamma_1) => p_1, ...) : tau$,
-    )),
-    prooftree(rule(
-      name: rn("Dtor"),
-      $CODATA T br(..., D(Gamma') : tau, ...) in Theta$,
-      $Gamma tack p : T$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack p.D(sigma) : tau$,
-    )),
-    prooftree(rule(
-      name: rn("New"),
-      $CODATA T br(D_1(Gamma_1) : tau_1, ...) in Theta$,
-      $forall i: Gamma, Gamma_i tack p_i : tau_i$,
-      $Theta mid Gamma tack NEW br(D_1(Gamma_1) => p_1, ...) : T$,
-    )),
-    prooftree(rule(
-      name: rn("Call"),
-      $DEF f(Gamma') : tau br(...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack f(sigma) : tau$,
-    )),
-  )
+    #rule-set(
+      prooftree(rule(
+        name: rn("Var"),
+        $x : tau in Gamma$,
+        $Gamma tack x : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Lit"),
+        $Gamma tack n : i64$,
+      )),
+      prooftree(rule(
+        name: rn("Let"),
+        $Gamma tack p_1 : tau_1$,
+        $Gamma, sp x:tau_1 tack p_2 : tau_2$,
+        $Gamma tack LET x = p_1; sp p_2 : tau_2$,
+      )),
+      prooftree(rule(
+        name: rn("Plus"),
+        $Gamma tack p_1 : i64$,
+        $Gamma tack p_2 : i64$,
+        $Gamma tack p_1 + p_2 : i64$,
+      )),
+      prooftree(rule(
+        name: rn("IfZ"),
+        $Gamma tack p : i64$,
+        $Gamma tack p_1 : tau$,
+        $Gamma tack p_2 : tau$,
+        $Gamma tack IF p equiv 0 br(p_1) ELSE br(p_2) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Label"),
+        $Gamma, alpha :^cns tau tack p : tau$,
+        $Gamma tack LABEL alpha br(p) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Goto"),
+        $Gamma tack p : tau$,
+        $alpha :^cns tau in Gamma$,
+        $Gamma tack GOTO alpha sp (p) : tau'$,
+      )),
+      prooftree(rule(
+        name: rn("Exit"),
+        $Gamma tack p : i64$,
+        $Gamma tack EXIT p : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Ctor"),
+        $DATA T br(..., K(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack K(sigma) : T$,
+      )),
+      prooftree(rule(
+        name: rn("Case"),
+        $DATA T br(K_1(Gamma_1), ...) in Theta$,
+        $Gamma tack p : T$,
+        $forall i: Gamma, Gamma_i tack p_i : tau$,
+        $Theta mid Gamma tack p.CASE br(K_1(Gamma_1) => p_1, ...) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Dtor"),
+        $CODATA T br(..., D(Gamma') : tau, ...) in Theta$,
+        $Gamma tack p : T$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack p.D(sigma) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("New"),
+        $CODATA T br(D_1(Gamma_1) : tau_1, ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack p_i : tau_i$,
+        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => p_1, ...) : T$,
+      )),
+      prooftree(rule(
+        name: rn("Call"),
+        $DEF f(Gamma') : tau br(...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack f(sigma) : tau$,
+      )),
+    )
 
-  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+    #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
 
-  #rule-set(
-    prooftree(rule(
-      name: rn("Covar"),
-      $alpha :^cns tau in Gamma$,
-      $Gamma tack alpha :^cns tau$,
-    )),
-  )
+    #rule-set(
+      prooftree(rule(
+        name: rn("Covar"),
+        $alpha :^cns tau in Gamma$,
+        $Gamma tack alpha :^cns tau$,
+      )),
+    )
 
-  #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
 
-  #rule-set(
-    column-gutter: 2em,
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _1$),
-      $Gamma tack empty : empty$,
-    )),
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _2$),
-      $Gamma tack sigma : Gamma'$,
-      $Gamma tack p : tau$,
-      $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
-    )),
-    prooftree(rule(
-      name: rn($#smallcaps("Arg") _3$),
-      $Gamma tack sigma : Gamma'$,
-      $Gamma tack c :^cns tau$,
-      $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
-    )),
-  )
-] <fig:scc:fun:typing>
+    #rule-set(
+      column-gutter: 2em,
+      prooftree(rule(
+        name: rn($#smallcaps("Arg") _1$),
+        $Gamma tack empty : empty$,
+      )),
+      prooftree(rule(
+        name: rn($#smallcaps("Arg") _2$),
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack p : tau$,
+        $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
+      )),
+      prooftree(rule(
+        name: rn($#smallcaps("Arg") _3$),
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack c :^cns tau$,
+        $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
+      )),
+    )
+  ],
+) <fig:scc:fun:typing>
 
 Most of the rules are standard.
 Interesting are the control operators.
@@ -321,7 +329,7 @@ Here, the argument must be of the same type as the consumer covariable.
 The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
 Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
 
-== The High-Level Intermediate Language #Core <scc:core>
+== The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
 It is an extension of the $lambda mu tilde(mu)$-calculus @Curien2000, a term assignment system for Gentzen's classical sequent calculus LK @Gentzen1935a,
 equipped with integer arithmetic, top-level function definitions, and algebraic data and codata types.
@@ -468,112 +476,113 @@ Statements, representing computation, do not have return types themselves.
   kind: "Figure",
   supplement: "Figure",
   caption: [Typing rules for #Core.],
-)[
-  #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
+  block(width: 100%)[
+    #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
-  #rule-set(
-    manual-grouping: true,
-    (
+    #rule-set(
+      manual-grouping: true,
+      (
+        prooftree(rule(
+          name: rn("Var"),
+          $x :^prd tau in Gamma$,
+          $Gamma tack x :^prd tau$,
+        )),
+        prooftree(rule(
+          name: rn("Act-R"),
+          $Gamma, alpha :^cns tau tack s$,
+          $Gamma tack mu a. s :^prd tau$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Lit"),
+          $Gamma tack n :^prd i64$,
+        )),
+        prooftree(rule(
+          name: rn("Plus"),
+          $Gamma tack p_1 :^prd i64$,
+          $Gamma tack p_2 :^prd i64$,
+          $Gamma tack p_1 + p_2 :^prd i64$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Ctor"),
+          $DATA T br(..., K(Gamma'), ...) in Theta$,
+          $Theta mid Gamma tack sigma : Gamma'$,
+          $Theta mid Gamma tack K(sigma) :^prd T$,
+        )),
+        prooftree(rule(
+          name: rn("New"),
+          $CODATA T br(D_1(Gamma_1), ...) in Theta$,
+          $forall i: Gamma, Gamma_i tack s_i$,
+          $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
+        )),
+      ),
+    )
+
+    #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+
+    #rule-set(
+      manual-grouping: true,
+      (
+        prooftree(rule(
+          name: rn("Covar"),
+          $alpha :^cns tau in Gamma$,
+          $Gamma tack alpha :^cns tau$,
+        )),
+        prooftree(rule(
+          name: rn("Act-L"),
+          $Gamma, x :^prd tau tack s$,
+          $Gamma tack tilde(mu)x. s :^cns tau$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Dtor"),
+          $CODATA T br(..., D(Gamma'), ...) in Theta$,
+          $Theta mid Gamma tack sigma : Gamma'$,
+          $Theta mid Gamma tack D(sigma) :^cns T$,
+        )),
+        prooftree(rule(
+          name: rn("Case"),
+          $DATA T br(K_1(Gamma_1), ...) in Theta$,
+          $forall i: Gamma, Gamma_i tack s_i$,
+          $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+        )),
+      ),
+    )
+
+    #def-box[Statement Typing: $Theta mid Gamma tack s$]
+
+    #rule-set(
       prooftree(rule(
-        name: rn("Var"),
-        $x :^prd tau in Gamma$,
-        $Gamma tack x :^prd tau$,
+        name: rn("Cut"),
+        $Gamma tack p :^prd tau$,
+        $Gamma tack c :^cns tau$,
+        $Gamma tack cut(p, c)$,
       )),
       prooftree(rule(
-        name: rn("Act-R"),
-        $Gamma, alpha :^cns tau tack s$,
-        $Gamma tack mu a. s :^prd tau$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Lit"),
-        $Gamma tack n :^prd i64$,
+        name: rn("IfZ"),
+        $Gamma tack p :^prd i64$,
+        $Gamma tack s_1$,
+        $Gamma tack s_2$,
+        $Gamma tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
       )),
       prooftree(rule(
-        name: rn("Plus"),
-        $Gamma tack p_1 :^prd i64$,
-        $Gamma tack p_2 :^prd i64$,
-        $Gamma tack p_1 + p_2 :^prd i64$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Ctor"),
-        $DATA T br(..., K(Gamma'), ...) in Theta$,
+        name: rn("Call"),
+        $DEF f(Gamma') br(...) in Theta$,
         $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack K(sigma) :^prd T$,
+        $Theta mid Gamma tack f(sigma)$,
       )),
       prooftree(rule(
-        name: rn("New"),
-        $CODATA T br(D_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => s_1, ...) :^prd T$,
+        name: rn("Exit"),
+        $Gamma tack p :^prd i64$,
+        $Gamma tack EXIT p$,
       )),
-    ),
-  )
-
-  #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
-
-  #rule-set(
-    manual-grouping: true,
-    (
-      prooftree(rule(
-        name: rn("Covar"),
-        $alpha :^cns tau in Gamma$,
-        $Gamma tack alpha :^cns tau$,
-      )),
-      prooftree(rule(
-        name: rn("Act-L"),
-        $Gamma, x :^prd tau tack s$,
-        $Gamma tack tilde(mu)x. s :^cns tau$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Dtor"),
-        $CODATA T br(..., D(Gamma'), ...) in Theta$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack D(sigma) :^cns T$,
-      )),
-      prooftree(rule(
-        name: rn("Case"),
-        $DATA T br(K_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
-      )),
-    ),
-  )
-
-  #def-box[Statement Typing: $Theta mid Gamma tack s$]
-
-  #rule-set(
-    prooftree(rule(
-      name: rn("Cut"),
-      $Gamma tack p :^prd tau$,
-      $Gamma tack c :^cns tau$,
-      $Gamma tack cut(p, c)$,
-    )),
-    prooftree(rule(
-      name: rn("IfZ"),
-      $Gamma tack p :^prd i64$,
-      $Gamma tack s_1$,
-      $Gamma tack s_2$,
-      $Gamma tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
-    )),
-    prooftree(rule(
-      name: rn("Call"),
-      $DEF f(Gamma') br(...) in Theta$,
-      $Theta mid Gamma tack sigma : Gamma'$,
-      $Theta mid Gamma tack f(sigma)$,
-    )),
-    prooftree(rule(
-      name: rn("Exit"),
-      $Gamma tack p :^prd i64$,
-      $Gamma tack EXIT p$,
-    )),
-  )
-] <fig:scc:core:typing>
+    )
+  ],
+) <fig:scc:core:typing>
 
 Most of the rules exist similarly in #Fun (@fig:scc:fun:typing).
 We present all of them here to, again, highlight the symmetry of #Core. #note[And maybe for the contrast to later.]
@@ -595,7 +604,7 @@ In contrast to #Fun, where the $EXIT$ expression has an arbitrary type, in #Core
 The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
 This guarantees that they can meaningfully interact.
 
-== Translation from #Fun to #Core <scc:f2c>
+== Translation from #Fun to #Core <sec:scc:f2c>
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
 this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
 
@@ -605,75 +614,76 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
   kind: "Figure",
   supplement: "Figure",
   caption: [Translation from #Fun to #Core.],
-)[
-  #set math.lr(size: 1em)
+  block(width: 100%)[
+    #set math.lr(size: 1em)
 
-  #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
-  $
-    f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
-    f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
-    f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
-    f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
-  $
+    #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
+    $
+      f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
+      f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
+      f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
+      f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
+    $
 
-  #def-box[$f2c(dot) : "Producer"_Fun -> "Producer"_Core$]
-  #stack(dir: ltr, spacing: 2em)[
+    #def-box[$f2c(dot) : "Producer"_Fun -> "Producer"_Core$]
+    #stack(dir: ltr, spacing: 2em)[
+      $
+               f2c(x) & := x \
+        f2c(K(sigma)) & := K(f2c(sigma)) \
+      $
+    ][
+      $
+                f2c(n) & := n \
+        f2c(p_1 + p_2) & := f2c(p_1) + f2c(p_2) \
+      $
+    ]
     $
-             f2c(x) & := x \
-      f2c(K(sigma)) & := K(f2c(sigma)) \
+      f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
+      f2c(LABEL alpha br(p)) & := mu alpha. f2c(p, with: alpha) \
+      f2c(p) &:= mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
     $
-  ][
-    $
-              f2c(n) & := n \
-      f2c(p_1 + p_2) & := f2c(p_1) + f2c(p_2) \
-    $
-  ]
-  $
-    f2c(NEW br(D_1(Gamma_1) => p_1, ...)) & := NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...) \
-    f2c(LABEL alpha br(p)) & := mu alpha. f2c(p, with: alpha) \
-    f2c(p) &:= mu alpha. f2c(p, with: alpha) quad "for all other producers" p \
-  $
 
-  #def-box[$f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$]
-  #stack(dir: ltr, spacing: 2em)[
+    #def-box[$f2c(dot, with: dot.o) : "Producer"_Fun times "Consumer"_Core -> "Statement"_Core$]
+    #stack(dir: ltr, spacing: 2em)[
+      $
+                        f2c(x, with: c) & := cut(x, c) \
+                        f2c(n, with: c) & := cut(n, c) \
+                 f2c(K(sigma), with: c) & := cut(K(f2c(sigma)), c) \
+                 f2c(f(sigma), with: c) & := f(f2c(sigma), c) \
+        f2c(LABEL alpha br(p), with: c) & := cut(mu alpha. f2c(p, with: alpha), c) \
+      $
+    ][
+      $
+        #hide[$f2c(x, with: c) := cut(x, c)$] \
+        f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
+        #note[bindvals not yet defined]
+        f2c(p.D(sigma), with: c) & := bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
+        f2c(EXIT p, with: c) & := EXIT f2c(p) \
+        f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
+      $
+    ]
     $
-                      f2c(x, with: c) & := cut(x, c) \
-                      f2c(n, with: c) & := cut(n, c) \
-               f2c(K(sigma), with: c) & := cut(K(f2c(sigma)), c) \
-               f2c(f(sigma), with: c) & := f(f2c(sigma), c) \
-      f2c(LABEL alpha br(p), with: c) & := cut(mu alpha. f2c(p, with: alpha), c) \
+      f2c(LET x = p_1\; sp p_2, with: c) & := && cases(
+        cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c)) quad & "if" p_1: CODATA T br(...),
+        f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) quad & "otherwise",
+      ) \
+      f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
+      f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: c_0) quad "where" c_0 equiv CASE br(K_1(Gamma_1) => f2c(p_1, with: tilde(mu)x. j(Gamma)), ...) \
+      "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
+      f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: tilde(mu)x. j(Gamma))) ELSE br(f2c(p_2, with: tilde(mu)x. j(Gamma))) \
+      "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
     $
-  ][
-    $
-      #hide[$f2c(x, with: c) := cut(x, c)$] \
-      f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
-      #note[bindvals not yet defined]
-      f2c(p.D(sigma), with: c) & := bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
-      f2c(EXIT p, with: c) & := EXIT f2c(p) \
-      f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
-    $
-  ]
-  $
-    f2c(LET x = p_1\; sp p_2, with: c) & := && cases(
-      cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c)) quad & "if" p_1: CODATA T br(...),
-      f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) quad & "otherwise",
-    ) \
-    f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
-    f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: c_0) quad "where" c_0 equiv CASE br(K_1(Gamma_1) => f2c(p_1, with: tilde(mu)x. j(Gamma)), ...) \
-    "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
-    f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: tilde(mu)x. j(Gamma))) ELSE br(f2c(p_2, with: tilde(mu)x. j(Gamma))) \
-    "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
-  $
 
-  #def-box[$f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$]
-  $
-    f2c(empty) := empty quad quad
-    f2c(sigma\, p) := f2c(sigma), f2c(p) quad quad
-    f2c(sigma\, alpha) := f2c(sigma), alpha
-  $
-]
+    #def-box[$f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$]
+    $
+      f2c(empty) := empty quad quad
+      f2c(sigma\, p) := f2c(sigma), f2c(p) quad quad
+      f2c(sigma\, alpha) := f2c(sigma), alpha
+    $
+  ],
+) <fig:scc:f2c>
 
-== The Focusing Transformation <scc:focus>
+== The Focusing Transformation <sec:scc:focus>
 
 === The Focused Fragment
 #definition(title: [Focused #Core])[
@@ -723,7 +733,7 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
       ),
     )
   ]
-]
+] <def:scc:focused>
 
 === The Transformation
 
@@ -731,73 +741,75 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
   kind: "Figure",
   supplement: "Figure",
   caption: [The binding functions used for the focusing transformation.],
-)[
-  #def-box[$bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
-  $
-    bind(x, k) & := && k(x) \
-    bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
-    bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
-    bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
-    bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
-    bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu) x. k(x))))
-  $
+  block(width: 100%)[
+    #def-box[$bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
+    $
+      bind(x, k) & := && k(x) \
+      bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
+      bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
+      bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
+      bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
+      bind(p_1 + p_2, k) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, tilde(mu) x. k(x))))
+    $
 
-  #def-box[$bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
-  $
-    bind(alpha, k) & := && k(alpha) \
-    bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
-    bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
-    bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
-  $
+    #def-box[$bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
+    $
+      bind(alpha, k) & := && k(alpha) \
+      bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
+      bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
+      bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
+    $
 
-  #def-box[$bindargs(dot, dot) : "Args"_Core times ("Context" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
-  $
-    bindargs(empty, k) & := && k(empty) \
-    bindargs(e :: sigma, k) & := && bind(e, lambda a. bindargs(sigma, lambda overline(a). k(a :: overline(a))))
-  $
-]
+    #def-box[$bindargs(dot, dot) : "Args"_Core times ("Context" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
+    $
+      bindargs(empty, k) & := && k(empty) \
+      bindargs(e :: sigma, k) & := && bind(e, lambda a. bindargs(sigma, lambda overline(a). k(a :: overline(a))))
+    $
+  ],
+) <fig:scc:bind>
 
 #figure(
   kind: "Figure",
   supplement: "Figure",
   caption: [The focusing transformation.],
-)[
-  #def-box[$focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$]
-  $
-    focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
-  $
+  block(width: 100%)[
+    #def-box[$focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$]
+    $
+      focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
+    $
 
-  #def-box[$focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$]
-  $
-    focus(cut(p_1 + p_2, c)) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, focus(c)))) \
-    focus(cut(K(sigma), c)) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), focus(c))) \
-    focus(cut(p, D(sigma))) & := && bindargs(sigma, lambda overline(a). cut(focus(p), D(overline(a)))) \
-    focus(cut(p, c)) & := && cut(focus(p), focus(c)) \
-    focus(IF p equiv 0 br(s_1) ELSE br(s_2)) & := && bind(p, lambda a. IF a equiv 0 br(focus(s_1)) ELSE br(focus(s_2))) \
-    focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
-    focus(EXIT p) & := && bind(p, lambda a. EXIT a)
-  $
+    #def-box[$focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$]
+    $
+      focus(cut(p_1 + p_2, c)) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, focus(c)))) \
+      focus(cut(K(sigma), c)) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), focus(c))) \
+      focus(cut(p, D(sigma))) & := && bindargs(sigma, lambda overline(a). cut(focus(p), D(overline(a)))) \
+      focus(cut(p, c)) & := && cut(focus(p), focus(c)) \
+      focus(IF p equiv 0 br(s_1) ELSE br(s_2)) & := && bind(p, lambda a. IF a equiv 0 br(focus(s_1)) ELSE br(focus(s_2))) \
+      focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
+      focus(EXIT p) & := && bind(p, lambda a. EXIT a)
+    $
 
-  #def-box[$focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$]
-  $
-    focus(x) & := && x \
-    focus(mu alpha. s) & := && mu alpha. focus(s) \
-    focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
-    focus(K(sigma)) &&& "does not occur" \
-    focus(n) & := && n \
-    focus(p_1 + p_2) &&& "does not occur"
-  $
+    #def-box[$focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$]
+    $
+      focus(x) & := && x \
+      focus(mu alpha. s) & := && mu alpha. focus(s) \
+      focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
+      focus(K(sigma)) &&& "does not occur" \
+      focus(n) & := && n \
+      focus(p_1 + p_2) &&& "does not occur"
+    $
 
-  #def-box[$focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$]
-  $
-    focus(alpha) & := && alpha \
-    focus(tilde(mu) x. s) & := && tilde(mu) x. focus(s) \
-    focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
-    focus(D(sigma)) &&& "does not occur" \
-  $
-]
+    #def-box[$focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$]
+    $
+      focus(alpha) & := && alpha \
+      focus(tilde(mu) x. s) & := && tilde(mu) x. focus(s) \
+      focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
+      focus(D(sigma)) &&& "does not occur" \
+    $
+  ],
+) <fig:scc:focusing>
 
-== The Shrinking Transformation <scc:shrink>
+== The Shrinking Transformation <sec:scc:shrink>
 
 === The Shrunk Fragment
 
@@ -837,7 +849,7 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
       ),
     )
   ]
-]
+] <def:scc:shrunk>
 
 === The Transformation
 
@@ -896,36 +908,38 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
     $
   ]
 
-== The Lower-Level Intermediate Language #AxCut <scc:axcut>
+== The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
 
 === Syntax
-#figure[
-  #bnf(
-    ($v$, "(Co)Variables"),
-    alt(
-      $var(x)$,
-      $covar(alpha)$,
-    ),
+#definition(title: [Syntax of #AxCut])[
+  #figure[
+    #bnf(
+      ($v$, "(Co)Variables"),
+      alt(
+        $var(x)$,
+        $covar(alpha)$,
+      ),
 
-    ($s$, "Statements"),
-    $LET v = X(sigma); sp s$,
-    $CREATE v = Gamma br(X(Gamma) => s, ...); sp s$,
-    $SWITCH v br(X(Gamma) => s, ...)$,
-    $INVOKE v sp X(sigma)$,
-    $LIT v <- n; sp s$,
-    $v <- v + v; sp s$,
-    $IF v equiv 0 br(s) ELSE br(s)$,
-    $f(sigma)$,
-    $EXIT v$,
-    $SUBSTITUTE[Gamma := sigma]; sp s$,
+      ($s$, "Statements"),
+      $LET v = X(sigma); sp s$,
+      $CREATE v = Gamma br(X(Gamma) => s, ...); sp s$,
+      $SWITCH v br(X(Gamma) => s, ...)$,
+      $INVOKE v sp X(sigma)$,
+      $LIT v <- n; sp s$,
+      $v <- v + v; sp s$,
+      $IF v equiv 0 br(s) ELSE br(s)$,
+      $f(sigma)$,
+      $EXIT v$,
+      $SUBSTITUTE[Gamma := sigma]; sp s$,
 
-    ($sigma$, "Arguments"),
-    alt(
-      $empty$,
-      $sigma, sp v$,
-    ),
-  )
-]
+      ($sigma$, "Arguments"),
+      alt(
+        $empty$,
+        $sigma, sp v$,
+      ),
+    )
+  ]
+] <def:scc:axcut>
 
 === Typing Rules
 #definition[
@@ -940,81 +954,86 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
   $
 ]
 
-#figure[
-  #def-box[Statement Typing: $Theta mid Gamma tack s$]
-  #rule-set(
-    manual-grouping: true,
-    (
-      prooftree(rule(
-        name: $#rn("Let-")pi$,
-        $pi T br(..., X(Gamma_0), ...) in Theta$,
-        $Gamma, v:^(chi_1(pi)) T tack s$,
-        $Theta mid Gamma, Gamma_0 tack LET v = X(Gamma_0); sp s$,
-      )),
-      prooftree(rule(
-        name: $#rn("Create-")pi$,
-        $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $Gamma, v:^(chi_2(pi)) T tack s$,
-        $forall i: Gamma_i, Gamma_0 tack s_i$,
-        $Theta mid Gamma, Gamma_0 tack CREATE v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
-      )),
-      prooftree(rule(
-        name: $#rn("Switch-")pi$,
-        $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma, v :^(chi_1(pi)) T tack SWITCH v br(X_1(Gamma_1) => s_1, ...)$,
-      )),
-      prooftree(rule(
-        name: $#rn("Invoke-")pi$,
-        $pi T br(..., X(Gamma), ...) in Theta$,
-        $Theta mid Gamma, v :^(chi_2(pi)) T tack INVOKE v sp X(Gamma)$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Substitute"),
-        $Gamma tack sigma : Gamma'$,
-        $Gamma' tack s$,
-        $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Lit"),
-        $Gamma, v:^prd i64 tack s$,
-        $Gamma tack LIT v <- n; sp s$,
-      )),
-      prooftree(rule(
-        name: rn("Plus"),
-        $v_1 :^prd i64 in Gamma$,
-        $v_2 :^prd i64 in Gamma$,
-        $Gamma, v :^prd i64 tack s$,
-        $Gamma tack v <- v_1 + v_2; sp s$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("IfZ"),
-        $v :^prd i64 in Gamma$,
-        $Gamma tack s_1$,
-        $Gamma tack s_2$,
-        $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
-      )),
-      prooftree(rule(
-        name: rn("Call"),
-        $DEF f(Gamma) br(...) in Theta$,
-        $Theta mid Gamma tack f(Gamma)$,
-      )),
-      prooftree(rule(
-        name: rn("Exit"),
-        $v :^prd i64 in Gamma$,
-        $Gamma tack EXIT v$,
-      )),
-    ),
-  )
-]
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Typing rules for #AxCut.],
+  block(width: 100%)[
+    #def-box[Statement Typing: $Theta mid Gamma tack s$]
+    #rule-set(
+      manual-grouping: true,
+      (
+        prooftree(rule(
+          name: $#rn("Let-")pi$,
+          $pi T br(..., X(Gamma_0), ...) in Theta$,
+          $Gamma, v:^(chi_1(pi)) T tack s$,
+          $Theta mid Gamma, Gamma_0 tack LET v = X(Gamma_0); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Create-")pi$,
+          $pi T br(X_1(Gamma_1), ...) in Theta$,
+          $Gamma, v:^(chi_2(pi)) T tack s$,
+          $forall i: Gamma_i, Gamma_0 tack s_i$,
+          $Theta mid Gamma, Gamma_0 tack CREATE v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Switch-")pi$,
+          $pi T br(X_1(Gamma_1), ...) in Theta$,
+          $forall i: Gamma, Gamma_i tack s_i$,
+          $Theta mid Gamma, v :^(chi_1(pi)) T tack SWITCH v br(X_1(Gamma_1) => s_1, ...)$,
+        )),
+        prooftree(rule(
+          name: $#rn("Invoke-")pi$,
+          $pi T br(..., X(Gamma), ...) in Theta$,
+          $Theta mid Gamma, v :^(chi_2(pi)) T tack INVOKE v sp X(Gamma)$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Substitute"),
+          $Gamma tack sigma : Gamma'$,
+          $Gamma' tack s$,
+          $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Lit"),
+          $Gamma, v:^prd i64 tack s$,
+          $Gamma tack LIT v <- n; sp s$,
+        )),
+        prooftree(rule(
+          name: rn("Plus"),
+          $v_1 :^prd i64 in Gamma$,
+          $v_2 :^prd i64 in Gamma$,
+          $Gamma, v :^prd i64 tack s$,
+          $Gamma tack v <- v_1 + v_2; sp s$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("IfZ"),
+          $v :^prd i64 in Gamma$,
+          $Gamma tack s_1$,
+          $Gamma tack s_2$,
+          $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
+        )),
+        prooftree(rule(
+          name: rn("Call"),
+          $DEF f(Gamma) br(...) in Theta$,
+          $Theta mid Gamma tack f(Gamma)$,
+        )),
+        prooftree(rule(
+          name: rn("Exit"),
+          $v :^prd i64 in Gamma$,
+          $Gamma tack EXIT v$,
+        )),
+      ),
+    )
+  ],
+) <fig:scc:axcut:typing>
 
-== Translation from #Core to #AxCut <scc:c2a>
+== Translation from #Core to #AxCut <sec:scc:c2a>
 #inline-note[Improve formatting.]
 #big-figure[
   #set math.lr(size: 1em)
@@ -1058,7 +1077,7 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
   $
 ]
 
-== Code Generation <scc:codegen>
+== Code Generation <sec:scc:codegen>
 
 === The Target Language #RISC-V
 We use the following subset of #RISC-V @Waterman2014riscv as target for the code generation.
@@ -1115,7 +1134,7 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
       ),
     )
   ]
-]
+] <def:scc:riscv>
 
 === Overview
 #inline-note[
@@ -1147,43 +1166,44 @@ We use the following subset of #RISC-V @Waterman2014riscv as target for the code
   kind: "Figure",
   supplement: "Figure",
   caption: [Translation from #AxCut to #RISC-V.],
-)[
-  #set math.lr(size: 1em)
+  block(width: 100%)[
+    #set math.lr(size: 1em)
 
-  #def-box[$a2m(dot) : "Definition"_AxCut -> I^*$]
-  $
-    a2m(DEF f(Gamma) br(s)) & := && f: a2m(s)
-  $
+    #def-box[$a2m(dot) : "Definition"_AxCut -> I^*$]
+    $
+      a2m(DEF f(Gamma) br(s)) & := && f: a2m(s)
+    $
 
-  #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
-  $
-    a2m(f(Gamma)) & := && JUMP f \
-    a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
-    & && ERASE [Gamma' := sigma] \
-    & && MOVE [Gamma' := sigma] \
-    & && a2m(s) \
-    a2m(EXIT v) & := && LI #reg(17) #imm(93) \
-    & && MV #reg(10) (REG_2 sp v) \
-    & && ECALL \
-    a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
-    & && a2m(s) \
-    a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 v_1) sp (REG_2 sp v_2) \
-    & && a2m(s) \
-    a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
-    & && #hide[$l:$] a2m(s_2) \
-    & && l: a2m(s_1) \
-    a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-    & && LI (REG_2 sp v) sp (INDEX X) \
-    & && a2m(s) \
-    a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-    & && LA (REG_2 sp v) sp l \
-    & && a2m(s) \
-    & && l: VTABLE b sp Gamma_0 \
-    a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
-    & && l: JTABLE b sp Gamma \
-    a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
-  $
-]
+    #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
+    $
+      a2m(f(Gamma)) & := && JUMP f \
+      a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
+      & && ERASE [Gamma' := sigma] \
+      & && MOVE [Gamma' := sigma] \
+      & && a2m(s) \
+      a2m(EXIT v) & := && LI #reg(17) #imm(93) \
+      & && MV #reg(10) (REG_2 sp v) \
+      & && ECALL \
+      a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
+      & && a2m(s) \
+      a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 v_1) sp (REG_2 sp v_2) \
+      & && a2m(s) \
+      a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
+      & && #hide[$l:$] a2m(s_2) \
+      & && l: a2m(s_1) \
+      a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+      & && LI (REG_2 sp v) sp (INDEX X) \
+      & && a2m(s) \
+      a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+      & && LA (REG_2 sp v) sp l \
+      & && a2m(s) \
+      & && l: VTABLE b sp Gamma_0 \
+      a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
+      & && l: JTABLE b sp Gamma \
+      a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+    $
+  ],
+) <fig:scc:a2m>
 
 === Share & Erase
 #inline-note[
