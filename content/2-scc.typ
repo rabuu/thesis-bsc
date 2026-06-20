@@ -1280,6 +1280,18 @@ But in contrast to binding a constructor or destructor to a variable, it creates
 #inline-note[Unfinished!]
 
 $
+  VTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma_0 & := && JUMP l_1 \
+  &&& JUMP l_2 \
+  &&& ... \
+  &&& VTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma_0 (l_1, l_2, ...) \
+  VTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma sp (l_1, l_2, ...) & := && l_1: LOAD (REG_1 sp x) sp Gamma_0 \
+  &&& #hide[$l_1:$] a2m(s_1) \
+  &&& VTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
+$
+
+#inline-note[Note the $Gamma_0$ in the $LOAD$.]
+
+$
   a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
                                    &    && LA (REG_2 sp v) sp l \
                                    &    && a2m(s) \
