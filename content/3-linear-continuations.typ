@@ -19,7 +19,7 @@ Very broadly speaking, a continuation is something that answers to the question 
 
 #inline-note[Maybe an example for every stage?]
 
-== Restricting the Surface Language #Fun
+== Restricting #Fun
 As we have seen, correctly identifying which continuations are used linearly is much harder for programs using non-local control flow.
 Therefore, we restrict the optimization that this thesis explores to a certain subset of #Fun programs,
 i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
