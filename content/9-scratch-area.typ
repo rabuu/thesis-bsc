@@ -32,11 +32,8 @@
     open-right: true,
   )
 
-  brace((7, regy), (8, regy))
-  content((7.5, regy + 0.5), t($Gamma$))
-
-  brace((8, regy), (16, regy))
-  content((12, regy + 0.5), t($Gamma_0$))
+  brace(1, offset: (7, regy), label: $Gamma$)
+  brace(8, offset: (8, regy), label: $Gamma_0$)
 
   let memy1 = 2
   let memy2 = 0

@@ -4,6 +4,19 @@
 
 #let ddd = $dot dot dot$
 
+#let t = text.with(size: 0.8em)
+#let reg(it) = t(raw(it))
+#let data(it, active: true) = text(fill: if active { green } else { gray }, it)
+#let ptr = line.with(stroke: purple, mark: (end: (symbol: ")>", fill: purple)))
+
+#let brace(range, offset: (0, 0), label: none) = {
+  let (dx, dy) = offset
+  cetz.decorations.brace((dx, dy), (dx + range, dy))
+  if label != none {
+    content((dx + (range / 2), dy + 0.5), t(label))
+  }
+}
+
 #let slot(
   n,
   offset: (0, 0),
