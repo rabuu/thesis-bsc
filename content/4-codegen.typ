@@ -15,7 +15,7 @@ The central idea behind the optimization we are going for is obvious:
 since the reference count is not used anyway, it can just be left out.
 This not only increases the memory space we can use for actual data, but also reduces code size and runtime overhead that is needed for maintaining the reference count.
 
-== The Naïve Approach and Where it Fails
+== The Naïve Approach and Where it Fails <sec:codegen:naive>
 The first approach is to simply extend the memory operations $STORE$ and $LOAD$ to make use of all four fields.
 But there is an issue.
 
@@ -134,6 +134,10 @@ Either swap the components of a variable so that second slot contains the memory
 or store the pointer to the next block in a free list in the second slot instead of the first.
 In this thesis, the latter approach is chosen.
 
+To keep the property that the position of the next block in the free list is also the position of the reference count in an allocated block,
+we now also store the reference count in the second slot.
+This, of course, only affects nonlinear blocks, since
+
 Modifying the original layout in @fig:scc:codegen:layout yields the following result.
 #figure(
   kind: "Figure",
@@ -153,7 +157,16 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
       )
     }),
 
-    [in use],
+    [nonlinearly in use],
+    cetz.canvas({
+      import diagram: *
+      memblock(
+        data: (none, [`rc`]),
+        fill: (reserved,) * 2 + (free-to-use,) * 8,
+      )
+    }),
+
+    [linearly in use],
     cetz.canvas({
       import diagram: *
       memblock(
@@ -163,11 +176,50 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
   )
 ]
 
-As in the other figure, `next` stands for the pointer to the next block in the free list (potentially zero if there is none).
-The green highlighting of the slots shows that all eight slots are free to use because there are no more reserved slots.
+As in the other figure, `next` stands for the pointer to the next block in the free list (potentially zero if there is none),
+and `rc` for the reference count of an allocated memory block.
+Reserved slots of in-use slots are illustrated with grey background, slots that can freely be used for payload data are highlighted in green.
+
+Importantly, the modification affects the memory layout of all blocks, not only those used linearly.
+#inline-note[Use a auxiliary definition to parametrize this. Otherwise, the nonlinear memory mechanisms would have to be updated.]
 
 == Linear Memory Management
-#inline-note[$STORE_1$, $LOAD_1$, $ACQUIRE_1$, $RELEASE_1$]
+#inline-note[intro]
+
+=== Acquire
+As a first step of the optimization, we modify $ACQUIRE$ for linear blocks and call it $ACQUIRE_1$.
+Its job is to maintain the invariant that the $HEAP$ register points to a free memory block.
+The difference to its nonlinear variant from @sec:scc:codegen:mem is that it does not have to initialize a reference count.
+
+$
+  ACQUIRE_1 sp r & := && MV r HEAP \
+                 &    && LW HEAP #imm(1) HEAP \
+                 &    && BEQ HEAP #reg(0) l_1 \
+                 &    && #hide[$l_1:$] JUMP l_2 \
+                 &    && l_1: MV HEAP TODO \
+                 &    && #hide[$l_1:$] LW TODO #imm(1) TODO \
+                 &    && #hide[$l_1:$] #note[or use `bne`] BEQ TODO #reg(0) l_3 \
+                 &    && #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(1) HEAP \
+                 &    && #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
+                 &    && #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
+                 &    && #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
+                 &    && l_2: \
+$
+
+=== Store
+The first thing to note is that we only need to modify the storing procedure if we need to fill all four fields of the memory block.
+If only three or less fields should be stored, $STOREV$ is used to fill the memory block from back to front, without touching the first field at all,
+and then $ACQUIRE_1$ is called.
+
+The more difficult situation is when all four fields of the memory block should get filled.
+
+#todo[TODO]
+
+=== Release
+#todo[TODO]
+
+=== Load
+#todo[TODO]
 
 == Translation from #AxCut to #RISC-V
 #figure[
