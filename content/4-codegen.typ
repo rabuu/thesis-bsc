@@ -422,6 +422,201 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
 === Load
 #todo[TODO]
 
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
+
+  scale(0.8)
+
+  let regy = 4
+
+  content((0, regy - 0.5), [Registers])
+  slots(
+    15,
+    labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
+    data: (0, none, none, none, ddd, ddd) + (none,) * 8 + (ddd,),
+    offset: (2, regy),
+    open-right: true,
+  )
+
+  brace(1, offset: (7, regy), label: $Gamma$)
+  brace(2, offset: (8, regy), label: $v$)
+
+  let memy1 = 2
+  let memy2 = 0
+  content((0, memy1 - 0.5), [Memory])
+  memblock(
+    data: range(1, 9).map(i => data($a_#i$)),
+    offset: (5, memy1),
+  )
+  memblock(offset: (5, memy2))
+
+  ptr(
+    (4.5, regy - 0.6),
+    (4.5, memy2 - 0.5),
+    (5, memy2 - 0.5),
+  )
+
+  ptr(
+    (8.5, regy - 0.6),
+    (8.5, regy - 1.5),
+    (5.5, regy - 1.5),
+    (5.5, memy1),
+  )
+}))
+
+#todo[TODO]
+
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
+
+  scale(0.8)
+
+  let regy = 4
+
+  content((0, regy - 0.5), [Registers])
+  slots(
+    15,
+    labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
+    data: (0, none, none, none, ddd, ddd, none)
+      + range(2, 9).map(i => data($a_#i$))
+      + (ddd,),
+    offset: (2, regy),
+    open-right: true,
+  )
+
+  brace(1, offset: (7, regy), label: $Gamma$)
+  brace(2, offset: (8, regy), label: $v$)
+
+  let memy1 = 2
+  let memy2 = 0
+  content((0, memy1 - 0.5), [Memory])
+  memblock(
+    data: (data($a_1$),) + range(2, 9).map(i => data($a_#i$, active: false)),
+    offset: (5, memy1),
+  )
+  memblock(offset: (5, memy2))
+
+  ptr(
+    (4.5, regy - 0.6),
+    (4.5, memy2 - 0.5),
+    (5, memy2 - 0.5),
+  )
+
+  ptr(
+    (8.5, regy - 0.6),
+    (8.5, regy - 1.5),
+    (5.5, regy - 1.5),
+    (5.5, memy1),
+  )
+}))
+
+#todo[TODO]
+
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
+
+  scale(0.8)
+
+  let regy = 4
+
+  content((0, regy - 0.5), [Registers])
+  slots(
+    15,
+    labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
+    data: (0, none, none, none, ddd, ddd, none)
+      + range(2, 9).map(i => data($a_#i$))
+      + (ddd,),
+    offset: (2, regy),
+    open-right: true,
+  )
+
+  brace(1, offset: (7, regy), label: $Gamma$)
+  brace(8, offset: (8, regy), label: $Gamma_0$)
+
+  let memy1 = 2
+  let memy2 = 0
+  content((0, memy1 - 0.5), [Memory])
+  memblock(
+    data: (data($a_1$), none)
+      + range(3, 9).map(i => data($a_#i$, active: false)),
+    offset: (5, memy1),
+  )
+  memblock(offset: (5, memy2))
+
+  ptr(
+    (4.5, regy - 0.6),
+    (4.5, memy1 - 0.5),
+    (5, memy1 - 0.5),
+  )
+
+  ptr(
+    (6.5, memy1 - 0.6),
+    (6.5, memy1 - 1.5),
+    (5.5, memy1 - 1.5),
+    (5.5, memy2),
+  )
+
+  ptr(
+    (8.5, regy - 0.6),
+    (8.5, regy - 1.5),
+    (5.5, regy - 1.5),
+    (5.5, memy1),
+  )
+}))
+
+#todo[TODO]
+
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
+
+  scale(0.8)
+
+  let regy = 4
+
+  content((0, regy - 0.5), [Registers])
+  slots(
+    15,
+    labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
+    data: (0, none, none, none, ddd, ddd)
+      + range(1, 9).map(i => data($a_#i$))
+      + (ddd,),
+    offset: (2, regy),
+    open-right: true,
+  )
+
+  brace(1, offset: (7, regy), label: $Gamma$)
+  brace(8, offset: (8, regy), label: $Gamma_0$)
+
+  let memy1 = 2
+  let memy2 = 0
+  content((0, memy1 - 0.5), [Memory])
+  memblock(
+    data: (data($a_1$, active: false), none)
+      + range(3, 9).map(i => data($a_#i$, active: false)),
+    offset: (5, memy1),
+  )
+  memblock(offset: (5, memy2))
+
+  ptr(
+    (4.5, regy - 0.6),
+    (4.5, memy1 - 0.5),
+    (5, memy1 - 0.5),
+  )
+
+  ptr(
+    (6.5, memy1 - 0.6),
+    (6.5, memy1 - 1.5),
+    (5.5, memy1 - 1.5),
+    (5.5, memy2),
+  )
+}))
+
+#todo[TODO]
+
 == Translation from #AxCut to #RISC-V
 #figure[
   #set math.lr(size: 1em)
