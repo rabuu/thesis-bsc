@@ -617,6 +617,9 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
 
 #todo[TODO]
 
+=== Jump Tables and Virtual Tables
+#todo[TODO]
+
 == Translation from #AxCut to #RISC-V
 #figure[
   #set math.lr(size: 1em)
@@ -635,5 +638,3 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
     a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
   $
 ]
-
-#inline-note[$VTABLE$ and $JTABLE$ are missing.]
