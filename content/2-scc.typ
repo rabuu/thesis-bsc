@@ -1,5 +1,5 @@
 #import "/lib/lib.typ": *
-#import deps.fletcher
+#import deps: cetz, fletcher
 
 = The Sequent Calculus Compiler <ch:scc>
 This chapter provides a summary of the entire Sequent Calculus Compiler (SCC) pipeline as described by Müller et al. @Mueller2026,
@@ -1170,6 +1170,35 @@ Before invoking it, the required arguments must be placed in certain registers, 
   - Memory blocks and their layout
   - Constant-time lazy reference counting @Lam2024
 ]
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [The layout of heap memory blocks.],
+)[
+  #grid(
+    columns: 2,
+    column-gutter: 4em,
+    row-gutter: 1em,
+    align: (right + horizon, center + horizon),
+    [on the free list],
+    cetz.canvas({
+      import diagram: *
+      memblock(
+        data: ([`next`],),
+      )
+    }),
+
+    [in use],
+    cetz.canvas({
+      import diagram: *
+      memblock(
+        data: ([`rc`],),
+        fill: (reserved,) * 2 + (free-to-use,) * 6,
+      )
+    }),
+  )
+] <fig:scc:codegen:layout>
 
 === Translation from #AxCut to #RISC-V
 The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.

@@ -9,6 +9,9 @@
 #let data(it, active: true) = text(fill: if active { green } else { gray }, it)
 #let ptr = line.with(stroke: purple, mark: (end: (symbol: ")>", fill: purple)))
 
+#let reserved = gray.lighten(20%)
+#let free-to-use = green.lighten(40%)
+
 #let brace(range, offset: (0, 0), label: none) = {
   let (dx, dy) = offset
   cetz.decorations.brace((dx, dy), (dx + range, dy))
@@ -22,6 +25,7 @@
   offset: (0, 0),
   data: none,
   label: none,
+  fill: none,
   fields: false,
   size: 1,
   open-left: false,
@@ -33,6 +37,10 @@
   let ne = (x + size, y)
   let sw = (x, y - size)
   let se = (x + size, y - size)
+
+  if fill != none {
+    rect(nw, se, stroke: none, fill: fill)
+  }
 
   line(nw, ne)
   line(sw, se)
@@ -61,6 +69,7 @@
   n,
   data: (),
   labels: (),
+  fill: (),
   offset: (0, 0),
   fields: false,
   size: 1,
@@ -70,12 +79,14 @@
   for i in range(0, n) {
     let data = data.at(i, default: none)
     let label = labels.at(i, default: none)
+    let fill = fill.at(i, default: none)
     let open-left = open-left and i == 0
     let open-right = open-right and i == n - 1
     slot(
       i,
       data: data,
       label: label,
+      fill: fill,
       offset: offset,
       fields: fields,
       size: size,
@@ -85,9 +96,15 @@
   }
 }
 
-#let memblock(data: (), offset: (0, 0), size: 1) = slots(
+#let memblock(
+  data: (),
+  fill: (),
+  offset: (0, 0),
+  size: 1,
+) = slots(
   8,
   data: data,
+  fill: fill,
   offset: offset,
   fields: true,
   size: size,

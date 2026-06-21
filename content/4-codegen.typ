@@ -128,7 +128,43 @@ In the current layout #note[reference], it is the slot where the pointer to the 
 But it also corresponds to the register with the memory pointer to the block itself.
 
 == Changing the Memory Layout
-#inline-note[Move next-block offset, and reference count, from 0 to 1.]
+To solve the deadlock, the memory layout must be modified.
+There are two equally viable possibilities.
+Either swap the components of a variable so that second slot contains the memory pointer
+or store the pointer to the next block in a free list in the second slot instead of the first.
+In this thesis, the latter approach is chosen.
+
+Modifying the original layout in @fig:scc:codegen:layout yields the following result.
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Modified layout of heap memory blocks.],
+)[
+  #grid(
+    columns: 2,
+    column-gutter: 4em,
+    row-gutter: 1em,
+    align: (right + horizon, center + horizon),
+    [on the free list],
+    cetz.canvas({
+      import diagram: *
+      memblock(
+        data: (none, [`next`]),
+      )
+    }),
+
+    [in use],
+    cetz.canvas({
+      import diagram: *
+      memblock(
+        fill: (free-to-use,) * 8,
+      )
+    }),
+  )
+]
+
+As in the other figure, `next` stands for the pointer to the next block in the free list (potentially zero if there is none).
+The green highlighting of the slots shows that all eight slots are free to use because there are no more reserved slots.
 
 == Linear Memory Management
 #inline-note[$STORE_1$, $LOAD_1$, $ACQUIRE_1$, $RELEASE_1$]
