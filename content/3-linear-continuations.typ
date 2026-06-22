@@ -57,12 +57,15 @@ Very broadly speaking, a continuation is something that answers to the question 
 #todo[TODO]
 
 == Restricting #Fun
-As we have seen, correctly identifying which continuations are used linearly is much harder for programs using non-local control flow.
-Therefore, we restrict the optimization that this thesis explores to a certain subset of #Fun programs,
-i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
+As we have seen, a #Fun program with non-local control flow using control operators always leads to nonlinear continuations.
+As soon as any control operator is involved, only a complex analysis of the whole program can track which continuations exactly are used linearly.
+This thesis focuses only on programs that use no control operators at all.
 
-This restrictions leaves us with a less interesting but much more predictable language where control flow is completely implicit.
-And because of this implicitness we can be sure that every continuation is perfectly linear.
+So the optimization can only be applied to a certain subset of #Fun programs,
+i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
+This restrictions leaves us with a less interesting but much more predictable language where control flow is simple and completely implicit.
+Because of this implicitness we can be sure that every continuation is perfectly linear.
+
 The syntax of this restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
 By removing $LABEL$ and $GOTO$ from the language, we also lose the need for explicit covariables, and hence consumers in general.
 
@@ -103,18 +106,25 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
       ),
     )
   ]
-]
+] <def:lin:fun>
 
-=== Intuitionistic!
-#inline-note[Maybe a section about how Fun now loses classical expression and gets intuitionistic.]
+The typing rules from @fig:scc:fun:typing also apply to this fragment of #Fun.
+Of course, the rules #rn("Label"), #rn("Goto"), #rn("Covar"), and $#rn("Arg") _3$ are not needed anymore.
 
-=== Typing?
-#inline-note[This boring but I should add some note.]
+=== Control Operators and Classical Logic
+The addition of the control operators $LABEL$ and $GOTO$ in #Fun corresponds to classical logic,
+similarly to `call/cc` in Scheme @Timothy1990formulae.
+This enables programs corresponding to classical propositions, like the law of the excluded middle or double negation elemination,
+that cannot be derived without control operators.
+
+Restricting #Fun, therefore, also means that we lose the ability to write those classical programs.
+The fragment from @def:lin:fun corresponds to intuitionistic logic which will get even more obvious in #Core.
+
+#inline-note[Idk about this section. It is poorly phrased and not important to the thesis.]
 
 == Restricting #Core
-The goal is now to retain the information about linear continuations that we gained by restricting #Fun,
-to finally use it to optimize code generation.
-But in #Core there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply forbid.
+After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
+In #Core, there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply remove from the language.
 Instead, all continuations are explicit now, and we must structurally ensure that they are used linearly.
 
 The key idea here is that, coming from #Fun, every continuation and consumer must be linear anyway,
@@ -198,7 +208,7 @@ Note that it is a strict subset of @def:scc:core.
 
 In #Core programs that are translated from the restricted fragment of #Fun,
 all covariables and consumer arguments must stem from the translation process.
-In argument and parameter lists, they are exactly the added arguments that correspond to the implicit continuation in #Fun.
+In argument and parameter lists, they are exactly the added consumer arguments that correspond to the implicit continuation in #Fun.
 
 Here, this is made explicit by splitting arguments, parameters, and typing contexts into parts for producers and consumers, respectively.
 In this restricted version of #Core, every top-level definition --- except the special entry point `main` which is omitted here ---

@@ -262,6 +262,15 @@ Schuster2025:
       location: New York, NY, USA
     issue: OOPSLA1
     volume: 9
+Timothy1990formulae:
+  type: article
+  title: A formulae-as-types notion of control
+  author: Timothy, G GRIFFIN
+  date: 1990
+  page-range: 47-58
+  parent:
+    type: proceedings
+    title: Proceedings of the 17th ACM SIGPLAN-SIGACT symposium on Principles of Programming Languages (POPL'90), Association for Computing Machinery, New York
 Waterman2014riscv:
   type: report
   title: 'The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Version 2.0'
