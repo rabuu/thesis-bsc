@@ -416,8 +416,26 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
   )
 }))
 
+#todo[TODO]
+
+$
+  STORE_1 sp r sp Gamma & := && STOREV r sp Gamma &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
+  &&& ACQUIRE_1 sp r \
+  STORE_1 sp r sp (v :^chi tau, Gamma) & := && STOREV r sp Gamma &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| = 4 \
+  &&& SW (REG_1 sp v) sp (OFFSET_1 sp v) HEAP && \
+  &&& ACQUIRE_1 sp r && \
+  &&& SW (REG_2 sp v) sp (OFFSET_2 sp v) HEAP && \
+$
+
 === Release
 #todo[TODO]
+
+$
+  RELEASE_1 sp r & := && SW HEAP #note[parameter]#imm(1) sp r \
+                 &    && MV HEAP r \
+$
 
 === Load
 #todo[TODO]
@@ -616,6 +634,17 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
 }))
 
 #todo[TODO]
+
+$
+  LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
+  &&& LOADV r sp Gamma \
+  LOAD_1 sp r sp (v :^chi tau, Gamma) & := && LOADV r sp Gamma &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| = 4 \
+  &&& LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r && \
+  &&& RELEASE_1 sp r && \
+  &&& LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r && \
+$
 
 === Jump Tables and Virtual Tables
 #todo[TODO]
