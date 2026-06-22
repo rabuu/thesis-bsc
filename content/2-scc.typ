@@ -436,10 +436,10 @@ The naming conventions from @naming hold here, too.
 There are three separate syntactic categories in #Core: producers, consumers and statements.
 As already said earlier, producers make up the data of a program and consumers are first-class evaluation contexts.
 Statements are the place where actual computation happens.
-#note[I don't like this sentence:] This can mean a conditional, a function call, terminating the program, or a so-called _cut_ $cut(p, c)$ where a producer and a consumer interact.
+#sidenote[I don't like this sentence:] This can mean a conditional, a function call, terminating the program, or a so-called _cut_ $cut(p, c)$ where a producer and a consumer interact.
 
 Special about the sequent-calculus-based representation is the almost perfect symmetry of producers and consumers.
-Only the built-in integers and arithmetic on them #note[Explain why only +, but already in #Fun] do not have consumer counterparts.
+Only the built-in integers and arithmetic on them #sidenote[Explain why only +, but already in #Fun] do not have consumer counterparts.
 
 But for algebraic (co)data types, the symmetry is very obvious.
 In contrast to #Fun, pattern matches and destructor invocations in #Core are separated from the value they act on and appear as independent consumers.
@@ -449,11 +449,11 @@ and corresponding pattern matches and destructors as consumers.
 Central to the $lambda mu tilde(mu)$-calculus, and thus #Core, are the abstraction operators $mu$ and $tilde(mu)$.
 The producer $mu alpha. s$ captures the current consumer and binds it to the covariable $alpha$ for the scope of its body $s$.
 Dually, the consumer $tilde(mu) x. s$ captures the current producer and binds it to the variable $x$ in $s$.
-#note[Example or further explanation needed.]
+#sidenote[Example or further explanation needed.]
 
 In #Core, we have to keep track of both variable and covariable bindings in the typing environments, which also serve as parameter lists.
 Hence, each binding is annotated with its _chirality_, i.e. whether it is a producer or consumer.
-#note[But this is the same as in #Fun.]
+#sidenote[But this is the same as in #Fun.]
 
 Another notable aspect of #Core is that top-level definitions and codata destructors no longer specify a return type.
 Instead, it is replaced by an additional consumer argument, the function's _continuation_.
@@ -584,7 +584,7 @@ Statements, representing computation, do not have return types themselves.
 ) <fig:scc:core:typing>
 
 Most of the rules exist similarly in #Fun (@fig:scc:fun:typing).
-We present all of them here to, again, highlight the symmetry of #Core. #note[And maybe for the contrast to later.]
+We present all of them here to, again, highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
 Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
 all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
 
@@ -688,7 +688,7 @@ For the sake of completeness, the definition of (co)values and the lifting funct
   ],
 ) <fig:scc:f2c>
 
-#inline-note[Explain the translation. I am not sure yet how much of is relevant enough to explain.]
+#note[Explain the translation. I am not sure yet how much of is relevant enough to explain.]
 
 == Transformations on #Core <sec:scc:transformations>
 
@@ -909,7 +909,7 @@ For the sake of completeness, the definition of (co)values and the lifting funct
 ) <fig:scc:axcut:typing>
 
 == Translation from #Core to #AxCut <sec:scc:c2a>
-#inline-note[Improve formatting.]
+#note[Improve formatting.]
 #big-figure[
   #set math.lr(size: 1em)
 
@@ -1038,7 +1038,7 @@ Lastly, $ECALL$ is used to make a system call.
 Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
 === The Model
-#inline-note[
+#note[
   - $Gamma$ is registers
   - A variable living in $Gamma$ takes up two registers
   - $REG_1$, $REG_2$
@@ -1079,7 +1079,7 @@ Before invoking it, the required arguments must be placed in certain registers, 
 The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
 Each #AxCut construct is explained separately.
 
-#inline-note[
+#note[
   TODO:
   - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
   - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
@@ -1102,7 +1102,7 @@ If this involves dropping or duplicating variables that point to heap-allocated 
 
 The reordering is achieved by a parallel moves algorithm @Rideau2008parallelmoves written as $MOVE$ that is not further explained here.
 
-#inline-note[$SHARE$ and $ERASE$]
+#note[$SHARE$ and $ERASE$]
 
 $
   a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
@@ -1175,13 +1175,13 @@ the pointer to the fields of the constructor or destructor that were stored in m
 Firstly, the tag index is used to get to the correct $JUMP$ instruction, and then the jump table itself is generated.
 In every branch the fields are loaded back into the registers. This is done using a the variable that stand after $Gamma$, above called $x$, which is exactly the variable $v$ which holds the memory pointer.
 
-#inline-note[This needs more work. Examples would be good.]
+#note[This needs more work. Examples would be good.]
 
 ==== Objects and Invocations
 The $CREATE$ instruction is similar to the $LET$ instruction in that it also creates a new variable.
 But in contrast to binding a constructor or destructor to a variable, it creates a closure object.
 
-#inline-note[Unfinished!]
+#note[Unfinished!]
 
 $
   VTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma_0 & := && JUMP l_1 \
@@ -1193,7 +1193,7 @@ $
   &&& VTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
 $
 
-#inline-note[Note the $Gamma_0$ in the $LOAD$.]
+#note[Note the $Gamma_0$ in the $LOAD$.]
 
 $
   a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \

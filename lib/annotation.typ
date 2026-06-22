@@ -2,8 +2,8 @@
 
 #let todo = text.with(fill: red)
 
-#let note = deps.drafting.margin-note
-#let inline-note = deps.drafting.inline-note
+#let sidenote = deps.drafting.margin-note
+#let note = deps.drafting.inline-note
 
 // FIX: see https://github.com/ryuryu-ymj/mannot/issues/9
 #let mannot-mark-fixed(

@@ -2,7 +2,7 @@
 #import deps: cetz
 
 = Optimizing Code Generation <ch:codegen>
-#inline-note[Chapter Introduction...]
+#note[Chapter Introduction...]
 
 == The Key Observation
 A memory block that is allocated for linear use is statically known to be consumed exactly once.
@@ -124,7 +124,7 @@ So it must be called at least after loading $a_1$.
 But at the same time, loading $a_1$ into the first register after $Gamma$ overwrites the pointer to the memory block, which is needed for the rest of the loads and for $RELEASE$.
 
 In both cases the deadlock results from the double meaning of the first slot.
-In the current layout #note[reference], it is the slot where the pointer to the next block of the free list is stored.
+In the current layout #sidenote[reference], it is the slot where the pointer to the next block of the free list is stored.
 But it also corresponds to the register with the memory pointer to the block itself.
 
 == Changing the Memory Layout
@@ -181,17 +181,17 @@ and `rc` for the reference count of an allocated memory block.
 Reserved slots of in-use slots are illustrated with grey background, slots that can freely be used for payload data are highlighted in green.
 
 Importantly, the modification affects the memory layout of all blocks, not only those used linearly.
-#inline-note[Use a auxiliary definition to parametrize this. Otherwise, the nonlinear memory mechanisms would have to be updated.]
+#note[Use a auxiliary definition to parametrize this. Otherwise, the nonlinear memory mechanisms would have to be updated.]
 
 == Linear Memory Management
-#inline-note[intro]
+#note[intro]
 
 === Acquire
 The job of $ACQUIRE$ is to make the first block of the linear free list available to use
 and restore the invariant that the $HEAP$ register points to a free memory block.
 The only difference for $ACQUIRE_1$, in contrast to $ACQUIRE$ from @sec:scc:codegen:mem, is that it does not have to initialize a reference count.
 
-#inline-note[Explain $BNE$, probably in @sec:scc:codegen.]
+#note[Explain $BNE$, probably in @sec:scc:codegen.]
 
 $
   ACQUIRE_1 sp r & := && MV r HEAP \
@@ -442,7 +442,7 @@ A block that is known to be used linearly does not have a reference count --- an
 That means that $RELEASE_1$ does not have the check any reference count and can directly put the memory block back on the linear free list.
 
 $
-  RELEASE_1 sp r & := && SW HEAP #note[parameter] #imm(1) sp r \
+  RELEASE_1 sp r & := && SW HEAP #sidenote[parameter] #imm(1) sp r \
                  &    && MV HEAP r \
 $
 

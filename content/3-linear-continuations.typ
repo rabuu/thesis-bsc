@@ -120,7 +120,7 @@ that cannot be derived without control operators.
 Restricting #Fun, therefore, also means that we lose the ability to write those classical programs.
 The fragment from @def:lin:fun corresponds to intuitionistic logic which will get even more obvious in #Core.
 
-#inline-note[Idk about this section. It is poorly phrased and not important to the thesis.]
+#note[Idk about this section. It is poorly phrased and not important to the thesis.]
 
 == Restricting #Core
 After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
@@ -329,10 +329,10 @@ And constructors cannot have any consumer field.
   ],
 )
 
-#inline-note[Structural rules. Rules for arguments.]
+#note[Structural rules. Rules for arguments.]
 
 === Linearity & Intuitionistic
-#inline-note[This resembles Gentzen's LJ :O]
+#note[This resembles Gentzen's LJ :O]
 
 === Focusing & Shrinking
 #todo[TODO]
@@ -374,7 +374,7 @@ And constructors cannot have any consumer field.
         name: $#rn("Let") _omega"-"pi$,
         $pi T br(..., X(Gamma_0), ...) in Theta$,
         $Gamma, mark(v :^(chi_1(pi))_omega) T tack s$,
-        inline-note[$omega(Gamma_0) = Gamma_0$],
+        note[$omega(Gamma_0) = Gamma_0$],
         $Theta mid Gamma, Gamma_0 tack mark(LET_omega) sp v = X(Gamma_0); sp s$,
       )),
       prooftree(rule(
@@ -389,7 +389,7 @@ And constructors cannot have any consumer field.
         $pi T br(X_1(Gamma_1), ...) in Theta$,
         $Gamma, mark(v :^(chi_2(pi))_omega) T tack s$,
         $forall i: Gamma_i, Gamma_0 tack s_i$,
-        inline-note[$omega(Gamma_0)=Gamma_0$],
+        note[$omega(Gamma_0)=Gamma_0$],
         $Theta mid Gamma, Gamma_0 tack mark(CREATE_omega) sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
       )),
       prooftree(rule(
@@ -409,7 +409,7 @@ And constructors cannot have any consumer field.
         name: rn("Substitute"),
         $Gamma tack sigma : Gamma'$,
         $Gamma' tack s$,
-        inline-note[Linearity Condition: $forall v in "lin"(Gamma). exists_1 v' in sigma. v = v'$],
+        note[Linearity Condition: $forall v in "lin"(Gamma). exists_1 v' in sigma. v = v'$],
         $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
       )),
     ),
@@ -478,4 +478,4 @@ And constructors cannot have any consumer field.
   $
 ]
 
-#inline-note[The (maybe) new #Core syntax is not used here yet. Maybe also include other cases.]
+#note[The (maybe) new #Core syntax is not used here yet. Maybe also include other cases.]
