@@ -11,13 +11,23 @@ The idea of this thesis is that in many program this power and flexibility is no
 And we do not want to sacrifice performance and memory usage in these cases.
 
 #inline-note[
-  Example in #AxCut might be nice.
+  Motivating example in #AxCut might be nice.
 ]
 
 == What is a Continuation?
 Very broadly speaking, a continuation is something that answers to the question "what happens next?".
 
-#inline-note[Maybe an example for every stage?]
+=== ...in #Fun
+#todo[TODO]
+
+=== ...in #Core
+#todo[TODO]
+
+=== ...in #AxCut
+#todo[TODO]
+
+=== ...in Machine Code
+#todo[TODO]
 
 == Restricting #Fun
 As we have seen, correctly identifying which continuations are used linearly is much harder for programs using non-local control flow.
