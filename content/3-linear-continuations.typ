@@ -14,6 +14,15 @@ And we do not want to sacrifice performance and memory usage in these cases.
   Example in #AxCut might be nice.
 ]
 
+== Alternative Approaches
+#todo[keep it short]
+
+=== Linearity Detection
+#todo[TODO: whole-program analysis]
+
+=== Fully Linear Type System with User Annotations
+#todo[TODO]
+
 == What is a Continuation?
 Very broadly speaking, a continuation is something that answers to the question "what happens next?".
 
