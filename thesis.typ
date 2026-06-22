@@ -141,7 +141,6 @@
 #include "content/3-linear-continuations.typ"
 #include "content/4-codegen.typ"
 #include "content/5-conclusion.typ"
-#include "content/9-scratch-area.typ"
 
 #bibliography(
   "references.yaml",
@@ -149,6 +148,4 @@
   title: "References",
 )
 
-#show: appendix.with(title: none)
-
-#include "content/A-implementation.typ"
+// #show: appendix.with(title: none)
