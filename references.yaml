@@ -66,6 +66,23 @@ Curien2000:
       location: New York, NY, USA
     issue: 9
     volume: 35
+Danvy2003cps:
+  type: article
+  title: A first-order one-pass CPS transformation
+  author:
+  - Danvy, Olivier
+  - Nielsen, Lasse R.
+  date: 2003
+  page-range: 239-257
+  url: https://www.sciencedirect.com/science/article/pii/S0304397502007338
+  serial-number:
+    doi: https://doi.org/10.1016/S0304-3975(02)00733-8
+    issn: 0304-3975
+  parent:
+    type: periodical
+    title: Theoretical Computer Science
+    issue: 1
+    volume: 308
 Downen2016sequent:
   type: article
   title: Sequent calculus as a compiler intermediate language

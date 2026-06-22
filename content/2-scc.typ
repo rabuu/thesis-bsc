@@ -6,7 +6,6 @@ This chapter provides a summary of the entire Sequent Calculus Compiler (SCC) pi
 and serves as the foundation for the subsequent chapters that will modify and extend it.
 The presentation follows the original paper closely, adapted here to establish the notation and terminology used throughout this thesis.
 
-== Overview <sec:scc:overview>
 The SCC compiles a functional programming language, called #Fun, to native machine code.
 The concrete target architecture is not very relevant here and can easily be adapted.
 In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we only consider #RISC-V in this thesis.
@@ -83,13 +82,13 @@ where each box represents a compiler stage and the arrows represent the translat
 The following sections will explain every stage and translation step-by-step.
 
 == The Surface Language #Fun <sec:scc:fun>
-Every compiler needs a surface language: the language of its source programs, typically written by a human #footnote[Or, increasingly, by some large language model. #note[Weird, remove this.]].
+Every compiler pipeline starts with a surface language: the language of its source programs which are typically written by a human.
 In the case of the SCC, this language is called #Fun @Binder2024grokking.
 It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
 #Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it functions.
 
 === Syntax
-This thesis contains a number of languages, each with their own syntax.
+This thesis covers a multiple languages, each with their own syntax.
 To help readability, syntax elements that are common to more than one language share the same notation.
 Here, we establish a nomenclature that is valid for the rest of this thesis.
 
@@ -170,21 +169,21 @@ With these conventions in place, we can define the syntax of the surface languag
   ]
 ] <def:scc:fun>
 
-#Fun supports standard features such as top-level (first-order) functions, variables, simple arithmetic and conditional expressions, and (non-recursive) let-bindings.
+At its core, #Fun is an ordinary functional language, supporting standard features such as top-level (first-order) functions, variables, simple arithmetic, conditional expressions, and (non-recursive) let-bindings.
 
 Besides built-in machine integers ($i64$), there are user-definable algebraic data and codata types.
-Algebraic data types are a familiar concept from many popular statically-typed functional programming languages.
+Algebraic data types are a familiar concept from many popular statically-typed programming languages --- like Haskell's `data` or Rust's `enum` types.
 They are defined by their constructors $K(sigma)$, which produce elements of the data type, and are consumed by pattern matching ($CASE$).
 Dually, the less common algebraic codata types @Hagino1989 @Downen2019codata are defined by their destructors $D(sigma)$, which consume elements of the codata type, and are produced by copattern matching ($NEW$) @Abel2013copattern;
-they are very similar to interfaces in object-oriented programming.
-Together the two constructs form a very general and powerful framework for user-definable types, subsuming commonly built-in features of popular programming languages like sum and product types, coinductive types, and higher-order function types,
+they are closely related to interfaces and objects in object-oriented programming.
+Together, data and codata provide a general framework for user-defined types, subsuming other desirable features of popular programming languages like lists, streams, and even higher-order function types.
 
-Another very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
+A very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
 They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the Scheme family of programming languages.
 $LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
 With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
 
-The $EXIT$ construct terminates the program with a given exit code.
+The $EXIT$ expression terminates the program with a given exit code.
 
 The naming of terms and covariables as _producers_ and _consumers_, respectively, are chosen to mimic the terminology used for the languages that will get introduced later.
 
@@ -327,7 +326,7 @@ In #rn("Label"), a covariable $alpha$ is added to the context when typing the bo
 If there is a covariable in the current context, #rn("Goto") can be used to invoke it.
 Here, the argument must be of the same type as the consumer covariable.
 The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
-Similarly in the rule #rn("Exit"), the expression's type is arbitrary because, again, the computation will not continue.
+In the rule #rn("Exit"), the expression's type is also arbitrary because the program terminating makes the type of the expression irrelevant.
 
 == The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
@@ -608,7 +607,14 @@ This guarantees that they can meaningfully interact.
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
 this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
 
-#inline-note[Longer introduction. bindvals.]
+This translation bridges the gap between the direct-style #Fun and the two-sided world of the sequent calculus.
+It resembles a CPS transformation @Danvy2003cps and works by passing the current continuation as argument of the translation to the correct position.
+The transformation is designed to avoid administrative redexes.
+
+At one point, i.e. translating a destructor invocation, the translation makes use of a function $bindvals(dot, dot)$
+to lift non-(co)values out of argument position for the destructor.
+The reason behind this is not relevant to this thesis.
+For the sake of completeness, the definition of (co)values and the lifting function can be found in @app:supp:bindval.
 
 #figure(
   kind: "Figure",
@@ -656,7 +662,6 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
       $
         #hide[$f2c(x, with: c) := cut(x, c)$] \
         f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
-        #note[bindvals not yet defined]
         f2c(p.D(sigma), with: c) & := bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
         f2c(EXIT p, with: c) & := EXIT f2c(p) \
         f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
@@ -682,6 +687,8 @@ this section presents the translation function $f2c(dot)$ that transforms the fo
     $
   ],
 ) <fig:scc:f2c>
+
+#inline-note[Explain the translation. I am not sure yet how much of is relevant enough to explain.]
 
 == Transformations on #Core <sec:scc:transformations>
 
