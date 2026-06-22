@@ -187,32 +187,40 @@ Importantly, the modification affects the memory layout of all blocks, not only 
 #inline-note[intro]
 
 === Acquire
-As a first step of the optimization, we modify $ACQUIRE$ for linear blocks and call it $ACQUIRE_1$.
-Its job is to maintain the invariant that the $HEAP$ register points to a free memory block.
-The difference to its nonlinear variant from @sec:scc:codegen:mem is that it does not have to initialize a reference count.
+The job of $ACQUIRE$ is to make the first block of the linear free list available to use
+and restore the invariant that the $HEAP$ register points to a free memory block.
+The only difference for $ACQUIRE_1$, in contrast to $ACQUIRE$ from @sec:scc:codegen:mem, is that it does not have to initialize a reference count.
+
+#inline-note[Explain $BNE$, probably in @sec:scc:codegen.]
 
 $
   ACQUIRE_1 sp r & := && MV r HEAP \
                  &    && LW HEAP #imm(1) HEAP \
-                 &    && BEQ HEAP #reg(0) l_1 \
-                 &    && #hide[$l_1:$] JUMP l_2 \
-                 &    && l_1: MV HEAP TODO \
+                 &    && BNE HEAP #reg(0) l_1 \
+                 &    && #hide[$l_1:$] MV HEAP TODO \
                  &    && #hide[$l_1:$] LW TODO #imm(1) TODO \
-                 &    && #hide[$l_1:$] #note[or use `bne`] BEQ TODO #reg(0) l_3 \
-                 &    && #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(1) HEAP \
-                 &    && #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
-                 &    && #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
-                 &    && #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
-                 &    && l_2: \
+                 &    && #hide[$l_1:$] BEQ TODO #reg(0) l_2 \
+                 &    && #hide[$l_1:$] #hide[$l_2:$] SW #reg(0) #imm(1) HEAP \
+                 &    && #hide[$l_1:$] #hide[$l_2:$] ERASEFIELDS HEAP \
+                 &    && #hide[$l_1:$] #hide[$l_2:$] JUMP l_2 \
+                 &    && #hide[$l_1:$] l_2: ADDI TODO HEAP #imm(32) \
+                 &    && l_1:
 $
 
 === Store
-The first thing to note is that we only need to modify the storing procedure if we need to fill all four fields of the memory block.
-If only three or less fields should be stored, $STOREV$ is used to fill the memory block from back to front, without touching the first field at all,
-and then $ACQUIRE_1$ is called.
+For $STORE_1$, there are two cases to consider.
+If only three or less of the four available fields are needed in a memory block, there is no issue like in @sec:codegen:naive.
+Like in $STORE$, the memory block is filled from back to front using $STOREV$, without touching the first field.
+Then, $ACQUIRE_1$ puts the memory pointer into the registers and restores the $HEAP$ invariant.
 
-The more difficult situation is when all four fields of the memory block should get filled.
-The following illustrations show how to $STORE_1$ operates in this situation.
+$
+  STORE_1 sp r sp Gamma & := && STOREV r sp Gamma &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
+  &&& ACQUIRE_1 sp r \
+$
+
+The more difficult case is when all four fields of the memory block should get filled.
+The following illustrations show how $STORE_1$ operates in this situation.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -258,8 +266,10 @@ The following illustrations show how to $STORE_1$ operates in this situation.
   )
 }))
 
-The goal is to store the eight registers from $Gamma_0$ into the memory block.
-In contrast to the scenario from @sec:codegen:naive, the memory pointer to the second free list block is located in the second slot of the first block due to the layout modifications.
+The goal is to store the eight registers from $Gamma_0$ into the memory block,
+which is possible now, in contrast to the same situation in @sec:codegen:naive.
+This is due to the layout modifications that cause the pointer to the next block of the free list to be stored in the second slot.
+But we have to be careful about the order of stores.
 
 First, the latter three fields and the very first slot can be stored as usual because this does not overwrite anything.
 
@@ -309,9 +319,8 @@ First, the latter three fields and the very first slot can be stored as usual be
   )
 }))
 
-There are two actions left to do:
-storing $a_2$ and using $ACQUIRE_1$ to restore the invariant that $HEAP$ points to some ready-to-use memory block.
-Because of the layout change this is not a deadlock situation anymore.
+There are two actions left to do: storing $a_2$ and using $ACQUIRE_1$.
+This is not a deadlock situation anymore.
 But it is important to use $ACQUIRE_1$ before storing $a_2$, otherwise the pointer to the next memory block would be overwritten.
 By using $ACQUIRE_1$ now, the free list invariant is established.
 
@@ -368,7 +377,7 @@ By using $ACQUIRE_1$ now, the free list invariant is established.
   )
 }))
 
-And finally, because the $HEAP$ already points to the correct memory block,
+And finally, because $HEAP$ already points to the correct memory block,
 $a_2$ can be stored into the second slot of the memory block, overwriting the old pointer.
 
 #figure(cetz.canvas({
@@ -416,29 +425,42 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
   )
 }))
 
-#todo[TODO]
+Using this approach, all four fields can be used for actual data.
 
 $
-  STORE_1 sp r sp Gamma & := && STOREV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
-  &&& ACQUIRE_1 sp r \
   STORE_1 sp r sp (v :^chi tau, Gamma) & := && STOREV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| = 4 \
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |v :^chi tau, Gamma| = 4 \
   &&& SW (REG_1 sp v) sp (OFFSET_1 sp v) HEAP && \
   &&& ACQUIRE_1 sp r && \
   &&& SW (REG_2 sp v) sp (OFFSET_2 sp v) HEAP && \
 $
 
 === Release
-#todo[TODO]
+When loading data from a memory block,
+$RELEASE$ is used to either decrement the reference count of the block or put it back on the free list if the reference count is zero.
+A block that is known to be used linearly does not have a reference count --- and if it had, the reference count would always be zero.
+That means that $RELEASE_1$ does not have the check any reference count and can directly put the memory block back on the linear free list.
 
 $
-  RELEASE_1 sp r & := && SW HEAP #note[parameter]#imm(1) sp r \
+  RELEASE_1 sp r & := && SW HEAP #note[parameter] #imm(1) sp r \
                  &    && MV HEAP r \
 $
 
 === Load
-#todo[TODO]
+Analogous to $STORE_1$, there are again two cases to consider for $LOAD_1$.
+The simple case is when the memory block that is loaded from contains three or less fields of data.
+First, $RELEASE_1$ is used to put the memory block on the linear free list and stores the link to the next block of the free list into the second slot.
+This is not a problem because the first field does not store data that should be loaded.
+Then, the slots are loaded from back to front into the registers using $LOADV$.
+
+$
+  LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r &&
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
+  &&& LOADV r sp Gamma \
+$
+
+In the case that four fields are to be loaded from the memory block into the registers,
+the procedure is slightly more complex.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -483,7 +505,8 @@ $
   )
 }))
 
-#todo[TODO]
+The first step is to load all slots which do not overwrite anything.
+These are all slots but the first ($a_1$ in the illustration).
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -530,7 +553,9 @@ $
   )
 }))
 
-#todo[TODO]
+Now, we cannot load $a_1$ directly because that would overwrite the memory pointer to the block.
+But because of the changed memory layout we can use $RELEASE_1$ here.
+It puts the pointer to the next memory block into the second slot which is already loaded.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -585,7 +610,7 @@ $
   )
 }))
 
-#todo[TODO]
+And finally, $a_1$ can be loaded to complete the procedure.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -633,14 +658,11 @@ $
   )
 }))
 
-#todo[TODO]
+This method enables loading all four fields from a memory block.
 
 $
-  LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
-  &&& LOADV r sp Gamma \
   LOAD_1 sp r sp (v :^chi tau, Gamma) & := && LOADV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| = 4 \
+  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |v :^chi tau, Gamma| = 4 \
   &&& LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r && \
   &&& RELEASE_1 sp r && \
   &&& LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r && \

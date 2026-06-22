@@ -63,6 +63,7 @@
 #let LW = _rv("lw")
 #let MV = _rv("mv")
 #let BEQ = _rv("beq")
+#let BNE = _rv("bne")
 #let ADD = _rv("add")
 #let ADDI = _rv("addi")
 #let JUMP = _rv("j")
