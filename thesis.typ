@@ -148,4 +148,6 @@
   title: "References",
 )
 
-// #show: appendix.with(title: none)
+#show: appendix.with(title: none)
+
+#include "content/A-supplementary-formalization.typ"
