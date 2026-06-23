@@ -32,8 +32,7 @@ Consumers as a first-class construct naturally allow for very powerful and flexi
   If a continuation is dropped, its reference count is decremented and the corresponding memory block is potentially freed.
 ]
 
-In general, the SCC allows continuations, representing the control flow of the program,
-to be arbitrarily duplicated and dropped, just like regular data.
+In general, the SCC allows continuations to be arbitrarily duplicated and dropped, just like regular data.
 And the generated code must keep track of when memory is allocated and freed, for continuations and data alike.
 
 But not all programs make use of this.
