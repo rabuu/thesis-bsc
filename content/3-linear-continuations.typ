@@ -40,11 +40,46 @@ In many functional programs control flow is simple.
 The motivation behind this thesis is that we do not want to sacrifice performance and memory usage for power and flexibility that is not even used.
 The goal of this chapter is to identify what it means for control flow to be simple and make this information available to the code generation stage.
 
-== What Do Linear Continuations Look Like?
-Very broadly speaking, a continuation is something that answers to the question "what happens next?".
+== Control Flow and Continuations
 
 === ...in #Fun
-#todo[TODO]
+Control flow in #Fun is mostly implicit as a result of its call and return semantics.
+Invoking a top-level definition or destructor transfers control from the caller to the callee
+which is then handed back with a return value.
+
+#example[
+  This program demonstrates local control flow in #Fun programs.
+  $
+    & DEF f(): i64 sp { quad g(#imm(1)) + #imm(2) quad } \
+    & DEF g(x: i64): i64 sp { quad x + x quad }
+  $
+  The function $f$ invokes $g$ with some argument.
+  The function $g$ must return some value --- unless it terminates the program --- and has no influence on what happens after it returns.
+  Only the body of $f$ controls how the computation continues.
+] <ex:lin:fun:local>
+
+But there is an exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual control flow
+by providing explicit control of where some computation continues.
+In #Fun, $LABEL$ is the only way to get an explicit handle to the otherwise implicit continuation.
+Labels can be freely passed around as covariables which are allowed to be duplicated or dropped.
+
+#example[
+  This #Fun program uses control operators causing non-local control flow.
+  $
+    & DEF f(): i64 { quad LABEL alpha sp { sp g(#imm(1), sp alpha) + #imm(2) sp } quad } \
+    & DEF g(x: i64, sp alpha :^cns i64) sp { \
+      & quad IF x equiv #imm(0) sp { quad GOTO alpha sp (x) quad } \
+      & quad ELSE { quad x + x quad } \
+      & } \
+  $
+  Here, $f$ gives its entire body the label $alpha$ and provides it to $g$ as an additional argument.
+  By giving $g$ access to this label, the function can arbitrarily decide whether it returns a value, handing control back to the call side,
+  or invoking the $alpha$. At the call side in $f$, it cannot be known if the computation will resume after the call to $g$.
+] <ex:lin:fun:nonlocal>
+
+Control flow like in @ex:lin:fun:local that is completely decided by #Fun's implicit semantics of calls and return values is referred to as _local_
+because computation is known to continue exactly where it left off.
+When explicit control effects like in @ex:lin:fun:nonlocal break this property, it is called _non-local_ control flow.
 
 === ...in #Core
 #todo[TODO]
