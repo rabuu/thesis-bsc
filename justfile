@@ -2,6 +2,8 @@ VIEWER := "okular"
 ENTRY := "thesis.typ"
 ARTIFACT := "thesis.pdf"
 SYNC_PATH := "~/uni/ba/thesis.pdf"
+INITIAL_PRESENTATION := "initial-presentation.typ"
+FINAL_PRESENTATION := "final-presentation.typ"
 
 alias c := compile
 alias w := watch
@@ -39,3 +41,9 @@ configure-git-hooks:
 
 sync: compile
 	cp {{ARTIFACT}} {{SYNC_PATH}}
+
+initial:
+	typst compile {{INITIAL_PRESENTATION}}
+
+final:
+	typst compile {{FINAL_PRESENTATION}}
