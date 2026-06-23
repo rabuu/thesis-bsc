@@ -5,36 +5,6 @@ A central feature of the SCC is how it explicitly represents control flow,
 leveraging the symmetric properties of data and computation contexts inherited from the sequent calculus.
 Consumers as a first-class construct naturally allow for very powerful and flexible handling of control flow.
 
-#example[
-  #let Bool = `Bool`
-  #let (True, False) = (`True`, `False`)
-  #let foo = `foo`
-  The following simple #AxCut program demonstrates non-local control flow.
-  It is not known beforehand where the computation continues after #foo.
-  It depends on the value of $x$ whether $alpha_1$ or $alpha_2$ is invoked.
-
-  $
-    & DATA Bool sp { sp True, sp False sp } \
-    & DEF foo(x :^prd i64, sp alpha_1 :^cns Bool, sp alpha_2 :^cns Bool) sp { \
-    & quad IF x equiv 0 sp { \
-    & quad quad SUBSTITUTE (alpha_1 := alpha_1); \
-    & quad quad INVOKE alpha_1 True \
-    & quad } ELSE sp { \
-    & quad quad SUBSTITUTE (alpha_2 := alpha_2); \
-    & quad quad INVOKE alpha_2 False \
-    & quad } \
-    & } \
-  $
-
-  Here, we need the flexibility that the SCC provides for handling control flow.
-  One of the continuations $alpha_1$ and $alpha_2$ is dropped at runtime, depending on the branch of the conditional statement.
-  That requires a runtime system to track this behavior, i.e. reference counting.
-  If a continuation is dropped, its reference count is decremented and the corresponding memory block is potentially freed.
-]
-
-In general, the SCC allows continuations to be arbitrarily duplicated and dropped, just like regular data.
-And the generated code must keep track of when memory is allocated and freed, for continuations and data alike.
-
 But not all programs make use of this.
 In many functional programs control flow is simple.
 The motivation behind this thesis is that we do not want to sacrifice performance and memory usage for power and flexibility that is not even used.
@@ -86,6 +56,33 @@ When explicit control effects like in @ex:lin:fun:nonlocal break this property, 
 
 === ...in #AxCut
 #todo[TODO]
+
+// #example[
+//   #let Bool = `Bool`
+//   #let (True, False) = (`True`, `False`)
+//   #let foo = `foo`
+//   The following simple #AxCut program demonstrates non-local control flow.
+//   It is not known beforehand where the computation continues after #foo.
+//   It depends on the value of $x$ whether $alpha_1$ or $alpha_2$ is invoked.
+//
+//   $
+//     & DATA Bool sp { sp True, sp False sp } \
+//     & DEF foo(x :^prd i64, sp alpha_1 :^cns Bool, sp alpha_2 :^cns Bool) sp { \
+//     & quad IF x equiv 0 sp { \
+//     & quad quad SUBSTITUTE (alpha_1 := alpha_1); \
+//     & quad quad INVOKE alpha_1 True \
+//     & quad } ELSE sp { \
+//     & quad quad SUBSTITUTE (alpha_2 := alpha_2); \
+//     & quad quad INVOKE alpha_2 False \
+//     & quad } \
+//     & } \
+//   $
+//
+//   Here, we need the flexibility that the SCC provides for handling control flow.
+//   One of the continuations $alpha_1$ and $alpha_2$ is dropped at runtime, depending on the branch of the conditional statement.
+//   That requires a runtime system to track this behavior, i.e. reference counting.
+//   If a continuation is dropped, its reference count is decremented and the corresponding memory block is potentially freed.
+// ]
 
 === ...in Machine Code
 #todo[TODO]
