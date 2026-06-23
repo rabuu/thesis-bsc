@@ -1,9 +1,6 @@
 #import "@preview/touying:0.7.3": *
 #import themes.metropolis: *
 
-#import "/lib/lib.typ": syntax
-#import syntax: *
-
 #import "@preview/codly:1.3.0": *
 #show: codly-init
 
@@ -28,9 +25,9 @@
 )
 
 #show raw: set raw(syntaxes: (
-  "misc/sublime/fun.sublime-syntax",
-  "misc/sublime/core.sublime-syntax",
-  "misc/sublime/axcut.sublime-syntax",
+  "resources/syntax/fun.sublime-syntax",
+  "resources/syntax/core.sublime-syntax",
+  "resources/syntax/axcut.sublime-syntax",
 ))
 
 #title-slide()
@@ -40,7 +37,10 @@
 == Sequent-Calculus-Compiler Overview
 
 #slide[
-  #figure(image("assets/initial-presentation/scc-overview.png", width: 100%))
+  #figure(image(
+    "resources/img/initial-presentation/scc-overview.png",
+    width: 100%,
+  ))
 ]
 
 == Linear Continuations
@@ -193,7 +193,10 @@
 == Memory Layout: Memory Block
 
 #slide[
-  #figure(image("assets/initial-presentation/codegen/layout1.png", width: 80%))
+  #figure(image(
+    "resources/img/initial-presentation/codegen/layout1.png",
+    width: 80%,
+  ))
 ]
 
 == Advantages of Linearity
@@ -282,7 +285,7 @@ $==>$ 12% faster
 == Memory Layout: Free List
 
 #slide[
-  #figure(image("assets/initial-presentation/codegen/freelist1.png"))
+  #figure(image("resources/img/initial-presentation/codegen/freelist1.png"))
 ]
 
 == Memory Layout: Heap
@@ -292,22 +295,22 @@ $==>$ 12% faster
   #v(1.8em)
   Registers:
 ][
-  #figure(image("assets/initial-presentation/codegen/heap.png"))
+  #figure(image("resources/img/initial-presentation/codegen/heap.png"))
 ]
 
 == Storing a Non-Linear Block
 
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store/store1.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store/store1.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store/store2.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store/store2.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store/store3.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store/store3.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store/store4.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store/store4.png"))
 ]
 
 == Modifying the Memory Layout (Before)
@@ -315,7 +318,7 @@ $==>$ 12% faster
 #slide[
   free list:
   #figure(image(
-    "assets/initial-presentation/codegen/freelist1.png",
+    "resources/img/initial-presentation/codegen/freelist1.png",
     height: 50%,
   ))
 
@@ -325,7 +328,7 @@ $==>$ 12% faster
 
   memory block in use:
   #figure(image(
-    "assets/initial-presentation/codegen/layout1.png",
+    "resources/img/initial-presentation/codegen/layout1.png",
     height: 11%,
   ))
 ]
@@ -335,7 +338,7 @@ $==>$ 12% faster
 #slide[
   free list:
   #figure(image(
-    "assets/initial-presentation/codegen/freelist2.png",
+    "resources/img/initial-presentation/codegen/freelist2.png",
     height: 50%,
   ))
 
@@ -345,7 +348,7 @@ $==>$ 12% faster
 
   memory block in use:
   #figure(image(
-    "assets/initial-presentation/codegen/layout2.png",
+    "resources/img/initial-presentation/codegen/layout2.png",
     height: 11%,
   ))
 ]
@@ -353,21 +356,21 @@ $==>$ 12% faster
 == Storing a Linear Block
 
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store1.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store1.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store2.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store2.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store3.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store3.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store4.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store4.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store5.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store5.png"))
 ]
 #slide[
-  #figure(image("assets/initial-presentation/codegen/store1/store6.png"))
+  #figure(image("resources/img/initial-presentation/codegen/store1/store6.png"))
 ]
 
