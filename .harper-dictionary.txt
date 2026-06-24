@@ -10,6 +10,7 @@ font-sans
 font-serif
 font-size-chapter
 font-size-normal
+intuitionistic
 margin-inside
 margin-outside
 nonlinearity
