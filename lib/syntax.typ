@@ -76,7 +76,9 @@
 #let empty = sym.diamond.small
 
 #let br(..inner) = [{ #inner.pos().join($,$) }]
-#let cut(p, c) = $chevron.l #p | #c chevron.r$
+#let cl = math.chevron.l
+#let cr = math.chevron.r
+#let cut(p, c) = $cl #p | #c cr$
 
 #let sp = sym.space.nobreak
 

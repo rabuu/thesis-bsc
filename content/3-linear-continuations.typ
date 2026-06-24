@@ -49,10 +49,63 @@ Labels can be freely passed around as covariables which are allowed to be duplic
 
 Control flow like in @ex:lin:fun:local that is completely decided by #Fun's implicit semantics of calls and return values is referred to as _local_
 because computation is known to continue exactly where it left off.
-When explicit control effects like in @ex:lin:fun:nonlocal break this property, it is called _non-local_ control flow.
+When control effects like in @ex:lin:fun:nonlocal break this property, it is called _non-local_ control flow.
 
 === ...in #Core
-#todo[TODO]
+In #Core, all control flow is made explicit with consumers that are a first-class representation for computation contexts.
+This makes programs much more verbose and arguably harder to read.
+But it also simplifies the reasoning about control flow and continuations.
+
+The translation function from #Fun to #Core keeps track of the current continuation, represented by such a consumer.
+When translating top-level definitions, destructors, and the corresponding calls, the continuation that is implicit in #Fun is added as explicit consumer argument.
+Returning a value in #Fun becomes invoking the continuation with that value in #Core.
+
+#example[
+  This is the translation of @ex:lin:fun:local to #Core.
+  $
+    & DEF f(kappa :^cns i64) sp { quad cut((mu alpha. g(#imm(1), sp alpha)) + #imm(2), kappa) quad } \
+    & DEF g(x :^prd i64, sp kappa :^cns i64) sp { quad cut(x + x, kappa) quad } \
+  $
+  The definitions $f$ and $g$ do not return a value anymore.
+  Instead, they use the additional continuation argument $kappa$.
+  A cut with $kappa$ exactly corresponds to returning a value in @ex:lin:fun:local.
+  The call to $g$ in $f$ needs to specify where the continuations should resume after $g$ which it does by capturing the current continuation using the $mu$ abstraction.
+] <ex:lin:core:local>
+
+When there is only local control flow, like in @ex:lin:core:local,
+the covariable representing the continuation is invoked exactly once at runtime.
+Because invoking the continuation corresponds to returning a value and a function in #Fun must return exactly once, unless control effects are involved.
+
+#definition(title: [Linear Continuation])[
+  A continuation is _linear_ if it is invoked exactly once in every possible execution.
+]
+
+The observation motivating this chapter is that in a program with only local control flow every continuation must be linear.
+
+In a program that makes use of control operators resulting in non-local control flow,
+continuations are not generally linear.
+
+#example[
+  This is the translation of @ex:lin:fun:nonlocal to #Core.
+  $
+    & DEF f(kappa :^cns i64) sp { \
+    & quad cl mu alpha. \
+    & quad quad cut((mu beta. g(#imm(1), sp alpha, sp beta)) + #imm(2), alpha) \
+    & quad | kappa cr \
+    & } \
+    & DEF g(x :^prd i64, sp alpha :^cns i64, sp kappa :^cns i64) sp { \
+    & quad IF x equiv #imm(0) sp { quad cut(#imm(0), alpha) quad } \
+    & quad ELSE { quad cut(x + x, kappa) quad } \
+    & } \
+  $
+  The example shows how non-local control flow corresponds to nonlinear continuations.
+  In $f$, the first $mu$ abstraction gives a name to the current continuation --- which is $kappa$, so $alpha$ is just another name for $kappa$.
+  And $alpha$ is not used linearly: it is given to $g$ as explicit argument and it is used as consumer in the cut.
+  Also in $g$, neither $alpha$ nor $kappa$ is linear because depending on $x$ one of the two is dropped.
+]
+
+To summarize: programs in #Fun with only local control flow correspond to #Core programs where every continuation is linear and #Fun programs that make use of control operators to achieve non-local control flow result in #Core programs where continuations may be nonlinear.
+The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
 
 === ...in #AxCut
 #todo[TODO]
