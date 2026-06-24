@@ -12,6 +12,7 @@ font-size-chapter
 font-size-normal
 margin-inside
 margin-outside
+nonlinearity
 reviewer-department
 reviewer-university
 sequent

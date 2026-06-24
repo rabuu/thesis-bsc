@@ -101,41 +101,72 @@ continuations are not generally linear.
   The example shows how non-local control flow corresponds to nonlinear continuations.
   In $f$, the first $mu$ abstraction gives a name to the current continuation --- which is $kappa$, so $alpha$ is just another name for $kappa$.
   And $alpha$ is not used linearly: it is given to $g$ as explicit argument and it is used as consumer in the cut.
-  Also in $g$, neither $alpha$ nor $kappa$ is linear because depending on $x$ one of the two is dropped.
+  Also in $g$, neither $alpha$ nor $kappa$ is linear because depending on $x$ one of them is dropped.
 ]
 
 To summarize: programs in #Fun with only local control flow correspond to #Core programs where every continuation is linear and #Fun programs that make use of control operators to achieve non-local control flow result in #Core programs where continuations may be nonlinear.
 The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
 
 === ...in #AxCut
-#todo[TODO]
+#AxCut makes linearity even more explicit by concentrating all sources of nonlinearity into explicit $SUBSTITUTE$ statements.
+The only way to duplicate or drop a (co)variable is through the usage of $SUBSTITUTE$.
 
-// #example[
-//   #let Bool = `Bool`
-//   #let (True, False) = (`True`, `False`)
-//   #let foo = `foo`
-//   The following simple #AxCut program demonstrates non-local control flow.
-//   It is not known beforehand where the computation continues after #foo.
-//   It depends on the value of $x$ whether $alpha_1$ or $alpha_2$ is invoked.
-//
-//   $
-//     & DATA Bool sp { sp True, sp False sp } \
-//     & DEF foo(x :^prd i64, sp alpha_1 :^cns Bool, sp alpha_2 :^cns Bool) sp { \
-//     & quad IF x equiv 0 sp { \
-//     & quad quad SUBSTITUTE (alpha_1 := alpha_1); \
-//     & quad quad INVOKE alpha_1 True \
-//     & quad } ELSE sp { \
-//     & quad quad SUBSTITUTE (alpha_2 := alpha_2); \
-//     & quad quad INVOKE alpha_2 False \
-//     & quad } \
-//     & } \
-//   $
-//
-//   Here, we need the flexibility that the SCC provides for handling control flow.
-//   One of the continuations $alpha_1$ and $alpha_2$ is dropped at runtime, depending on the branch of the conditional statement.
-//   That requires a runtime system to track this behavior, i.e. reference counting.
-//   If a continuation is dropped, its reference count is decremented and the corresponding memory block is potentially freed.
-// ]
+The translation from #Core to #AxCut preserves the linearity of continuations.
+That means, a linear continuation in a #Core program is translated into a linear continuation in #AxCut.
+
+One thing to keep in mind is that the usage of producers and consumers is syntactically unified.
+Continuations and can be introduced by $LET$ and $CREATE$.
+Both of which can also introduce producers.
+
+#example[
+  Consider the following #Fun program that makes use of data and codata types.
+  #set math.lr(size: 1em)
+  #let (Unit, unit) = (`Unit`, `U`)
+  #let (Fun, ap) = (`Fun`, `ap`)
+  $
+    & DATA Unit sp { quad unit quad } \
+    & CODATA Fun sp { quad ap(u : Unit): Unit quad } \
+    & DEF f(): Unit sp { \
+    & quad highlight(LET sp u, color: #green) = unit; \
+    & quad highlight(LET sp h, color: #blue) = NEW { quad ap(u) => u quad }; \
+    & quad highlight(h.ap(g().ap(u)), color: #orange) \
+    & } \
+    & DEF g(): Fun { sp ... sp }
+  $
+
+  In the green and blue highlighted parts, some data is bound to a variable.
+  The parts of the program that concern control flow are highlighted in orange.
+
+  The following #AxCut translation illustrates how $LET$ and $CREATE$ are used for both continuations and data.
+
+  $
+    & DATA Unit sp { quad unit quad } \
+    & CODATA Fun { quad ap(x :^prd Unit, kappa :^cns Unit) quad } \
+    & DEF f(kappa_f :^cns Unit) sp { \
+      & quad highlight(LET sp u, color: #green) = unit; \
+      & quad highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_j) => \
+        & quad quad SUBSTITUTE [kappa_h := kappa_h]; \
+        & quad quad INVOKE kappa_h sp U \
+        & quad }; \
+      & quad SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h]; \
+      & quad highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit => \
+        & quad quad LET x = U; \
+        & quad quad SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h]; \
+        & quad quad INVOKE h ap(x, sp kappa_f) \
+        & quad }; \
+      & quad highlight(LET sp beta, color: #orange) = ap(u, sp alpha); \
+      & quad g(beta) \
+      & } \
+    & DEF g(kappa_g :^cns Fun) sp { sp ... sp } \
+  $
+  In #AxCut, a the producer of a data type is $LET$-bound to a variable.
+  A codata type, on the other hand, is translated into a closure using $CREATE$.
+  And dually, a continuation for a data type, like $alpha$, is introduced by $CREATE$,
+  while a continuation for a codata type, like $beta$ is a $LET$-binding.
+] <ex:lin:axcut:4intros>
+
+We must be careful to distinguish which $CREATE$, $LET$, $SWITCH$, and $INVOKE$ corresponds to a linear continuation and which does not,
+so we can use this information to optimize code generation.
 
 === ...in Machine Code
 #todo[TODO]
