@@ -344,7 +344,7 @@ And constructors cannot have any consumer field.
         prooftree(rule(
           name: rn("Var"),
           $x :^prd tau in Gamma$,
-          $Gamma, Delta tack x :^prd tau$,
+          $Gamma tack x :^prd tau$,
         )),
         prooftree(rule(
           name: rn("Act-R"),
