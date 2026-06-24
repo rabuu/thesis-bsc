@@ -1056,7 +1056,7 @@ Before invoking it, the required arguments must be placed in certain registers, 
     column-gutter: 4em,
     row-gutter: 1em,
     align: (right + horizon, center + horizon),
-    [on the free list],
+    [in free list],
     cetz.canvas({
       import diagram: *
       memblock(

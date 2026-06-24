@@ -149,7 +149,7 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
     column-gutter: 4em,
     row-gutter: 1em,
     align: (right + horizon, center + horizon),
-    [on the free list],
+    [in free list],
     cetz.canvas({
       import diagram: *
       memblock(
@@ -157,7 +157,7 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
       )
     }),
 
-    [nonlinearly in use],
+    [in use (nonlinear)],
     cetz.canvas({
       import diagram: *
       memblock(
@@ -166,7 +166,7 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
       )
     }),
 
-    [linearly in use],
+    [in use (linear)],
     cetz.canvas({
       import diagram: *
       memblock(
