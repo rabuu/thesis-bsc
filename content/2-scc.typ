@@ -299,19 +299,19 @@ If that is the case, it is omitted to improve readability.
     #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
 
     #rule-set(
-      column-gutter: 2em,
+      column-gutter: 1.3em,
       prooftree(rule(
-        name: rn($#smallcaps("Arg") _1$),
+        name: $rn("Arg"_empty)$,
         $Gamma tack empty : empty$,
       )),
       prooftree(rule(
-        name: rn($#smallcaps("Arg") _2$),
+        name: $rn("Arg"_prd)$,
         $Gamma tack sigma : Gamma'$,
         $Gamma tack p : tau$,
         $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
       )),
       prooftree(rule(
-        name: rn($#smallcaps("Arg") _3$),
+        name: $rn("Arg"_cns)$,
         $Gamma tack sigma : Gamma'$,
         $Gamma tack c :^cns tau$,
         $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
@@ -461,6 +461,27 @@ Returning from a function in #Core is then equivalent to passing a value to this
 and therefore a special case of the general interaction between producers and consumers.
 Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
+=== Structural Rules
+#definition(title: [Structural Rules])[
+  #figure(rule-set(
+    prooftree(rule(
+      name: rn("Weakening"),
+      $Gamma tack ...$,
+      $v :^chi tau, Gamma tack ...$,
+    )),
+    prooftree(rule(
+      name: rn("Contraction"),
+      $v :^chi tau, v :^chi tau, Gamma tack ...$,
+      $v :^chi tau, Gamma tack ...$,
+    )),
+    prooftree(rule(
+      name: rn("Exchange"),
+      $Gamma_1, v_1 :^chi tau_1, v_2 :^chi tau_2, Gamma_2 tack ...$,
+      $Gamma_1, v_2 :^chi tau_2, v_1 :^chi tau_1, Gamma_2 tack ...$,
+    )),
+  ))
+]
+
 === Typing Rules
 @fig:scc:core:typing shows the typing rules for #Core.
 Again, the well-formedness of declarations is assumed implicitly, and the global context $Theta$ is omitted where possible.
@@ -483,8 +504,7 @@ Statements, representing computation, do not have return types themselves.
       (
         prooftree(rule(
           name: rn("Var"),
-          $x :^prd tau in Gamma$,
-          $Gamma tack x :^prd tau$,
+          $x :^prd tau tack x :^prd tau$,
         )),
         prooftree(rule(
           name: rn("Act-R"),
@@ -527,8 +547,7 @@ Statements, representing computation, do not have return types themselves.
       (
         prooftree(rule(
           name: rn("Covar"),
-          $alpha :^cns tau in Gamma$,
-          $Gamma tack alpha :^cns tau$,
+          $alpha :^cns tau tack alpha :^cns tau$,
         )),
         prooftree(rule(
           name: rn("Act-L"),
@@ -578,6 +597,28 @@ Statements, representing computation, do not have return types themselves.
         name: rn("Exit"),
         $Gamma tack p :^prd i64$,
         $Gamma tack EXIT p$,
+      )),
+    )
+
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+
+    #rule-set(
+      column-gutter: 1.2em,
+      prooftree(rule(
+        name: $rn("Arg"_empty)$,
+        $Gamma tack empty : empty$,
+      )),
+      prooftree(rule(
+        name: $rn("Arg"_prd)$,
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack p :^prd tau$,
+        $Gamma tack (sigma, p) : (Gamma', sp x :^prd tau)$,
+      )),
+      prooftree(rule(
+        name: $rn("Arg"_cns)$,
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack c :^cns tau$,
+        $Gamma tack (sigma, c) : (Gamma', sp alpha :^cns tau)$,
       )),
     )
   ],
