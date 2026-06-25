@@ -301,21 +301,15 @@ Note that it is a strict subset of @def:scc:core.
         $Gamma, sp x :^prd tau$,
       ),
 
-      ($Delta$, "Typing Contexts (Consumer)"),
-      alt(
-        $empty$,
-        $alpha :^cns tau$,
-      ),
-
       ($delta$, "Declarations"),
       alt(
-        $DEF f(Gamma, Delta) br(s)$,
+        $DEF f(Gamma, alpha :^cns tau) br(s)$,
       ),
       alt(
         $DATA sp T br(K(Gamma), ...)$,
       ),
       alt(
-        $CODATA sp T br(D(Gamma, Delta), ...)$,
+        $CODATA sp T br(D(Gamma, alpha :^cns tau), ...)$,
       ),
     )
   ]
@@ -332,53 +326,26 @@ And constructors cannot have any consumer field.
 
 === Typing Rules
 
-#definition(title: [Context Splitting])[
-  #figure(rule-set(
-    prooftree(
-      rule(
-        name: rn("Split-Empty"),
-        $Delta_1 = empty$,
-        $Delta_2 = empty$,
-        $Delta_1 plus.o Delta_2 = empty$,
-      ),
-    ),
-    prooftree(
-      rule(
-        name: rn("Split-L"),
-        $Delta_1 = alpha :^cns tau$,
-        $Delta_2 = empty$,
-        $Delta_1 plus.o Delta_2 = alpha :^cns tau$,
-      ),
-    ),
-    prooftree(
-      rule(
-        name: rn("Split-R"),
-        $Delta_1 = empty$,
-        $Delta_2 = alpha :^cns tau$,
-        $Delta_1 plus.o Delta_2 = alpha :^cns tau$,
-      ),
-    ),
-  ))
-]
-
 #definition(title: [Structural Rules])[
   #figure(rule-set(
     prooftree(rule(
       name: rn("Weakening"),
-      $Gamma, Delta tack ...$,
-      $x :^prd tau, Gamma, Delta tack ...$,
+      $Gamma tack ...$,
+      $x :^prd tau, Gamma tack ...$,
     )),
     prooftree(rule(
       name: rn("Contraction"),
-      $x :^prd tau, x :^prd tau, Gamma, Delta tack ...$,
-      $x :^prd tau, Gamma, Delta tack ...$,
+      $x :^prd tau, x :^prd tau, Gamma tack ...$,
+      $x :^prd tau, Gamma tack ...$,
     )),
     prooftree(rule(
       name: rn("Exchange"),
-      $Gamma_1, x_1 :^prd tau_1, x_2 :^prd tau_2, Gamma_2, Delta tack ...$,
-      $Gamma_1, x_2 :^prd tau_2, x_1 :^prd tau_1, Gamma_2, Delta tack ...$,
+      $Gamma_1, x_1 :^prd tau_1, x_2 :^prd tau_2, Gamma_2 tack ...$,
+      $Gamma_1, x_2 :^prd tau_2, x_1 :^prd tau_1, Gamma_2 tack ...$,
     )),
   ))
+
+  #note[This is only for producer typing right now.]
 ]
 
 #figure(
@@ -386,15 +353,14 @@ And constructors cannot have any consumer field.
   supplement: "Figure",
   caption: [Typing rules for #Core.],
   block(width: 100%)[
-    #def-box[Producer Typing: $Theta mid Gamma, Delta tack p :^prd tau$]
+    #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
     #rule-set(
       manual-grouping: true,
       (
         prooftree(rule(
           name: rn("Var"),
-          $x :^prd tau in Gamma$,
-          $Gamma tack x :^prd tau$,
+          $x :^prd tau tack x :^prd tau$,
         )),
         prooftree(rule(
           name: rn("Act-R"),
@@ -405,90 +371,105 @@ And constructors cannot have any consumer field.
       (
         prooftree(rule(
           name: rn("Lit"),
-          $Gamma, Delta tack n :^prd i64$,
+          $Gamma tack n :^prd i64$,
         )),
         prooftree(rule(
           name: rn("Plus"),
-          $Gamma, Delta_1 tack p_1 :^prd i64$,
-          $Gamma, Delta_2 tack p_2 :^prd i64$,
-          $Gamma, Delta_1 plus.o Delta_2 tack p_1 + p_2 :^prd i64$,
+          $Gamma tack p_1 :^prd i64$,
+          $Gamma tack p_2 :^prd i64$,
+          $Gamma tack p_1 + p_2 :^prd i64$,
         )),
       ),
       (
         prooftree(rule(
           name: rn("Ctor"),
           $DATA T br(..., K(Gamma'), ...) in Theta$,
-          $Theta mid Gamma, Delta tack sigma : Gamma'$,
-          $Theta mid Gamma, Delta tack K(sigma) :^prd T$,
+          $Gamma tack sigma : Gamma'$,
+          $Theta mid Gamma tack K(sigma) :^prd T$,
         )),
         prooftree(rule(
           name: rn("New"),
-          $CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau), ...) in Theta$,
-          $forall i: Gamma, Gamma_i, alpha_i :^cns tau tack s_i$,
-          $Theta mid Gamma tack NEW br(D_1(Gamma_1, alpha_1 :^cns tau) => s_1, ...) :^prd T$,
+          $CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) in Theta$,
+          $forall i: Gamma, Gamma_i, alpha_i :^cns tau_i tack s_i$,
+          $Theta mid Gamma tack NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...) :^prd T$,
         )),
       ),
     )
 
-    #def-box[Consumer Typing: $Theta mid Gamma, Delta tack c :^cns tau$]
+    #def-box[Consumer Typing: $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$]
 
     #rule-set(
       manual-grouping: true,
       (
         prooftree(rule(
           name: rn("Covar"),
-          $Gamma, alpha :^cns tau tack alpha :^cns tau$,
+          $alpha :^cns tau tack alpha :^cns tau$,
         )),
         prooftree(rule(
           name: rn("Act-L"),
-          $Gamma, x :^prd tau, Delta tack s$,
-          $Gamma, Delta tack tilde(mu)x. s :^cns tau$,
+          $Gamma, x :^prd tau', alpha :^cns tau tack s$,
+          $Gamma, alpha :^cns tau tack tilde(mu)x. s :^cns tau'$,
         )),
       ),
       (
         prooftree(rule(
           name: rn("Dtor"),
-          $CODATA T br(..., D(Gamma', alpha :^cns tau), ...) in Theta$,
-          $Theta mid Gamma, Delta_1 tack sigma : Gamma'$,
-          $Theta mid Gamma, Delta_2 tack c :^cns tau$,
-          $Theta mid Gamma, Delta_1 plus.o Delta_2 tack D(sigma, c) :^cns T$,
+          $CODATA T br(..., D(Gamma', alpha' :^cns tau'), ...) in Theta$,
+          $Gamma tack sigma : Gamma'$,
+          $Gamma, alpha :^cns tau tack c :^cns tau'$,
+          $Theta mid Gamma, alpha :^cns tau tack D(sigma, c) :^cns T$,
         )),
         prooftree(rule(
           name: rn("Case"),
           $DATA T br(K_1(Gamma_1), ...) in Theta$,
-          $forall i: Gamma, Gamma_i, Delta tack s_i$,
-          $Theta mid Gamma, Delta tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
+          $forall i: Gamma, Gamma_i, alpha :^cns tau tack s_i$,
+          $Theta mid Gamma, alpha :^cns tau tack CASE br(K_1(Gamma_1) => s_1, ...) :^cns T$,
         )),
       ),
     )
 
-    #def-box[Statement Typing: $Theta mid Gamma, Delta tack s$]
+    #def-box[Statement Typing: $Theta mid Gamma, alpha :^cns tau tack s$]
 
     #rule-set(
       prooftree(rule(
         name: rn("Cut"),
-        $Gamma, Delta_1 tack p :^prd tau$,
-        $Gamma, Delta_2 tack c :^cns tau$,
-        $Gamma, Delta_1 plus.o Delta_2 tack cut(p, c)$,
+        $Gamma tack p :^prd tau'$,
+        $Gamma, alpha :^cns tau tack c :^cns tau'$,
+        $Gamma, alpha :^cns tau tack cut(p, c)$,
       )),
       prooftree(rule(
         name: rn("IfZ"),
-        $Gamma, Delta_1 tack p :^prd i64$,
-        $Gamma, Delta_2 tack s_1$,
-        $Gamma, Delta_2 tack s_2$,
-        $Gamma, Delta_1 plus.o Delta_2 tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+        $Gamma, tack p :^prd i64$,
+        $Gamma, alpha :^cns tau tack s_1$,
+        $Gamma, alpha :^cns tau tack s_2$,
+        $Gamma, alpha :^cns tau tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
       )),
       prooftree(rule(
         name: rn("Call"),
-        $DEF f(Gamma', alpha :^cns tau) br(...) in Theta$,
-        $Theta mid Gamma, Delta_1 tack sigma : Gamma'$,
-        $Theta mid Gamma, Delta_2 tack c :^cns tau$,
-        $Theta mid Gamma, Delta_1 plus.o Delta_2 tack f(sigma, c)$,
+        $DEF f(Gamma', alpha' :^cns tau') br(...) in Theta$,
+        $Gamma tack sigma : Gamma'$,
+        $Gamma, alpha :^cns tau tack c :^cns tau'$,
+        $Theta mid Gamma, alpha :^cns tau tack f(sigma, c)$,
       )),
       prooftree(rule(
         name: rn("Exit"),
-        $Gamma, Delta tack p :^prd i64$,
-        $Gamma, Delta tack EXIT p$,
+        $Gamma tack p :^prd i64$,
+        $Gamma, alpha :^cns tau tack EXIT p$,
+      )),
+    )
+
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+
+    #rule-set(
+      prooftree(rule(
+        name: rn("Arg-Empty"),
+        $Gamma tack empty : empty$,
+      )),
+      prooftree(rule(
+        name: rn("Arg-Prd"),
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack p :^prd tau$,
+        $Gamma tack (sigma, p) : (Gamma', sp x :^prd tau)$,
       )),
     )
   ],
