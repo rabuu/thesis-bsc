@@ -242,12 +242,12 @@ After restricting #Fun, the goal is now to retain the information about linear c
 In #Core, there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply remove from the language.
 Instead, all continuations are explicit now, and we must structurally ensure that they are used linearly.
 
-The key idea here is that, coming from #Fun, every continuation and consumer must be linear anyway,
+The key idea here is that, coming from restricted #Fun, every continuation and consumer must be linear anyway,
 since in #Fun there is just no way to construct something that would result in a nonlinear usage of consumers.
 
 In theory, it would suffice to keep #Core and the translation to it as is, remembering that every continuation must be linear.
 But to make the correctness of the following optimization obvious,
-we identify the fragment of #Core that can result from the restricted version of #Fun.
+we identify the fragment of #Core that can result from the restricted version of #Fun, i.e. the image of the translation $f2c(dot)$.
 Note that it is a strict subset of @def:scc:core.
 
 #definition(title: [Restricted #Core])[
