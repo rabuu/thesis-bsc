@@ -320,8 +320,7 @@ all covariables and consumer arguments must stem from the translation process.
 In argument and parameter lists, they are exactly the added consumer arguments that correspond to the implicit continuation in #Fun.
 
 Here, this is made explicit by splitting arguments, parameters, and typing contexts into parts for producers and consumers, respectively.
-In this restricted version of #Core, every top-level definition --- except the special entry point `main` which is omitted here ---
-and every destructor has exactly one consumer argument at the end.
+In this restricted version of #Core, every top-level definition and every destructor has exactly one consumer argument at the end.
 And constructors cannot have any consumer field.
 
 === Typing Rules

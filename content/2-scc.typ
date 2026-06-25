@@ -672,7 +672,6 @@ For the sake of completeness, the definition of (co)values and the lifting funct
     #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
     $
       f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
-      f2c(DEF "main"(Gamma) : i64 br(p)) & := DEF "main"(Gamma) br(f2c(p, with: tilde(mu)x.EXIT x)) \
       f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
       f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
     $
@@ -734,7 +733,11 @@ For the sake of completeness, the definition of (co)values and the lifting funct
   ],
 ) <fig:scc:f2c>
 
-#note[Explain the translation. I am not sure yet how much of is relevant enough to explain.]
+#note[
+  Explain the translation. I am not sure yet how much of is relevant enough to explain.
+
+  - Mention `main`
+]
 
 == Transformations on #Core <sec:scc:transformations>
 
