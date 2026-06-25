@@ -353,6 +353,8 @@ And constructors cannot have any consumer field.
   supplement: "Figure",
   caption: [Typing rules for #Core.],
   block(width: 100%)[
+    #sidenote[Typing rule for definitions.]
+
     #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
     #rule-set(
@@ -474,8 +476,6 @@ And constructors cannot have any consumer field.
     )
   ],
 )
-
-#note[Structural rules. Rules for arguments.]
 
 === Linearity & Intuitionistic
 #note[This resembles Gentzen's LJ :O]
