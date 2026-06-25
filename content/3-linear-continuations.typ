@@ -19,10 +19,12 @@ which is then handed back with a return value.
 
 #example[
   This program demonstrates local control flow in #Fun programs.
-  $
-    & DEF f(): i64 sp { quad g(#imm(1)) + #imm(2) quad } \
-    & DEF g(x: i64): i64 sp { quad x + x quad }
-  $
+
+  #figure(pseudo(
+    $DEF f(): i64 sp { quad g(#imm(1)) + #imm(2) quad }$,
+    $DEF g(x: i64): i64 sp { quad x + x quad }$,
+  ))
+
   The function $f$ invokes $g$ with some argument.
   The function $g$ must return some value --- unless it terminates the program --- and has no influence on what happens after it returns.
   Only the body of $f$ controls how the computation continues.
@@ -35,13 +37,17 @@ Labels can be freely passed around as covariables which are allowed to be duplic
 
 #example[
   This #Fun program uses control operators causing non-local control flow.
-  $
-    & DEF f(): i64 { quad LABEL alpha sp { sp g(#imm(1), sp alpha) + #imm(2) sp } quad } \
-    & DEF g(x: i64, sp alpha :^cns i64) sp { \
-      & quad IF x equiv #imm(0) sp { quad GOTO alpha sp (x) quad } \
-      & quad ELSE { quad x + x quad } \
-      & } \
-  $
+
+  #figure(pseudo(
+    $DEF f(): i64 { quad LABEL alpha sp { sp g(#imm(1), sp alpha) + #imm(2) sp } quad }$,
+    $DEF g(x: i64, sp alpha :^cns i64) sp {$,
+    (
+      $IF x equiv #imm(0) sp { quad GOTO alpha sp (x) quad }$,
+      $ELSE { quad x + x quad }$,
+    ),
+    $}$,
+  ))
+
   Here, $f$ gives its entire body the label $alpha$ and provides it to $g$ as an additional argument.
   By giving $g$ access to this label, the function can arbitrarily decide whether it returns a value, handing control back to the call side,
   or invoking the $alpha$. At the call side in $f$, it cannot be known if the computation will resume after the call to $g$.
@@ -62,10 +68,12 @@ Returning a value in #Fun becomes invoking the continuation with that value in #
 
 #example[
   This is the translation of @ex:lin:fun:local to #Core.
-  $
-    & DEF f(kappa :^cns i64) sp { quad cut((mu alpha. g(#imm(1), sp alpha)) + #imm(2), kappa) quad } \
-    & DEF g(x :^prd i64, sp kappa :^cns i64) sp { quad cut(x + x, kappa) quad } \
-  $
+
+  #figure(pseudo(
+    $DEF f(kappa :^cns i64) sp { quad cut((mu alpha. g(#imm(1), sp alpha)) + #imm(2), kappa) quad }$,
+    $DEF g(x :^prd i64, sp kappa :^cns i64) sp { quad cut(x + x, kappa) quad }$,
+  ))
+
   The definitions $f$ and $g$ do not return a value anymore.
   Instead, they use the additional continuation argument $kappa$.
   A cut with $kappa$ exactly corresponds to returning a value in @ex:lin:fun:local.
@@ -87,17 +95,25 @@ continuations are not generally linear.
 
 #example[
   This is the translation of @ex:lin:fun:nonlocal to #Core.
-  $
-    & DEF f(kappa :^cns i64) sp { \
-    & quad cl mu alpha. \
-    & quad quad cut((mu beta. g(#imm(1), sp alpha, sp beta)) + #imm(2), alpha) \
-    & quad | kappa cr \
-    & } \
-    & DEF g(x :^prd i64, sp alpha :^cns i64, sp kappa :^cns i64) sp { \
-    & quad IF x equiv #imm(0) sp { quad cut(#imm(0), alpha) quad } \
-    & quad ELSE { quad cut(x + x, kappa) quad } \
-    & } \
-  $
+
+  #figure(pseudo(
+    $DEF f(kappa :^cns i64) sp {$,
+    (
+      $cl mu alpha.$,
+      (
+        $cut((mu beta. g(#imm(1), sp alpha, sp beta)) + #imm(2), alpha)$,
+      ),
+      $| kappa cr$,
+    ),
+    $}$,
+    $DEF g(x :^prd i64, sp alpha :^cns i64, sp kappa :^cns i64) sp {$,
+    (
+      $IF x equiv #imm(0) sp { quad cut(#imm(0), alpha) quad }$,
+      $ELSE { quad cut(x + x, kappa) quad }$,
+    ),
+    $}$,
+  ))
+
   The example shows how non-local control flow corresponds to nonlinear continuations.
   In $f$, the first $mu$ abstraction gives a name to the current continuation --- which is $kappa$, so $alpha$ is just another name for $kappa$.
   And $alpha$ is not used linearly: it is given to $g$ as explicit argument and it is used as consumer in the cut.
@@ -120,45 +136,54 @@ Both of which can also introduce producers.
 
 #example[
   Consider the following #Fun program that makes use of data and codata types.
-  #set math.lr(size: 1em)
   #let (Unit, unit) = (`Unit`, `U`)
   #let (Fun, ap) = (`Fun`, `ap`)
-  $
-    & DATA Unit sp { quad unit quad } \
-    & CODATA Fun sp { quad ap(u : Unit): Unit quad } \
-    & DEF f(): Unit sp { \
-    & quad highlight(LET sp u, color: #green) = unit; \
-    & quad highlight(LET sp h, color: #blue) = NEW { quad ap(u) => u quad }; \
-    & quad highlight(h.ap(g().ap(u)), color: #orange) \
-    & } \
-    & DEF g(): Fun { sp ... sp }
-  $
+
+  #figure(pseudo(
+    $DATA Unit sp { quad unit quad }$,
+    $CODATA Fun sp { quad ap(u : Unit): Unit quad }$,
+    $DEF f(): Unit sp {$,
+    (
+      $highlight(LET sp u, color: #green) = unit;$,
+      $highlight(LET sp h, color: #blue) = NEW { quad ap(u) => u quad };$,
+      $highlight(h.ap(g().ap(u)), color: #orange)$,
+    ),
+    $}$,
+    $DEF g(): Fun { sp ... sp }$,
+  ))
 
   In the green and blue highlighted parts, some data is bound to a variable.
   The parts of the program that concern control flow are highlighted in orange.
 
   The following #AxCut translation illustrates how $LET$ and $CREATE$ are used for both continuations and data.
 
-  $
-    & DATA Unit sp { quad unit quad } \
-    & CODATA Fun { quad ap(x :^prd Unit, kappa :^cns Unit) quad } \
-    & DEF f(kappa_f :^cns Unit) sp { \
-      & quad highlight(LET sp u, color: #green) = unit; \
-      & quad highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_j) => \
-        & quad quad SUBSTITUTE [kappa_h := kappa_h]; \
-        & quad quad INVOKE kappa_h sp U \
-        & quad }; \
-      & quad SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h]; \
-      & quad highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit => \
-        & quad quad LET x = U; \
-        & quad quad SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h]; \
-        & quad quad INVOKE h ap(x, sp kappa_f) \
-        & quad }; \
-      & quad highlight(LET sp beta, color: #orange) = ap(u, sp alpha); \
-      & quad g(beta) \
-      & } \
-    & DEF g(kappa_g :^cns Fun) sp { sp ... sp } \
-  $
+  #figure(pseudo(
+    $DATA Unit sp { quad unit quad }$,
+    $CODATA Fun { quad ap(x :^prd Unit, kappa :^cns Unit) quad }$,
+    $DEF f(kappa_f :^cns Unit) sp {$,
+    (
+      $highlight(LET sp u, color: #green) = unit;$,
+      $highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_j) =>$,
+      (
+        $SUBSTITUTE [kappa_h := kappa_h];$,
+        $INVOKE kappa_h sp U$,
+      ),
+      $};$,
+      $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
+      $highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
+      (
+        $LET x = U;$,
+        $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
+        $INVOKE h ap(x, sp kappa_f)$,
+      ),
+      $};$,
+      $highlight(LET sp beta, color: #orange) = ap(u, sp alpha);$,
+      $g(beta)$,
+    ),
+    $}$,
+    $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
+  ))
+
   In #AxCut, a the producer of a data type is $LET$-bound to a variable.
   A codata type, on the other hand, is translated into a closure using $CREATE$.
   And dually, a continuation for a data type, like $alpha$, is introduced by $CREATE$,

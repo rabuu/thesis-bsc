@@ -5,6 +5,7 @@
 #import "settings.typ"
 #import "syntax.typ": *
 #import "bnf.typ": alt, bnf
+#import "pseudo.typ": pseudo
 #import "prooftree.typ": *
 #import "annotation.typ": *
 #import "theorem.typ": *
