@@ -2,7 +2,7 @@
 
 = Supplementary Formalization <app:supp>
 
-== Lifting Non-(Co)Values in $f2c(dot)$ <app:supp:bindval>
+== Lifting Non-(Co)Values
 
 #figure(
   bnf(
