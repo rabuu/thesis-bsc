@@ -464,11 +464,11 @@ And constructors cannot have any consumer field.
 
     #rule-set(
       prooftree(rule(
-        name: rn("Arg-Empty"),
+        name: $rn("Arg"_empty)$,
         $Gamma tack empty : empty$,
       )),
       prooftree(rule(
-        name: rn("Arg-Prd"),
+        name: $rn("Arg"_prd)$,
         $Gamma tack sigma : Gamma'$,
         $Gamma tack p :^prd tau$,
         $Gamma tack (sigma, p) : (Gamma', sp x :^prd tau)$,
