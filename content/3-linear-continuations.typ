@@ -331,6 +331,56 @@ and every destructor has exactly one consumer argument at the end.
 And constructors cannot have any consumer field.
 
 === Typing Rules
+
+#definition(title: [Context Splitting])[
+  #figure(rule-set(
+    prooftree(
+      rule(
+        name: rn("Split-Empty"),
+        $Delta_1 = empty$,
+        $Delta_2 = empty$,
+        $Delta_1 plus.o Delta_2 = empty$,
+      ),
+    ),
+    prooftree(
+      rule(
+        name: rn("Split-L"),
+        $Delta_1 = alpha :^cns tau$,
+        $Delta_2 = empty$,
+        $Delta_1 plus.o Delta_2 = alpha :^cns tau$,
+      ),
+    ),
+    prooftree(
+      rule(
+        name: rn("Split-R"),
+        $Delta_1 = empty$,
+        $Delta_2 = alpha :^cns tau$,
+        $Delta_1 plus.o Delta_2 = alpha :^cns tau$,
+      ),
+    ),
+  ))
+]
+
+#definition(title: [Structural Rules])[
+  #figure(rule-set(
+    prooftree(rule(
+      name: rn("Weakening"),
+      $Gamma, Delta tack ...$,
+      $x :^prd tau, Gamma, Delta tack ...$,
+    )),
+    prooftree(rule(
+      name: rn("Contraction"),
+      $x :^prd tau, x :^prd tau, Gamma, Delta tack ...$,
+      $x :^prd tau, Gamma, Delta tack ...$,
+    )),
+    prooftree(rule(
+      name: rn("Exchange"),
+      $Gamma_1, x_1 :^prd tau_1, x_2 :^prd tau_2, Gamma_2, Delta tack ...$,
+      $Gamma_1, x_2 :^prd tau_2, x_1 :^prd tau_1, Gamma_2, Delta tack ...$,
+    )),
+  ))
+]
+
 #figure(
   kind: "Figure",
   supplement: "Figure",
