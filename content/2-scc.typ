@@ -464,22 +464,27 @@ Neatly, since destructors no longer have a return type, the definition of data a
 === Structural Rules
 #definition(title: [Structural Rules])[
   #figure(rule-set(
-    prooftree(rule(
-      name: rn("Weakening"),
-      $Gamma tack ...$,
-      $v :^chi tau, Gamma tack ...$,
-    )),
-    prooftree(rule(
-      name: rn("Contraction"),
-      $v :^chi tau, v :^chi tau, Gamma tack ...$,
-      $v :^chi tau, Gamma tack ...$,
-    )),
+    manual-grouping: true,
+    (
+      prooftree(rule(
+        name: rn("Weakening"),
+        $Gamma tack s$,
+        $Gamma, v :^chi tau tack s$,
+      )),
+      prooftree(rule(
+        name: rn("Contraction"),
+        $Gamma, v :^chi tau, v :^chi tau tack s$,
+        $Gamma, v :^chi tau tack s$,
+      )),
+    ),
     prooftree(rule(
       name: rn("Exchange"),
-      $Gamma_1, v_1 :^chi tau_1, v_2 :^chi tau_2, Gamma_2 tack ...$,
-      $Gamma_1, v_2 :^chi tau_2, v_1 :^chi tau_1, Gamma_2 tack ...$,
+      $Gamma_1, v_1 :^chi tau_1, v_2 :^chi tau_2, Gamma_2 tack s$,
+      $Gamma_1, v_2 :^chi tau_2, v_1 :^chi tau_1, Gamma_2 tack s$,
     )),
   ))
+
+  #note[Mention producer and consumer typing.]
 ]
 
 === Typing Rules

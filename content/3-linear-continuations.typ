@@ -328,24 +328,28 @@ And constructors cannot have any consumer field.
 
 #definition(title: [Structural Rules])[
   #figure(rule-set(
-    prooftree(rule(
-      name: rn("Weakening"),
-      $Gamma tack ...$,
-      $x :^prd tau, Gamma tack ...$,
-    )),
-    prooftree(rule(
-      name: rn("Contraction"),
-      $x :^prd tau, x :^prd tau, Gamma tack ...$,
-      $x :^prd tau, Gamma tack ...$,
-    )),
+    column-gutter: 2em,
+    manual-grouping: true,
+    (
+      prooftree(rule(
+        name: rn("Weakening"),
+        $Gamma, alpha :^cns tau' tack s$,
+        $Gamma, x :^prd tau, alpha :^cns tau' tack s$,
+      )),
+      prooftree(rule(
+        name: rn("Contraction"),
+        $Gamma, x :^prd tau, x :^prd tau, alpha :^cns tau' tack s$,
+        $Gamma, x :^prd tau, alpha :^cns tau' tack s$,
+      )),
+    ),
     prooftree(rule(
       name: rn("Exchange"),
-      $Gamma_1, x_1 :^prd tau_1, x_2 :^prd tau_2, Gamma_2 tack ...$,
-      $Gamma_1, x_2 :^prd tau_2, x_1 :^prd tau_1, Gamma_2 tack ...$,
+      $Gamma_1, v_1 :^prd tau_1, v_2 :^prd tau_2, Gamma_2, alpha :^cns tau' tack s$,
+      $Gamma_1, v_2 :^prd tau_2, v_1 :^prd tau_1, Gamma_2, alpha :^cns tau' tack s$,
     )),
   ))
 
-  #note[This is only for producer typing right now.]
+  #note[Mention producer and consumer typing.]
 ]
 
 #figure(
