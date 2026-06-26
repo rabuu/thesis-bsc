@@ -2,6 +2,135 @@
 
 = Supplementary Formalization <app:supp>
 
+== Typing Rules for #Fun <app:supp:fun:typing>
+To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
+We assume that all types and names that are used in the program are well-defined and unique.
+
+There are three judgment forms for producers, consumers, and argument lists, respectively.
+The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
+and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
+Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer of $tau$.
+The judgment $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
+In many rules, the global context $Theta$ is not referenced.
+If that is the case, it is omitted to improve readability.
+
+#figure(
+  block(width: 100%)[
+    #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
+
+    #rule-set(
+      prooftree(rule(
+        name: rn("Var"),
+        $x : tau in Gamma$,
+        $Gamma tack x : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Lit"),
+        $Gamma tack n : i64$,
+      )),
+      prooftree(rule(
+        name: rn("Let"),
+        $Gamma tack p_1 : tau_1$,
+        $Gamma, sp x:tau_1 tack p_2 : tau_2$,
+        $Gamma tack LET x = p_1; sp p_2 : tau_2$,
+      )),
+      prooftree(rule(
+        name: rn("Plus"),
+        $Gamma tack p_1 : i64$,
+        $Gamma tack p_2 : i64$,
+        $Gamma tack p_1 + p_2 : i64$,
+      )),
+      prooftree(rule(
+        name: rn("IfZ"),
+        $Gamma tack p : i64$,
+        $Gamma tack p_1 : tau$,
+        $Gamma tack p_2 : tau$,
+        $Gamma tack IF p equiv 0 br(p_1) ELSE br(p_2) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Label"),
+        $Gamma, alpha :^cns tau tack p : tau$,
+        $Gamma tack LABEL alpha br(p) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Goto"),
+        $Gamma tack p : tau$,
+        $alpha :^cns tau in Gamma$,
+        $Gamma tack GOTO alpha sp (p) : tau'$,
+      )),
+      prooftree(rule(
+        name: rn("Exit"),
+        $Gamma tack p : i64$,
+        $Gamma tack EXIT p : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Ctor"),
+        $DATA T br(..., K(Gamma'), ...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack K(sigma) : T$,
+      )),
+      prooftree(rule(
+        name: rn("Case"),
+        $DATA T br(K_1(Gamma_1), ...) in Theta$,
+        $Gamma tack p : T$,
+        $forall i: Gamma, Gamma_i tack p_i : tau$,
+        $Theta mid Gamma tack p.CASE br(K_1(Gamma_1) => p_1, ...) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("Dtor"),
+        $CODATA T br(..., D(Gamma') : tau, ...) in Theta$,
+        $Gamma tack p : T$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack p.D(sigma) : tau$,
+      )),
+      prooftree(rule(
+        name: rn("New"),
+        $CODATA T br(D_1(Gamma_1) : tau_1, ...) in Theta$,
+        $forall i: Gamma, Gamma_i tack p_i : tau_i$,
+        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => p_1, ...) : T$,
+      )),
+      prooftree(rule(
+        name: rn("Call"),
+        $DEF f(Gamma') : tau br(...) in Theta$,
+        $Theta mid Gamma tack sigma : Gamma'$,
+        $Theta mid Gamma tack f(sigma) : tau$,
+      )),
+    )
+
+    #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
+
+    #rule-set(
+      prooftree(rule(
+        name: rn("Covar"),
+        $alpha :^cns tau in Gamma$,
+        $Gamma tack alpha :^cns tau$,
+      )),
+    )
+
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+
+    #rule-set(
+      column-gutter: 1.3em,
+      prooftree(rule(
+        name: $rn("Arg"_empty)$,
+        $Gamma tack empty : empty$,
+      )),
+      prooftree(rule(
+        name: $rn("Arg"_prd)$,
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack p : tau$,
+        $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
+      )),
+      prooftree(rule(
+        name: $rn("Arg"_cns)$,
+        $Gamma tack sigma : Gamma'$,
+        $Gamma tack c :^cns tau$,
+        $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
+      )),
+    )
+  ],
+)
+
 == Lifting Non-(Co)Values <app:supp:bindval>
 
 #figure(

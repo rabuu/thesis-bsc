@@ -82,9 +82,9 @@ where each box represents a compiler stage and the arrows represent the translat
 The following sections will explain every stage and translation step-by-step.
 
 == The Surface Language #Fun <sec:scc:fun>
-Every compiler pipeline starts with a surface language: the language of its source programs which are typically written by a human.
+Every compiler pipeline starts with a surface language: the language of its source programs, typically written by a human.
 In the case of the SCC, this language is called #Fun @Binder2024grokking.
-It is designed as an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
+It is an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
 #Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it functions.
 
 === Syntax
@@ -169,7 +169,7 @@ With these conventions in place, we can define the syntax of the surface languag
   ]
 ] <def:scc:fun>
 
-At its core, #Fun is an ordinary functional language, supporting standard features such as top-level (first-order) functions, variables, simple arithmetic, conditional expressions, and (non-recursive) let-bindings.
+At its core, #Fun is an ordinary functional language, supporting standard features such as top-level (first-order) functions, variables, (non-recursive) let-bindings, simple integer arithmetic --- in this thesis, only addition is presented as an example ---, and conditional expressions.
 
 Besides built-in machine integers ($i64$), there are user-definable algebraic data and codata types.
 Algebraic data types are a familiar concept from many popular statically-typed programming languages --- like Haskell's `data` or Rust's `enum` types.
@@ -182,151 +182,46 @@ A very interesting feature, especially with regard to the contents of this thesi
 They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the Scheme family of programming languages.
 $LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
 With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
+Another way of breaking the usual control flow of programs is the $EXIT$ expression
+that terminates the program with a given exit code.
 
-The $EXIT$ expression terminates the program with a given exit code.
+The naming of terms and covariables as _producers_ and _consumers_, respectively, are chosen to mimic the terminology used for the languages that get introduced later.
 
-The naming of terms and covariables as _producers_ and _consumers_, respectively, are chosen to mimic the terminology used for the languages that will get introduced later.
+#note[TODO: example]
 
 === Typing Rules
-The typing rules for #Fun are shown in @fig:scc:fun:typing.
-To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
-We assume that all types and names that are used in the program are well-defined and unique.
-
-There are three judgment forms for producers, consumers, and argument lists, respectively.
-The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
-and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
-Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer of $tau$.
-The judgment $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
-In many rules, the global context $Theta$ is not referenced.
-If that is the case, it is omitted to improve readability.
-
-#figure(
-  kind: "Figure",
-  supplement: "Figure",
-  caption: [Typing rules for #Fun.],
-  block(width: 100%)[
-    #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
-
-    #rule-set(
-      prooftree(rule(
-        name: rn("Var"),
-        $x : tau in Gamma$,
-        $Gamma tack x : tau$,
-      )),
-      prooftree(rule(
-        name: rn("Lit"),
-        $Gamma tack n : i64$,
-      )),
-      prooftree(rule(
-        name: rn("Let"),
-        $Gamma tack p_1 : tau_1$,
-        $Gamma, sp x:tau_1 tack p_2 : tau_2$,
-        $Gamma tack LET x = p_1; sp p_2 : tau_2$,
-      )),
-      prooftree(rule(
-        name: rn("Plus"),
-        $Gamma tack p_1 : i64$,
-        $Gamma tack p_2 : i64$,
-        $Gamma tack p_1 + p_2 : i64$,
-      )),
-      prooftree(rule(
-        name: rn("IfZ"),
-        $Gamma tack p : i64$,
-        $Gamma tack p_1 : tau$,
-        $Gamma tack p_2 : tau$,
-        $Gamma tack IF p equiv 0 br(p_1) ELSE br(p_2) : tau$,
-      )),
-      prooftree(rule(
-        name: rn("Label"),
-        $Gamma, alpha :^cns tau tack p : tau$,
-        $Gamma tack LABEL alpha br(p) : tau$,
-      )),
-      prooftree(rule(
-        name: rn("Goto"),
-        $Gamma tack p : tau$,
-        $alpha :^cns tau in Gamma$,
-        $Gamma tack GOTO alpha sp (p) : tau'$,
-      )),
-      prooftree(rule(
-        name: rn("Exit"),
-        $Gamma tack p : i64$,
-        $Gamma tack EXIT p : tau$,
-      )),
-      prooftree(rule(
-        name: rn("Ctor"),
-        $DATA T br(..., K(Gamma'), ...) in Theta$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack K(sigma) : T$,
-      )),
-      prooftree(rule(
-        name: rn("Case"),
-        $DATA T br(K_1(Gamma_1), ...) in Theta$,
-        $Gamma tack p : T$,
-        $forall i: Gamma, Gamma_i tack p_i : tau$,
-        $Theta mid Gamma tack p.CASE br(K_1(Gamma_1) => p_1, ...) : tau$,
-      )),
-      prooftree(rule(
-        name: rn("Dtor"),
-        $CODATA T br(..., D(Gamma') : tau, ...) in Theta$,
-        $Gamma tack p : T$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack p.D(sigma) : tau$,
-      )),
-      prooftree(rule(
-        name: rn("New"),
-        $CODATA T br(D_1(Gamma_1) : tau_1, ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack p_i : tau_i$,
-        $Theta mid Gamma tack NEW br(D_1(Gamma_1) => p_1, ...) : T$,
-      )),
-      prooftree(rule(
-        name: rn("Call"),
-        $DEF f(Gamma') : tau br(...) in Theta$,
-        $Theta mid Gamma tack sigma : Gamma'$,
-        $Theta mid Gamma tack f(sigma) : tau$,
-      )),
-    )
-
-    #def-box[Consumer Typing: $Theta mid Gamma tack c :^cns tau$]
-
-    #rule-set(
-      prooftree(rule(
-        name: rn("Covar"),
-        $alpha :^cns tau in Gamma$,
-        $Gamma tack alpha :^cns tau$,
-      )),
-    )
-
-    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
-
-    #rule-set(
-      column-gutter: 1.3em,
-      prooftree(rule(
-        name: $rn("Arg"_empty)$,
-        $Gamma tack empty : empty$,
-      )),
-      prooftree(rule(
-        name: $rn("Arg"_prd)$,
-        $Gamma tack sigma : Gamma'$,
-        $Gamma tack p : tau$,
-        $Gamma tack (sigma,p) : (Gamma', sp x:tau)$,
-      )),
-      prooftree(rule(
-        name: $rn("Arg"_cns)$,
-        $Gamma tack sigma : Gamma'$,
-        $Gamma tack c :^cns tau$,
-        $Gamma tack (sigma,c) : (Gamma', sp alpha:^cns tau)$,
-      )),
-    )
-  ],
-) <fig:scc:fun:typing>
+All typing rules for #Fun are shown in @app:supp:fun:typing.
 
 Most of the rules are standard.
 Interesting are the control operators.
+#sidenote[Some explanation of the judgments.]
+
+#figure(rule-set(
+  manual-grouping: true,
+  (
+    prooftree(rule(
+      name: rn("Label"),
+      $Gamma, alpha :^cns tau tack p : tau$,
+      $Gamma tack LABEL alpha br(p) : tau$,
+    )),
+    prooftree(rule(
+      name: rn("Goto"),
+      $Gamma tack p : tau$,
+      $alpha :^cns tau in Gamma$,
+      $Gamma tack GOTO alpha sp (p) : tau'$,
+    )),
+  ),
+  prooftree(rule(
+    name: rn("Exit"),
+    $Gamma tack p : i64$,
+    $Gamma tack EXIT p : tau$,
+  )),
+))
 In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
 If there is a covariable in the current context, #rn("Goto") can be used to invoke it.
 Here, the argument must be of the same type as the consumer covariable.
 The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
-In the rule #rn("Exit"), the expression's type is also arbitrary because the program terminating makes the type of the expression irrelevant.
+Similarly, the type of an $EXIT$ expression is also arbitrary, since it terminates the program anyway.
 
 == The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
@@ -433,32 +328,31 @@ The naming conventions from @naming hold here, too.
   ]
 ] <def:scc:core>
 
-There are three separate syntactic categories in #Core: producers, consumers and statements.
-As already said earlier, producers make up the data of a program and consumers are first-class evaluation contexts.
-Statements are the place where actual computation happens.
-#sidenote[I don't like this sentence:] This can mean a conditional, a function call, terminating the program, or a so-called _cut_ $cut(p, c)$ where a producer and a consumer interact.
+There are three separate syntactic categories for terms in #Core: producers, consumers and statements.
+Producers and consumers introduce and eliminate static data.
+The language becomes dynamic through statements that drive computation forward.
+New is the _cut_ statement $cut(p, c)$ where a matching pair of a producer and a consumer interact.
 
 Special about the sequent-calculus-based representation is the almost perfect symmetry of producers and consumers.
-Only the built-in integers and arithmetic on them #sidenote[Explain why only +, but already in #Fun] do not have consumer counterparts.
-
+Only the built-in integers and arithmetic on them do not have consumer counterparts.
 But for algebraic (co)data types, the symmetry is very obvious.
 In contrast to #Fun, pattern matches and destructor invocations in #Core are separated from the value they act on and appear as independent consumers.
-This means there are constructors and copattern matches as producers for data and codata types, respectively,
+Hence, there are constructors and copattern matches as producers for data and codata types, respectively,
 and corresponding pattern matches and destructors as consumers.
 
 Central to the $lambda mu tilde(mu)$-calculus, and thus #Core, are the abstraction operators $mu$ and $tilde(mu)$.
 The producer $mu alpha. s$ captures the current consumer and binds it to the covariable $alpha$ for the scope of its body $s$.
 Dually, the consumer $tilde(mu) x. s$ captures the current producer and binds it to the variable $x$ in $s$.
-#sidenote[Example or further explanation needed.]
+#sidenote[Example?]
 
 In #Core, we have to keep track of both variable and covariable bindings in the typing environments, which also serve as parameter lists.
-Hence, each binding is annotated with its _chirality_, i.e. whether it is a producer or consumer.
-#sidenote[But this is the same as in #Fun.]
+This is similar to #Fun where we have to distinguish between normal terms and covariabel labels.
+Consumers in #Core are even more important and common.
+Therefore, each binding is explicitly annotated with its _chirality_, i.e. whether it is a producer ($prd$) or consumer ($cns$).
 
-Another notable aspect of #Core is that top-level definitions and codata destructors no longer specify a return type.
-Instead, it is replaced by an additional consumer argument, the function's _continuation_.
-Returning from a function in #Core is then equivalent to passing a value to this continuation,
-and therefore a special case of the general interaction between producers and consumers.
+Another notable aspect of #Core is that top-level definitions and codata destructors do not specify a return type.
+Instead, the interaction between caller and callee is generalized by allowing arbitrary consumer arguments that act as _continuations_.
+The equivalent of returning from a function or destructor is passing a value to a continuation.
 Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
 === Structural Rules
@@ -629,7 +523,7 @@ Statements, representing computation, do not have return types themselves.
   ],
 ) <fig:scc:core:typing>
 
-Most of the rules exist similarly in #Fun (@fig:scc:fun:typing).
+Most of the rules exist similarly in #Fun (@app:supp:fun:typing).
 We present all of them here to, again, highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
 Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
 all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
