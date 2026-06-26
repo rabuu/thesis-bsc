@@ -26,7 +26,7 @@ where each box represents a compiler stage and the arrows represent the translat
   let axcut = (4, 0)
   let riscv = (6, 0)
 
-  show ref: set text(size: settings.font-size-normal - 3pt)
+  show ref: set text(size: settings.font-size-normal - 4pt)
 
   diagram(
     debug: false,
@@ -35,7 +35,7 @@ where each box represents a compiler stage and the arrows represent the translat
     colored-node(red)(fun, [#Fun \ @sec:scc:fun]),
     colored-node(green)(core, [#Core \ @sec:scc:core]),
     colored-node(blue)(axcut, [#AxCut \ @sec:scc:axcut]),
-    colored-node(orange)(riscv, [#RISC-V \ @sec:scc:codegen]),
+    colored-node(orange)(riscv, [#RISC-V \ @sec:scc:codegen:riscv]),
     edge(fun, core, "-|>", label: $f2c(dot)$, label-side: left),
     edge(
       fun,
@@ -1006,7 +1006,7 @@ The final step of the SCC is code generation, translating #AxCut into native mac
 For the purposes of this thesis, #RISC-V @Waterman2014riscv was chosen as the target architecture due to its simplicity.
 The translation works nearly identically for other architectures since it only relies on ubiquitous assembly concepts and does not apply any techniques or optimizations that depend on a particular instruction set.
 
-=== The Target Language #RISC-V
+=== The Target Language #RISC-V <sec:scc:codegen:riscv>
 This is the subset of #RISC-V used as target of the code generation:
 
 #definition(title: [Syntax of #RISC-V])[
