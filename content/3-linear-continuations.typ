@@ -11,11 +11,13 @@ The motivation behind this thesis is that we do not want to sacrifice performanc
 The goal of this chapter is to identify what it means for control flow to be simple and make this information available to the code generation stage.
 
 == Control Flow and Continuations
+We begin with an informal analysis of how control flow is represented throughout the different compiler stages.
+This provides intuition for why the optimization is correct and motivates the approach presented in the remainder of this chapter.
 
 === ...in #Fun
-Control flow in #Fun is mostly implicit as a result of its call and return semantics.
-Invoking a top-level definition or destructor transfers control from the caller to the callee
-which is then handed back with a return value.
+Control flow in #Fun is mostly implicit due to its direct-style call-and-return semantics.
+Invoking a top-level definition or destructor transfers control from the caller to the callee,
+which eventually returns control to the caller along with a return value.
 
 #example[
   This program demonstrates local control flow in #Fun programs.
@@ -30,7 +32,7 @@ which is then handed back with a return value.
   Only the body of $f$ controls how the computation continues.
 ] <ex:lin:fun:local>
 
-But there is an exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual control flow
+But there is an important exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual control flow
 by providing explicit control of where some computation continues.
 In #Fun, $LABEL$ is the only way to get an explicit handle to the otherwise implicit continuation.
 Labels can be freely passed around as covariables which are allowed to be duplicated or dropped.
@@ -48,9 +50,9 @@ Labels can be freely passed around as covariables which are allowed to be duplic
     $}$,
   ))
 
-  Here, $f$ gives its entire body the label $alpha$ and provides it to $g$ as an additional argument.
+  Here, $f$ annotates its entire body with the label $alpha$ and which it provides to $g$ as an additional argument.
   By giving $g$ access to this label, the function can arbitrarily decide whether it returns a value, handing control back to the call side,
-  or invoking the $alpha$. At the call side in $f$, it cannot be known if the computation will resume after the call to $g$.
+  or invokes the continuation $alpha$. At the call side in $f$, it cannot be known if the computation will resume after the call to $g$.
 ] <ex:lin:fun:nonlocal>
 
 Control flow like in @ex:lin:fun:local that is completely decided by #Fun's implicit semantics of calls and return values is referred to as _local_
@@ -77,24 +79,25 @@ Returning a value in #Fun becomes invoking the continuation with that value in #
   The definitions $f$ and $g$ do not return a value anymore.
   Instead, they use the additional continuation argument $kappa$.
   A cut with $kappa$ exactly corresponds to returning a value in @ex:lin:fun:local.
-  The call to $g$ in $f$ needs to specify where the continuations should resume after $g$ which it does by capturing the current continuation using the $mu$ abstraction.
+  The call to $g$ in $f$ needs to specify where the computation should continue after $g$ which it does by capturing the current continuation using the $mu$ abstraction.
 ] <ex:lin:core:local>
 
 When there is only local control flow, like in @ex:lin:core:local,
 the covariable representing the continuation is invoked exactly once at runtime.
-Because invoking the continuation corresponds to returning a value and a function in #Fun must return exactly once, unless control effects are involved.
+This is because invoking the continuation corresponds to returning a value and a function in #Fun must return exactly once --- unless control effects are involved.
 
 #definition(title: [Linear Continuation])[
-  A continuation is _linear_ if it is invoked exactly once in every possible execution.
+  A continuation is _linear_ if it is invoked exactly once in every possible branch of execution.
 ]
 
 The observation motivating this chapter is that in a program with only local control flow every continuation must be linear.
 
-In a program that makes use of control operators resulting in non-local control flow,
+Conversely, in a program that makes use of control operators resulting in non-local control flow,
 continuations are not generally linear.
 
 #example[
   This is the translation of @ex:lin:fun:nonlocal to #Core.
+  It shows how non-local control flow corresponds to nonlinear continuations.
 
   #figure(pseudo(
     $DEF f(kappa :^cns i64) sp {$,
@@ -114,7 +117,6 @@ continuations are not generally linear.
     $}$,
   ))
 
-  The example shows how non-local control flow corresponds to nonlinear continuations.
   In $f$, the first $mu$ abstraction gives a name to the current continuation --- which is $kappa$, so $alpha$ is just another name for $kappa$.
   And $alpha$ is not used linearly: it is given to $g$ as explicit argument and it is used as consumer in the cut.
   Also in $g$, neither $alpha$ nor $kappa$ is linear because depending on $x$ one of them is dropped.
@@ -124,7 +126,7 @@ To summarize: programs in #Fun with only local control flow correspond to #Core 
 The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
 
 === ...in #AxCut
-#AxCut makes linearity even more explicit by concentrating all sources of nonlinearity into explicit $SUBSTITUTE$ statements.
+#AxCut makes linearity even more explicit by concentrating all causes of nonlinearity into explicit $SUBSTITUTE$ statements.
 The only way to duplicate or drop a (co)variable is through the usage of $SUBSTITUTE$.
 
 The translation from #Core to #AxCut preserves the linearity of continuations.
@@ -184,10 +186,10 @@ Both of which can also introduce producers.
     $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
   ))
 
-  In #AxCut, a the producer of a data type is $LET$-bound to a variable.
-  A codata type, on the other hand, is translated into a closure using $CREATE$.
-  And dually, a continuation for a data type, like $alpha$, is introduced by $CREATE$,
-  while a continuation for a codata type, like $beta$ is a $LET$-binding.
+  In #AxCut, the producer of a data type is $LET$-bound to a variable.
+  A codata producer, on the other hand, is translated into a closure using $CREATE$.
+  And dually, a continuation for a data type, like $alpha$, is introduced by $CREATE$
+  and a continuation for a codata type, like $beta$ with $LET$.
 ] <ex:lin:axcut:4intros>
 
 We must be careful to distinguish which $CREATE$, $LET$, $SWITCH$, and $INVOKE$ corresponds to a linear continuation and which does not,
