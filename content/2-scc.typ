@@ -383,13 +383,15 @@ Neatly, since destructors no longer have a return type, the definition of data a
 
 === Typing Rules
 @fig:scc:core:typing shows the typing rules for #Core.
-Again, the well-formedness of declarations is assumed implicitly, and the global context $Theta$ is omitted where possible.
+To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
+We assume that all types and names that are used in the program are well-defined and unique.
 
 For every syntactic category, there is a typing judgment form:
-$Theta mid Gamma tack p :^prd tau$ means that $p$ is a producer of type $tau$ in the context $Gamma$
-and, analogously, $Theta mid Gamma tack c :^cns tau$ means that $c$ is a consumer of type $tau$.
-Lastly, $Theta mid Gamma tack s$ denotes that $s$ is a well-typed statement.
+The judgments #box($Theta mid Gamma tack p :^prd tau$) and #box($Theta mid Gamma tack c :^cns tau$) type producers and consumers, respectively,
+and #box($Theta mid Gamma tack s$) denotes that $s$ is a well-typed statement.
 Statements, representing computation, do not have return types themselves.
+$Theta$ is the global program context that holds information about all top-level declarations and is often omitted in rules that do not mention it.
+The local context $Gamma$ contains the currently active (co)variable bindings.
 
 #figure(
   kind: "Figure",
@@ -524,7 +526,7 @@ Statements, representing computation, do not have return types themselves.
 ) <fig:scc:core:typing>
 
 Most of the rules exist similarly in #Fun (@app:form:fun:typing).
-We present all of them here to, again, highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
+We present all of them here to highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
 Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
 all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
 
@@ -542,6 +544,8 @@ Calls to top-level definitions do not have a return type, so they become stateme
 In contrast to #Fun, where the $EXIT$ expression has an arbitrary type, in #Core it is a statement because it represents a computation.
 The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
 This guarantees that they can meaningfully interact.
+
+#note[Too much mention of #Fun rules that I moved to the appendix.]
 
 == Translation from #Fun to #Core <sec:scc:f2c>
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,

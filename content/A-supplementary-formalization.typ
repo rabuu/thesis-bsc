@@ -3,9 +3,6 @@
 = Supplementary Formalization <app:form>
 
 == Typing Rules for #Fun <app:form:fun:typing>
-To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
-We assume that all types and names that are used in the program are well-defined and unique.
-
 There are three judgment forms for producers, consumers, and argument lists, respectively.
 The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
 and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
