@@ -65,7 +65,7 @@ In #Core, all control flow is made explicit with consumers that are a first-clas
 This makes programs much more verbose and arguably harder to read.
 But it also simplifies the reasoning about control flow and continuations.
 
-The translation function from #Fun to #Core keeps track of the current continuation, represented by such a consumer.
+The translation function from #Fun to #Core keeps track of the current continuation.
 When translating top-level definitions, destructors, and the corresponding calls, the continuation that is implicit in #Fun is added as explicit consumer argument.
 Returning a value in #Fun becomes invoking the continuation with that value in #Core.
 
@@ -92,7 +92,6 @@ This is because invoking the continuation corresponds to returning a value and a
 ]
 
 The observation motivating this chapter is that in a program with only local control flow every continuation must be linear.
-
 Conversely, in a program that makes use of control operators resulting in non-local control flow,
 continuations are not generally linear.
 
@@ -123,7 +122,7 @@ continuations are not generally linear.
   Also in $g$, neither $alpha$ nor $kappa$ is linear because depending on $x$ one of them is dropped.
 ]
 
-To summarize: programs in #Fun with only local control flow correspond to #Core programs where every continuation is linear and #Fun programs that make use of control operators to achieve non-local control flow result in #Core programs where continuations may be nonlinear.
+To summarize: programs in #Fun with only local control flow correspond to #Core programs where every continuation is linear. However, #Fun programs that make use of control operators to achieve non-local control flow result in #Core programs where continuations may be nonlinear.
 The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
 
 === ...in #AxCut
@@ -134,7 +133,7 @@ The translation from #Core to #AxCut preserves the linearity of continuations.
 That means, a linear continuation in a #Core program is translated into a linear continuation in #AxCut.
 
 One thing to keep in mind is that the usage of producers and consumers is syntactically unified.
-Continuations and can be introduced by $LET$ and $CREATE$.
+Continuations can be introduced by $LET$ and $CREATE$.
 Both of which can also introduce producers.
 
 #example[
@@ -190,7 +189,7 @@ Both of which can also introduce producers.
   In #AxCut, the producer of a data type is $LET$-bound to a variable.
   A codata producer, on the other hand, is translated into a closure using $CREATE$.
   And dually, a continuation for a data type, like $alpha$, is introduced by $CREATE$
-  and a continuation for a codata type, like $beta$ with $LET$.
+  and a continuation for a codata type, like $beta$, with $LET$.
 ] <ex:lin:axcut:4intros>
 
 We must be careful to distinguish which $CREATE$, $LET$, $SWITCH$, and $INVOKE$ corresponds to a linear continuation and which does not,
