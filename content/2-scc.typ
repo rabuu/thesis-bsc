@@ -190,7 +190,7 @@ The naming of terms and covariables as _producers_ and _consumers_, respectively
 #note[TODO: example]
 
 === Typing Rules
-All typing rules for #Fun are shown in @app:supp:fun:typing.
+All typing rules for #Fun are shown in @app:form:fun:typing.
 
 Most of the rules are standard.
 Interesting are the control operators.
@@ -523,7 +523,7 @@ Statements, representing computation, do not have return types themselves.
   ],
 ) <fig:scc:core:typing>
 
-Most of the rules exist similarly in #Fun (@app:supp:fun:typing).
+Most of the rules exist similarly in #Fun (@app:form:fun:typing).
 We present all of them here to, again, highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
 Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
 all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
@@ -554,7 +554,7 @@ The transformation is designed to avoid administrative redexes.
 At one point, i.e. translating a destructor invocation, the translation makes use of a function $bindvals(dot, dot)$
 to lift non-(co)values out of argument position for the destructor.
 The reason behind this is not relevant to this thesis.
-For the sake of completeness, the definition of (co)values and the lifting function can be found in @app:supp:bindval.
+For the sake of completeness, the definition of (co)values and the lifting function can be found in @app:form:bindval.
 
 #figure(
   kind: "Figure",

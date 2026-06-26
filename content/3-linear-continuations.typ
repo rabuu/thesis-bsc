@@ -248,7 +248,7 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
   ]
 ] <def:lin:fun>
 
-The typing rules from @app:supp:fun:typing also apply to this fragment of #Fun.
+The typing rules from @app:form:fun:typing also apply to this fragment of #Fun.
 Of course, the rules #rn("Label"), #rn("Goto"), #rn("Covar"), and $#rn("Arg") _3$ are not needed anymore.
 
 === Control Operators and Intuitionistic Logic

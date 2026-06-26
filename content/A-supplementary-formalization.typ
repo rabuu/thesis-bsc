@@ -1,8 +1,8 @@
 #import "/lib/lib.typ": *
 
-= Supplementary Formalization <app:supp>
+= Supplementary Formalization <app:form>
 
-== Typing Rules for #Fun <app:supp:fun:typing>
+== Typing Rules for #Fun <app:form:fun:typing>
 To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
 We assume that all types and names that are used in the program are well-defined and unique.
 
@@ -131,7 +131,7 @@ If that is the case, it is omitted to improve readability.
   ],
 )
 
-== Lifting Non-(Co)Values <app:supp:bindval>
+== Lifting Non-(Co)Values <app:form:bindval>
 
 #figure(
   bnf(
