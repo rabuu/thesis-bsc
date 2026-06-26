@@ -1,4 +1,5 @@
 #import "/lib/lib.typ": *
+#import deps: fletcher
 
 = Linear Continuations <ch:lin>
 A central feature of the SCC is how it explicitly represents control flow,
@@ -195,16 +196,99 @@ Both of which can also introduce producers.
 We must be careful to distinguish which $CREATE$, $LET$, $SWITCH$, and $INVOKE$ corresponds to a linear continuation and which does not,
 so we can use this information to optimize code generation.
 
-=== ...in Machine Code
-#todo[TODO]
+#sidenote[codegen sec?]
 
-== Restricting #Fun
-As we have seen, #Fun programs with non-local control flow using control operators lead to nonlinear continuations.
-As soon as any control operator is involved, only a complex analysis of the whole program can track which continuations exactly are used linearly.
-This thesis focuses only on programs that use no control operators at all.
+== The Scope of the Optimization
+This thesis presents how to exploit the linearity of continuations in the SCC to improve the generated machine code.
+As discussed, a source program that makes use of control operators inherently requires the expressive power of nonlinear continuations.
+Consequently, the optimization targets only programs whose control flow is entirely local.
+#sidenote[Why not mix and match?]
 
-The optimization can only be applied to a certain subset of #Fun programs,
-i.e. programs that do not make use of the $LABEL$ and $GOTO$ constructs.
+The following sections describe the modifications to the compiler stages and translations required to achieve these optimized results.
+In general, the lower-level stages of the compiler are extended to making them aware of the linearity of data.
+The higher-level stages, namely #Fun and #Core, are instead restricted to enable these lower-level optimizations for linear continuations in particular.
+
+#figure({
+  import fletcher: diagram, edge, node, shapes
+
+  let colored-node(color) = node.with(
+    stroke: color,
+    shape: shapes.rect,
+    fill: color.lighten(65%),
+  )
+
+  let fun = (0, 0)
+  let core = (1.5, 0)
+  let axcut = (3, 0)
+  let riscv = (4.5, 0)
+
+  show ref: set text(size: settings.font-size-normal - 4pt)
+
+  diagram(
+    debug: false,
+    node-stroke: 1pt,
+    label-sep: 0.2em,
+    colored-node(red)(fun, [Restricted \ #Fun \ @sec:lin:fun]),
+    colored-node(green)(core, [Restricted \ #Core \ @sec:lin:core]),
+    colored-node(blue)(axcut, [Extended \ #AxCut \ @sec:lin:axcut]),
+    colored-node(orange)(riscv, [Optimized \ #RISC-V \ @ch:codegen]),
+    edge(fun, core, "-|>", label: $f2c(dot)$, label-side: left),
+    edge(
+      core,
+      axcut,
+      "-|>",
+      label: [
+        #set align(center)
+        #set par(leading: 5pt)
+        #text(size: settings.font-size-normal - 2pt, "modified") \
+        $c2a(dot)$
+      ],
+      label-side: left,
+    ),
+    edge(
+      core,
+      axcut,
+      "-|>",
+      label: [@sec:lin:c2a],
+      label-side: right,
+      stroke: none,
+    ),
+    edge(
+      axcut,
+      riscv,
+      "-|>",
+      label: [
+        #set align(center)
+        #set par(leading: 5pt)
+        #text(size: settings.font-size-normal - 2pt, "modified") \
+        $a2m(dot)$
+      ],
+      label-side: left,
+    ),
+    edge(
+      axcut,
+      riscv,
+      "-|>",
+      label: [@ch:codegen],
+      label-side: right,
+      stroke: none,
+    ),
+    edge(
+      core,
+      core,
+      "-|>",
+      bend: -120deg,
+      label: $focus(dot), shrink(dot)$,
+    ),
+  )
+})
+
+The pipeline as described in @ch:scc remains largely intact.
+The remainder of this chapter discusses the class of programs for which the optimization presented in @ch:codegen is applicable and why it is correct.
+
+== Restricting #Fun <sec:lin:fun>
+The optimization can only be applied to a certain subset of #Fun programs.
+Specifically, programs that do not make use of the $LABEL$ and $GOTO$ constructs.
 This restrictions leaves us with a less interesting but much more predictable language where control flow is simple and completely implicit.
 Because of this implicitness we can be sure that every continuation is perfectly linear.
 
@@ -251,20 +335,21 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
 ] <def:lin:fun>
 
 The typing rules from @app:form:fun:typing also apply to this fragment of #Fun.
-Of course, the rules #rn("Label"), #rn("Goto"), #rn("Covar"), and $#rn("Arg") _3$ are not needed anymore.
+Of course, the rules concerning $LABEL$, $GOTO$ and covariables are not needed.
 
 === Control Operators and Intuitionistic Logic
-The addition of the control operators $LABEL$ and $GOTO$ in #Fun corresponds to classical logic,
+The existence of the control operators $LABEL$ and $GOTO$ in #Fun corresponds to classical logic,
 similarly to `call/cc` in Scheme @Timothy1990formulae.
-This enables programs corresponding to classical propositions, like the law of the excluded middle or double negation elimination,
+This enables programs that can be viewed as classical propositions, like the law of the excluded middle or double negation elimination,
 which cannot be derived without control operators.
 
 Restricting #Fun, therefore, also means that we lose the ability to write those classical programs.
-The fragment from @def:lin:fun corresponds to intuitionistic logic which will get even more obvious in #Core.
+The fragment from @def:lin:fun corresponds to intuitionistic logic.
+This will get even more obvious in #Core.
 
 #note[Idk about this section. It is poorly phrased and not important to the thesis.]
 
-== Restricting #Core
+== Restricting #Core <sec:lin:core>
 After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
 In #Core, there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply remove from the language.
 Instead, all continuations are explicit now, and we must structurally ensure that they are used linearly.
@@ -513,7 +598,7 @@ And constructors cannot have any consumer field.
 === Focusing & Shrinking
 #todo[TODO]
 
-== Linearity in #AxCut
+== Linearity in #AxCut <sec:lin:axcut>
 
 #definition(title: [#AxCut with Linearity Annotations])[
   #figure[
@@ -625,7 +710,7 @@ And constructors cannot have any consumer field.
   )
 ]
 
-== Translation from #Core to #AxCut
+== Translation from #Core to #AxCut <sec:lin:c2a>
 #figure[
   #set math.lr(size: 1em)
 
