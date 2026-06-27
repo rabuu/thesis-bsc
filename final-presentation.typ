@@ -592,7 +592,7 @@
 == Evaluation
 #note[Maybe a screenshot of the implementation PR]
 
-TODO
+#link("./resources/benchmark-speedup.html")
 
 == Future Work
 #slide[
