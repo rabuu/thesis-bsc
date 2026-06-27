@@ -15,63 +15,82 @@
 
 #title-slide()
 
-= The Sequent Calculus Compiler
+== The Sequent Calculus Compiler (SCC)
+#slide[
+  #set align(center + bottom)
+  #{
+    import fletcher: diagram, edge, node
 
-#figure({
-  import fletcher: diagram, edge, node
+    let colored-node(color) = node.with(stroke: color, fill: color.lighten(65%))
 
-  let colored-node(color) = node.with(stroke: color, fill: color.lighten(65%))
+    let fun = (0, 0)
+    let core = (2, 0)
+    let axcut = (4, 0)
+    let riscv = (6, 0)
 
-  let fun = (0, 0)
-  let core = (2, 0)
-  let axcut = (4, 0)
-  let riscv = (6, 0)
+    show ref: set text(size: settings.font-size-normal - 3pt)
 
-  show ref: set text(size: settings.font-size-normal - 3pt)
+    diagram(
+      debug: false,
+      node-stroke: 1pt,
+      node-inset: 18pt,
+      label-sep: 0.2em,
+      colored-node(red)(fun, [#Fun]),
+      colored-node(green)(core, [#Core]),
+      colored-node(blue)(axcut, [#AxCut]),
+      colored-node(orange)(riscv, [Machine Code]),
+      edge(fun, core, "-|>"),
+      edge(core, axcut, "-|>"),
+      edge(axcut, riscv, "-|>"),
+    )
+  }
+  #v(7em)
+]
 
-  diagram(
-    debug: false,
-    node-stroke: 1pt,
-    node-inset: 18pt,
-    label-sep: 0.2em,
-    colored-node(red)(fun, [#Fun]),
-    colored-node(green)(core, [#Core]),
-    colored-node(blue)(axcut, [#AxCut]),
-    colored-node(orange)(riscv, [#RISC-V]),
-    edge(fun, core, "-|>", label: $f2c(dot)$, label-side: left),
-    edge(
-      fun,
-      core,
-      "-|>",
-      label-side: right,
-      stroke: none,
-    ),
-    edge(core, axcut, "-|>", label: $c2a(dot)$, label-side: left),
-    edge(
-      core,
-      axcut,
-      "-|>",
-      label-side: right,
-      stroke: none,
-    ),
-    edge(axcut, riscv, "-|>", label: $a2m(dot)$, label-side: left),
-    edge(
-      axcut,
-      riscv,
-      "-|>",
-      label-side: right,
-      stroke: none,
-    ),
-    edge(
-      core,
-      core,
-      "-|>",
-      bend: -135deg,
-      label: $focus(dot), shrink(dot)$,
-    ),
-  )
-})
+== The Scope of the Optimization
+#slide[
+  #set align(center + bottom)
+  #{
+    import fletcher: diagram, edge, node, shapes
 
-= Linear Continuations
+    let colored-node(color) = node.with(stroke: color, fill: color.lighten(65%))
 
-= Optimizing Code Generation
+    let fun = (0, 0)
+    let core = (2, 0)
+    let axcut = (4, 0)
+    let riscv = (6, 0)
+
+    show ref: set text(size: settings.font-size-normal - 3pt)
+
+    diagram(
+      debug: false,
+      node-stroke: 1pt,
+      node-inset: 18pt,
+      label-sep: 0.2em,
+      node(
+        enclose: ((0, 0), (2, 0), (1, -1)),
+        shape: shapes.brace.with(dir: top, label: [
+          #set text(size: 1.5em)
+          Restrict
+          #v(0.5em)
+        ]),
+      ),
+      node(
+        enclose: ((4, 0), (6, 0), (5, -1)),
+        shape: shapes.brace.with(dir: top, label: [
+          #set text(size: 1.5em)
+          Extend
+          #v(0.5em)
+        ]),
+      ),
+      colored-node(red)(fun, [#Fun]),
+      colored-node(green)(core, [#Core]),
+      colored-node(blue)(axcut, [#AxCut]),
+      colored-node(orange)(riscv, [Machine Code]),
+      edge(fun, core, "-|>"),
+      edge(core, axcut, "-|>"),
+      edge(axcut, riscv, "-|>"),
+    )
+  }
+  #v(7em)
+]
