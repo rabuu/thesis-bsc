@@ -43,7 +43,7 @@ Labels can be freely passed around as covariables which are allowed to be duplic
 
   #figure(pseudo(
     $DEF f(): i64 { quad LABEL alpha sp { sp g(#imm(1), sp alpha) + #imm(2) sp } quad }$,
-    $DEF g(x: i64, sp alpha :^cns i64) sp {$,
+    $DEF g(x: i64, sp alpha :^cns i64): i64 sp {$,
     (
       $IF x equiv #imm(0) sp { quad GOTO alpha sp (x) quad }$,
       $ELSE { quad x + x quad }$,
@@ -111,7 +111,7 @@ continuations are not generally linear.
     $}$,
     $DEF g(x :^prd i64, sp alpha :^cns i64, sp kappa :^cns i64) sp {$,
     (
-      $IF x equiv #imm(0) sp { quad cut(#imm(0), alpha) quad }$,
+      $IF x equiv #imm(0) sp { quad cut(x, alpha) quad }$,
       $ELSE { quad cut(x + x, kappa) quad }$,
     ),
     $}$,
@@ -165,7 +165,7 @@ Both of which can also introduce producers.
     $DEF f(kappa_f :^cns Unit) sp {$,
     (
       $highlight(LET sp u, color: #green) = unit;$,
-      $highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_j) =>$,
+      $highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_h) =>$,
       (
         $SUBSTITUTE [kappa_h := kappa_h];$,
         $INVOKE kappa_h sp U$,
