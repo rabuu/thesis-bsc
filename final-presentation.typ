@@ -2,9 +2,11 @@
 #import themes.metropolis: *
 
 #import "/lib/lib.typ": *
-#import deps: fletcher
+#import deps: cetz, fletcher
 
 #show: syntax-config
+
+#set list(marker: ([–], [‣]))
 
 #let pseudo = pseudo.with(radius: 10pt)
 
@@ -335,4 +337,284 @@
     none,
     $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
   )
+]
+
+= Optimizing Code Generation
+
+== The Runtime Model
+#slide[
+  #set align(center + top)
+  #v(3em)
+
+  #cetz.canvas({
+    import cetz.draw: *
+    import diagram: *
+
+    scale(1.5)
+    set-style(stroke: 2pt)
+
+    let regy = 4
+
+    content((0, regy - 0.5), [Registers])
+    slots(
+      15,
+      labels: (none, reg("temp"), reg("heap"), reg("todo")),
+      data: (0,) + (none,) * 13 + (ddd,),
+      offset: (2, regy),
+      open-right: true,
+    )
+
+    brace(11, offset: (6, regy), label: $Gamma$)
+
+    let memy1 = 2
+    let memy2 = 0
+    content((0, memy1 - 0.5), [Memory])
+    memblock(
+      offset: (5, memy1),
+    )
+    memblock(offset: (5, memy2))
+
+    ptr(
+      (4.5, regy - 0.6),
+      (4.5, memy1 - 0.5),
+      (5, memy1 - 0.5),
+    )
+
+    ptr(
+      (5.5, memy1 - 0.6),
+      (5.5, memy2),
+    )
+
+    ptr(
+      (5.5, memy2 - 0.6),
+      (5.5, -2),
+    )
+  })
+]
+
+#slide[
+  #set align(center + top)
+  #v(3em)
+
+  #cetz.canvas({
+    import cetz.draw: *
+    import diagram: *
+
+    scale(1.5)
+    set-style(stroke: 2pt)
+
+    let regy = 4
+
+    content((0, regy - 0.5), [Registers])
+    slots(
+      15,
+      labels: (none, reg("temp"), reg("heap"), reg("todo")),
+      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      offset: (2, regy),
+      open-right: true,
+    )
+
+    brace(2, offset: (9, regy), label: $v_1$)
+
+    let memy1 = 2
+    let memy2 = 0
+    content((0, memy1 - 0.5), [Memory])
+    memblock(
+      offset: (5, memy1),
+      data: (`rc`, none),
+      fill: (reserved, reserved),
+    )
+    memblock(offset: (5, memy2))
+
+    ptr(
+      (4.5, regy - 0.6),
+      (4.5, memy2 - 0.5),
+      (5, memy2 - 0.5),
+    )
+
+    ptr(
+      (5.5, memy2 - 0.6),
+      (5.5, -2),
+    )
+
+    ptr(
+      (9.5, regy - 0.6),
+      (9.5, regy - 1.5),
+      (5.5, regy - 1.5),
+      (5.5, memy1),
+    )
+  })
+]
+
+#slide[
+  #set align(center + top)
+  #v(3em)
+
+  #cetz.canvas({
+    import cetz.draw: *
+    import diagram: *
+
+    scale(1.5)
+    set-style(stroke: 2pt)
+
+    let regy = 4
+
+    content((0, regy - 0.5), [Registers])
+    slots(
+      15,
+      labels: (none, reg("temp"), reg("heap"), reg("todo")),
+      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      offset: (2, regy),
+      open-right: true,
+    )
+
+    brace(2, offset: (9, regy), label: $v_1$)
+    brace(2, offset: (13, regy), label: $v_2$)
+
+    let memy1 = 2
+    let memy2 = 0
+    content((0, memy1 - 0.5), [Memory])
+    memblock(
+      offset: (5, memy1),
+      data: (`rc`, none),
+      fill: (reserved, reserved),
+    )
+    memblock(offset: (5, memy2))
+
+    ptr(
+      (4.5, regy - 0.6),
+      (4.5, memy2 - 0.5),
+      (5, memy2 - 0.5),
+    )
+
+    ptr(
+      (5.5, memy2 - 0.6),
+      (5.5, -2),
+    )
+
+    ptr(
+      (9.5, regy - 0.6),
+      (9.5, regy - 1.5),
+      (5.5, regy - 1.5),
+      (5.5, memy1),
+    )
+
+    ptr(
+      (13.5, regy - 0.6),
+      (13.5, memy1 - 1.5),
+      (5.5, memy1 - 1.5),
+      (5.5, memy1 - 1),
+    )
+  })
+]
+
+== Optimizing for Linearity
+#slide[
+  #set align(center + top)
+  #v(3em)
+
+  #cetz.canvas({
+    import cetz.draw: *
+    import diagram: *
+
+    scale(1.5)
+    set-style(stroke: 2pt)
+
+    let regy = 4
+
+    content((0, regy - 0.5), [Registers])
+    slots(
+      15,
+      labels: (none, reg("temp"), reg("heap"), reg("todo")),
+      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      offset: (2, regy),
+      open-right: true,
+    )
+
+    brace(2, offset: (9, regy), label: [linear $v$])
+
+    let memy1 = 2
+    let memy2 = 0
+    content((0, memy1 - 0.5), [Memory])
+    memblock(
+      offset: (5, memy1),
+    )
+    memblock(offset: (5, memy2))
+
+    ptr(
+      (4.5, regy - 0.6),
+      (4.5, memy2 - 0.5),
+      (5, memy2 - 0.5),
+    )
+
+    ptr(
+      (5.5, memy2 - 0.6),
+      (5.5, -2),
+    )
+
+    ptr(
+      (9.5, regy - 0.6),
+      (9.5, regy - 1.5),
+      (5.5, regy - 1.5),
+      (5.5, memy1),
+    )
+  })
+]
+
+#slide[
+  #set align(top)
+
+  *Advantages:*
+
+  #uncover("2-")[
+    - Better memory usage
+
+    - Less runtime overhead
+
+    - Smaller code size
+  ]
+][
+  #set align(top)
+
+  *Disadvantages:*
+
+  #uncover("3-")[
+    - none :)
+  ]
+]
+
+#focus-slide[
+  DEMO
+
+  (if there's enough time)
+]
+
+== Evaluation
+#note[Maybe a screenshot of the implementation PR]
+
+TODO
+
+== Future Work
+#slide[
+  #set align(top)
+
+  *Implementation:*
+
+  - Improvement the way spilling is handled
+
+  - Implemention for `AArch64` and `RISC-V`
+][
+  #set align(top)
+
+  *Extending the System:*
+
+  - Full Linear Type System (#Fun and #Core)
+
+  - Linearity Detection in #AxCut
+]
+
+#focus-slide[
+  Thank you!
+
+  I hope you had #Fun!
 ]
