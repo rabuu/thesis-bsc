@@ -140,7 +140,8 @@
 #include "content/2-scc.typ"
 #include "content/3-linear-continuations.typ"
 #include "content/4-codegen.typ"
-#include "content/5-conclusion.typ"
+#include "content/5-evaluation.typ"
+#include "content/6-conclusion.typ"
 
 #bibliography(
   "references.yaml",
