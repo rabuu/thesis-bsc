@@ -1,4 +1,5 @@
 #let default-number-style(i, size: 0.6em) = {
+  set align(horizon)
   text(size: size, str(i))
   h(1em)
 }
