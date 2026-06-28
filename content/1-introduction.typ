@@ -1,36 +1,40 @@
 #import "/lib/lib.typ": *
 
 = Introduction <ch:intro>
-Compilation is a complex process in which the source code of a high-level programming languages undergoes multiple transformations to finally result in executable machine code.
-Finding the right intermediate representations is one of the main challenges when designing compilers.
-On the one hand, they must be expressive enough to be useful for code analysis and optimization.
-On the other hand, they need to bridge the gap between high-level and lower-level abstraction stages so that they can ultimately be translated to machine code.
-For functional programming languages in particular, the design of such intermediate representations is usually based on the $lambda$-calculus which can be viewed as term assignment system of Gentzen's calculus of natural deduction @Gentzen1935a.
+Compilers translate high-level programming languages into executable machine code
+through a sequence of intermediate representations and transformations.
+One of the main challenges in compiler design is finding the right intermediate representations that are expressive enough for analysis and optimization and are suitable for generating efficient low-level machine code.
 
-In recent times, however, an alternative foundation for the design of intermediate representations has been proposed: the sequent calculus @Gentzen1935a,
-which is another logical proof system like natural deduction, also invented by Gentzen.
-Classical sequent calculus or specifically its corresponding term assignment system, the $lambda mu tilde(mu)$-calculus @Curien2000, has been found to offer a compelling basis for compiler intermediate representations @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
-Its symmetric treatment of both data and control flow as first-class concepts makes it especially suitable for encoding complex control operations.
+For functional programming languages in particular, the design of such intermediate representations is usually based on the $lambda$-calculus and, closely related, Gentzen's natural deduction @Gentzen1935a[ section II].
+In recent times, however, the sequent calculus @Gentzen1935a[ section III], another logical proof system like natural deduction by Gentzen, or specifically its corresponding term assignment system, the $lambda mu tilde(mu)$-calculus @Curien2000, has been found to offer a compelling alternative as basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
+A main selling point for sequent-calculus-based intermediate representations is that it makes control flow and its duality to data flow very explicit.
+The treatment of computation contexts as first-class concept is especially suitable for compilers that have to handle advanced control operators and complex control flow.
 
-This thesis builds upon one such compilation pipeline with intermediate representations based on the sequent calculus, the _Sequent Calculus Compiler (SCC)_ @Mueller2026 @Mueller2026scc.
+The _Sequent Calculus Compiler (SCC)_ @Mueller2026 @Mueller2026scc follows this approach.
+It compiles a functional programming language to native machine code through the usage of sequent-calculus-based intermediate representations.
+A key design feature of the SCC is that control flow is made explicit with first-class _consumers_
+which correspond to the computation contexts, or _continuations_, of programs.
+This provides a very expressive and uniform representation of computation, even for complex control flow.
+However, this expressiveness comes at a cost
+because the runtime system must support the very generalized control flow behavior.
 
-#todo[
-  TODO:
-  The main part of the introduction is missing yet.
+This thesis is motivated by the observation that in many programs control flow is simple because continuations are used _linearly_, i.e. each continuation is used exactly once.
+In such cases, the additional runtime overhead that is needed to track complex continuation usage is unnecessary.
+If the compiler can statically prove that continuations are linear, then it is possible to generate optimized machine code that is specialized for these cases.
 
-  Examples are important.
-]
+Concretely, this thesis investigates linear continuations in the SCC and how they can be exploited for generating more efficient machine code.
+The central idea is to provide the low-level stages of the compilation pipeline with additional information about the linearity of continuations and use this information for improved memory management in the resulting machine code.
 
-@ch:scc gives a summary of the SCC pipeline that is the foundation of the thesis.
+The remainder of this thesis is organized as follows:
+
+In @ch:scc, we summarize the SCC pipeline that is the foundation of the thesis.
 It introduces all compiler stages and the translations between them.
 
-In @ch:lin, the optimization is motivated, presented and formalized.
-Here, the original compiler pipeline is modified by restricting it to a certain class of programs where the optimization is applicable.
-This enables improving the generated machine code in many cases.
+In @ch:lin, we analyze how continuations are used to represent control flow in the SCC
+and formalize how to statically retain information about linear continuations.
 
-The low-level implementation of the optimization is presented in @ch:codegen.
-It describes how code generation can be improved for linear continuations.
+In @ch:codegen, we present the code generation modifications that exploit the linearity of continuations, which include changes to the memory layout and runtime memory management operations.
 
-@ch:eval evaluates the results of the thesis by presenting benchmarks that show the improvements in terms of performance, memory usage and code size which are achieved by applying the optimization.
+In @ch:eval, we evaluate the approach of the thesis by providing benchmarks and discussing the gained performance and memory usage improvements.
 
-In @ch:conclusion, we conclude by summarizing the contributions of this thesis and presenting what can be done in future work.
+In @ch:conclusion, we conclude by summarizing the contributions of this thesis and giving directions on future work.
