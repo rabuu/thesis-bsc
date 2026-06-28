@@ -599,16 +599,14 @@
   ]
 ]
 
-#focus-slide[
-  DEMO
-
-  (if there's enough time)
-]
+== Implementation
+#image("resources/img/final-presentation/pr.png")
 
 == Evaluation
-#note[Maybe a screenshot of the implementation PR]
 
-#link("./resources/benchmark-speedup.html")
+#focus-slide[
+  SHORT DEMO & BENCHMARKS
+]
 
 == Future Work
 #slide[
