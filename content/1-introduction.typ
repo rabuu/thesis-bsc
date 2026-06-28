@@ -14,4 +14,23 @@ Its symmetric treatment of both data and control flow as first-class concepts ma
 
 This thesis builds upon one such compilation pipeline with intermediate representations based on the sequent calculus, the _Sequent Calculus Compiler (SCC)_ @Mueller2026 @Mueller2026scc.
 
-#todo[Many things more...]
+#todo[
+  TODO:
+  The main part of the introduction is missing yet.
+
+  Examples are important.
+]
+
+@ch:scc gives a summary of the SCC pipeline that is the foundation of the thesis.
+It introduces all compiler stages and the translations between them.
+
+In @ch:lin, the optimization is motivated, presented and formalized.
+Here, the original compiler pipeline is modified by restricting it to a certain class of programs where the optimization is applicable.
+This enables improving the generated machine code in many cases.
+
+The low-level implementation of the optimization is presented in @ch:codegen.
+It describes how code generation can be improved for linear continuations.
+
+@ch:eval evaluates the results of the thesis by presenting benchmarks that show the improvements in terms of performance, memory usage and code size which are achieved by applying the optimization.
+
+In @ch:conclusion, we conclude by summarizing the contributions of this thesis and presenting what can be done in future work.
