@@ -438,7 +438,7 @@
     memblock(
       offset: (5, memy1),
       data: (`rc`, none),
-      fill: (reserved, reserved),
+      fill: (reserved, reserved) + (free-to-use,) * 6,
     )
     memblock(offset: (5, memy2))
 
@@ -493,7 +493,7 @@
     memblock(
       offset: (5, memy1),
       data: (`rc`, none),
-      fill: (reserved, reserved),
+      fill: (reserved, reserved) + (free-to-use,) * 6,
     )
     memblock(offset: (5, memy2))
 
@@ -554,6 +554,7 @@
     content((0, memy1 - 0.5), [Memory])
     memblock(
       offset: (5, memy1),
+      fill: (free-to-use,) * 8,
     )
     memblock(offset: (5, memy2))
 
@@ -582,21 +583,18 @@
 
   *Advantages:*
 
-  #uncover("2-")[
-    - Better memory usage
+  - Better memory usage
 
-    - Less runtime overhead
+  - Less runtime overhead
 
-    - Smaller code size
-  ]
+  - Smaller code size
 ][
   #set align(top)
 
   *Disadvantages:*
 
-  #uncover("3-")[
-    - none :)
-  ]
+  #pause
+  - none :)
 ]
 
 == Implementation
