@@ -614,9 +614,9 @@
 
   *Implementation:*
 
-  - Improvement the way spilling is handled
+  - Improve the way spilling is handled
 
-  - Implemention for `AArch64` and `RISC-V`
+  - Implementation for `AArch64` and `RISC-V`
 ][
   #set align(top)
 
