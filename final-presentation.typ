@@ -191,6 +191,22 @@
   )
 ]
 
+== Restrictions
+
+- Restrict #Fun:
+
+  - only local control flow
+
+  - no control operators ($LABEL$, $GOTO$)
+
+#v(2em)
+
+- Restrict #Core:
+
+  - image of the translation from restricted #Fun
+
+  - only linear continuations
+
 == Linearity Annotations in #AxCut
 
 #slide(composer: (1fr, 0.7fr))[
