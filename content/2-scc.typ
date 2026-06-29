@@ -355,8 +355,23 @@ Instead, the interaction between caller and callee is generalized by allowing ar
 The equivalent of returning from a function or destructor is passing a value to a continuation.
 Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
-=== Structural Rules
+=== Typing Rules
+@fig:scc:core:typing shows the typing rules for #Core.
+To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
+We assume that all types and names that are used in the program are well-defined and unique.
+
+For every syntactic category, there is a typing judgment form:
+The judgments #box($Theta mid Gamma tack p :^prd tau$) and #box($Theta mid Gamma tack c :^cns tau$) type producers and consumers, respectively,
+and #box($Theta mid Gamma tack s$) denotes that $s$ is a well-typed statement.
+Statements, representing computation, do not have return types themselves.
+$Theta$ is the global program context that holds information about all top-level declarations and is often omitted in rules that do not mention it.
+The local context $Gamma$ contains the currently active (co)variable bindings.
+
+We make the structural properties of the typing context explicit by giving additional inference rules
+that define how bindings in the local context can be manipulated.
+
 #definition(title: [Structural Rules])[
+  For statement typing, there are the following structural rules:
   #figure(rule-set(
     manual-grouping: true,
     (
@@ -378,20 +393,13 @@ Neatly, since destructors no longer have a return type, the definition of data a
     )),
   ))
 
-  #note[Mention producer and consumer typing.]
-]
+  The same rules also exist analogously for producer, consumer, and argument typing.
+] <def:scc:core:structural>
 
-=== Typing Rules
-@fig:scc:core:typing shows the typing rules for #Core.
-To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
-We assume that all types and names that are used in the program are well-defined and unique.
-
-For every syntactic category, there is a typing judgment form:
-The judgments #box($Theta mid Gamma tack p :^prd tau$) and #box($Theta mid Gamma tack c :^cns tau$) type producers and consumers, respectively,
-and #box($Theta mid Gamma tack s$) denotes that $s$ is a well-typed statement.
-Statements, representing computation, do not have return types themselves.
-$Theta$ is the global program context that holds information about all top-level declarations and is often omitted in rules that do not mention it.
-The local context $Gamma$ contains the currently active (co)variable bindings.
+The rules make it possible to drop, duplicate, and reorder bindings in the context.
+Since we can freely use all of the rules, it would also be possible to represent the context as a set
+and then, in the rules #rn("Var") and #rn("Covar"), look up whether the (co)variable exists in the context.
+For this thesis, the presentation is so explicit because in @ch:lin we will adapt the typing system of #Core for linear continuations which involves modifying the structural properties of the context.
 
 #figure(
   kind: "Figure",

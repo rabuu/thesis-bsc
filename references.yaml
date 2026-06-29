@@ -288,6 +288,18 @@ Timothy1990formulae:
   parent:
     type: proceedings
     title: Proceedings of the 17th ACM SIGPLAN-SIGACT symposium on Principles of Programming Languages (POPL'90), Association for Computing Machinery, New York
+Wadler1990linear:
+  type: article
+  title: Linear types can change the world!
+  author: Wadler, Philip
+  date: 1990
+  page-range: '5'
+  parent:
+    type: proceedings
+    title: Programming concepts and methods
+    organization: North-Holland, Amsterdam
+    issue: 4
+    volume: 3
 Waterman2014riscv:
   type: report
   title: 'The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Version 2.0'

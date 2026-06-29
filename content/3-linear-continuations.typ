@@ -436,8 +436,19 @@ constructors cannot have any consumer field.
 Restricted #Core is exactly the image of $f2c(dot)$ (see @fig:scc:f2c) for restricted #Fun.
 
 === Typing Rules
+The type system for restricted #Core is modified to ensure that every continuation is used exactly once.
+It works similar to linear type systems @Wadler1990linear, a concept originally derived from linear logic @Girard1987.
+The idea is that linearity is a structural property and can be tracked by restricting the structural rules for the context.
+The difference to full linear type systems is that, in restricted #Core, only continuations are linear, so the structural rules are only restricted for consumer bindings.
+
+Concretely, the structural rules like in @def:scc:core:structural are restricted to only apply to producers.
+Each continuation must be used, therefore continuations are not allowed to be dropped from the context.
+And each continuation must be used exactly once, therefore continuations are not allowed to be duplicated in the context.
+The former corresponds to restricting the #rn("Weakening") rule, the latter corresponds to the #rn("Contraction") rule.
+In restricted #Core, there cannot be more than one continuation in the context, so #rn("Exchange") does not apply to consumer bindings.
 
 #definition(title: [Structural Rules])[
+  For statement typing, the structural rules are:
   #figure(rule-set(
     column-gutter: 2em,
     manual-grouping: true,
@@ -460,15 +471,37 @@ Restricted #Core is exactly the image of $f2c(dot)$ (see @fig:scc:f2c) for restr
     )),
   ))
 
-  #note[Mention producer and consumer typing.]
+  Analogous, the three rules exist for consumer, producer, and argument typing.
+  For producer and argument typing, the additional consumer binding is omitted.
 ]
+
+The rest of the rules stays similar to the ones from @fig:scc:core:typing.
+But they are adjusted to track the continuation.
+In restricted #Core, there is always exactly one consumer, _the_ continuation, in the context when typing a statement.
+And this consumer must be invoked in the body of the statement. In every cut statement, the continuation must appear in the consumer part because a producer can only introduce new continuations --- using the $tilde(mu)$ abstraction or in a copattern match --- but never consume it.
+This is made explicit in the judgment forms.
+In #box[$Theta mid Gamma tack p :^prd tau$] there can only be producers in the context,
+in #box[$Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$] and #box[$Theta mid Gamma, alpha :^cns tau tack s$], on the other hand, there must be a single continuation in the context.
+
+This distinction makes it obvious where exactly the continuation is used.
+Producers cannot directly invoke continuations, and if a producers contains a statement, it first must introduce a new continuation.
+Statements and consumers always use their continuation exactly once.
+
+#note[This needs more work.]
 
 #figure(
   kind: "Figure",
   supplement: "Figure",
-  caption: [Typing rules for #Core.],
+  caption: [Typing rules for restricted #Core.],
   block(width: 100%)[
-    #sidenote[Typing rule for definitions.]
+    #def-box[Declaration Typing: $Theta tack delta$]
+    #rule-set(
+      prooftree(rule(
+        name: rn("Def"),
+        $Theta mid Gamma, alpha :^cns tau tack s$,
+        $Theta tack DEF f(Gamma, alpha :^cns tau) br(s)$,
+      )),
+    )
 
     #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
@@ -574,29 +607,13 @@ Restricted #Core is exactly the image of $f2c(dot)$ (see @fig:scc:f2c) for restr
         $Gamma, alpha :^cns tau tack EXIT p$,
       )),
     )
-
-    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
-
-    #rule-set(
-      prooftree(rule(
-        name: $rn("Arg"_empty)$,
-        $Gamma tack empty : empty$,
-      )),
-      prooftree(rule(
-        name: $rn("Arg"_prd)$,
-        $Gamma tack sigma : Gamma'$,
-        $Gamma tack p :^prd tau$,
-        $Gamma tack (sigma, p) : (Gamma', sp x :^prd tau)$,
-      )),
-    )
   ],
 )
 
-=== Linearity & Intuitionistic
-#note[This resembles Gentzen's LJ :O]
+=== Focusing and Shrinking
+The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:form:shrinking), preserve typability and therefore the linearity of continuations.
 
-=== Focusing & Shrinking
-#todo[TODO]
+#note[Why?]
 
 == Linearity in #AxCut <sec:lin:axcut>
 

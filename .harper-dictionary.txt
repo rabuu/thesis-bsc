@@ -21,3 +21,4 @@ student-id
 submission-date
 thesis-type-title
 title-linebreak
+typability

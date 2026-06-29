@@ -173,7 +173,7 @@ If that is the case, it is omitted to improve readability.
   ],
 )
 
-== The Focusing Transformation
+== The Focusing Transformation <app:form:focusing>
 #figure(
   block(width: 100%)[
     #def-box[$focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$]
@@ -241,7 +241,7 @@ If that is the case, it is omitted to improve readability.
 )
 
 
-== The Shrinking Transformation
+== The Shrinking Transformation <app:form:shrinking>
 
 + Inline all possible pairs of producers and consumers in cuts.
 
