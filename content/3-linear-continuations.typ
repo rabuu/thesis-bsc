@@ -11,7 +11,7 @@ In many functional programs control flow is simple.
 The motivation behind this thesis is that we do not want to sacrifice performance and memory usage for power and flexibility that is not even used.
 The goal of this chapter is to identify what it means for control flow to be simple and make this information available to the code generation stage.
 
-== Control Flow and Continuations
+== Control Flow and Continuations <sec:lin:flow>
 We begin with an informal analysis of how control flow is represented throughout the different compiler stages.
 This provides intuition for why the optimization is correct and motivates the approach presented in the remainder of this chapter.
 
@@ -204,7 +204,7 @@ Consequently, the optimization targets only programs whose control flow is entir
 #sidenote[Why not mix and match?]
 
 The following sections describe the modifications to the compiler stages and translations required to achieve these optimized results.
-In general, the lower-level stages of the compiler are extended to making them aware of the linearity of data.
+The lower-level stages of the compiler are extended to support special treatment of linearity --- for data and continuations in general.
 The higher-level stages, namely #Fun and #Core, are instead restricted to enable these lower-level optimizations for linear continuations in particular.
 
 #figure({
@@ -286,12 +286,14 @@ The pipeline as described in @ch:scc remains largely intact.
 The remainder of this chapter discusses the class of programs for which the optimization presented in @ch:codegen is applicable and why it is correct.
 
 == Restricting #Fun <sec:lin:fun>
-The optimization can only be applied to a certain subset of #Fun programs.
-Specifically, programs that do not make use of the $LABEL$ and $GOTO$ constructs.
-This restrictions leaves us with a less interesting but much more predictable language where control flow is simple and completely implicit.
-Because of this implicitness we can be sure that every continuation is perfectly linear.
+The property that is required for the optimization to work is that every continuation is linear.
+In #Fun, most continuations are implicit, so the goal is to find the subset of #Fun programs that result in #Core and #AxCut programs with only linear continuations.
+As shown in @sec:lin:flow, #Fun programs with non-local control flow, resulting from the control operators $LABEL$ and $GOTO$,
+are translated to #Core programs with nonlinear continuations.
+In this chapter we show that restricting the surface language to programs without the usage of $LABEL$ and $GOTO$ ensures that all continuations in the lower-level compiler stages must be linear.
+This restriction leaves us with a less interesting but much more predictable language where control flow is completely implicit and local.
 
-The syntax of this restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
+The syntax of the restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
 By removing $LABEL$ and $GOTO$ from the language, we also lose the need for explicit covariables, and hence consumers in general.
 
 #definition(title: [Restricted #Fun])[
@@ -336,30 +338,26 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
 The typing rules from @app:form:fun:typing also apply to this fragment of #Fun.
 Of course, the rules concerning $LABEL$, $GOTO$ and covariables are not needed.
 
-=== Control Operators and Intuitionistic Logic
-The existence of the control operators $LABEL$ and $GOTO$ in #Fun corresponds to classical logic,
-similarly to `call/cc` in Scheme @Timothy1990formulae.
-This enables programs that can be viewed as classical propositions, like the law of the excluded middle or double negation elimination,
-which cannot be derived without control operators.
-
-Restricting #Fun, therefore, also means that we lose the ability to write those classical programs.
-The fragment from @def:lin:fun corresponds to intuitionistic logic.
-This will get even more obvious in #Core.
-
-#note[Idk about this section. It is poorly phrased and not important to the thesis.]
+#note[
+  Maybe a small section about how restricted #Fun corresponds to intuitionistic logic.
+  See @Timothy1990formulae.
+]
 
 == Restricting #Core <sec:lin:core>
 After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
+To do that, one could image extending #Core to somehow annotate every continuation (or even every (co)variable) with whether it is linear or not
+and then translate restricted #Fun to annotate the linearity of the continuations.
+This approach would lead to an extended version of #Core with additional compile-time information about continuations.
+Although this would be attractive, especially as a compilation target for more than just #Fun, it also requires a much more complex, linear type system.
+
+Instead, in this thesis we chose to also restrict #Core to a fragment where every continuation must be linear.
 In #Core, there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply remove from the language.
-Instead, all continuations are explicit now, and we must structurally ensure that they are used linearly.
+Instead, all continuations are explicit now, and we must structurally ensure their linearity.
 
 The key idea here is that, coming from restricted #Fun, every continuation and consumer must be linear anyway,
 since in #Fun there is just no way to construct something that would result in a nonlinear usage of consumers.
-
-In theory, it would suffice to keep #Core and the translation to it as is, remembering that every continuation must be linear.
-But to make the correctness of the following optimization obvious,
-we identify the fragment of #Core that can result from the restricted version of #Fun, i.e. the image of the translation $f2c(dot)$.
-Note that it is a strict subset of @def:scc:core.
+So, we identify the image of the translation from restricted #Fun.
+It is a strict subset of @def:scc:core.
 
 #definition(title: [Restricted #Core])[
   #figure[
@@ -430,9 +428,12 @@ In #Core programs that are translated from the restricted fragment of #Fun,
 all covariables and consumer arguments must stem from the translation process.
 In argument and parameter lists, they are exactly the added consumer arguments that correspond to the implicit continuation in #Fun.
 
-Here, this is made explicit by splitting arguments, parameters, and typing contexts into parts for producers and consumers, respectively.
-In this restricted version of #Core, every top-level definition and every destructor has exactly one consumer argument at the end.
-And constructors cannot have any consumer field.
+Here, this is made explicit by restricting arguments $sigma$ and typing contexts $Gamma$ to only include producers.
+This makes it very explicit where continuations can appear:
+every top-level definition and every destructor has exactly one consumer argument at the end which is the continuation;
+constructors cannot have any consumer field.
+
+Restricted #Core is exactly the image of $f2c(dot)$ (see @fig:scc:f2c) for restricted #Fun.
 
 === Typing Rules
 
