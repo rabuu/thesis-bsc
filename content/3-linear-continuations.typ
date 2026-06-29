@@ -637,6 +637,18 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
 ]
 
 === Typing Rules
+
+#definition(title: [Context Filtering])[
+  To filter a typing context for linear and nonlinear bindings, we define the following two operations $Gamma^omega$ and $Gamma^1$ on some typing context $Gamma$:
+
+  $
+    (Gamma, v :^chi_omega tau)^omega & := Gamma^omega, v :^chi_omega tau #h(4em)
+    & (Gamma, v :^chi_1 tau)^omega & := Gamma^omega \
+    (Gamma, v :^chi_omega tau)^1 & := Gamma^1 #h(4em)
+    & (Gamma, v :^chi_1 tau)^1 & := Gamma^1, v :^chi_1 tau \
+  $
+]
+
 #figure[
   #def-box[Statement Typing: $Theta mid Gamma tack s$]
   #rule-set(
