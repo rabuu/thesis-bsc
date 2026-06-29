@@ -192,20 +192,19 @@
 ]
 
 == Restrictions
+#slide(composer: (1fr, 1.2fr))[
+  - Restrict #Fun:
 
-- Restrict #Fun:
+    - no control operators ($LABEL$, $GOTO$)
 
-  - only local control flow
+    - only local control flow
+][
+  - Restrict #Core:
 
-  - no control operators ($LABEL$, $GOTO$)
+    - image of the translation from restricted #Fun
 
-#v(2em)
-
-- Restrict #Core:
-
-  - image of the translation from restricted #Fun
-
-  - only linear continuations
+    - only linear continuations
+]
 
 == Linearity Annotations in #AxCut
 
@@ -221,19 +220,19 @@
     numbers: auto,
     $DEF f(kappa_f :^cns Unit) sp {$,
     (
-      $LET sp u :^prd Unit = unit;$,
-      $CREATE sp h :^prd Fun = () sp { sp ap(u, sp kappa_h) =>$,
+      $LET u :^prd Unit = unit;$,
+      $CREATE h :^prd Fun = () sp { sp ap(u, sp kappa_h) =>$,
       (
         $INVOKE kappa_h sp U$,
       ),
       $};$,
-      $CREATE sp alpha :^cns Unit = (kappa_f, sp h) sp { sp unit =>$,
+      $CREATE alpha :^cns Unit = (kappa_f, sp h) sp { sp unit =>$,
       (
         $LET x :^prd Unit = U;$,
         $INVOKE h ap(x, sp kappa_f)$,
       ),
       $};$,
-      $LET sp beta :^cns Fun = ap(u, sp alpha); quad g(beta)$,
+      $LET beta :^cns Fun = ap(u, sp alpha); quad g(beta)$,
     ),
     $}$,
   )
@@ -357,10 +356,9 @@
 
 = Optimizing Code Generation
 
-== The Runtime Model
+== Memory Management
 #slide[
-  #set align(center + top)
-  #v(3em)
+  #set align(center + bottom)
 
   #cetz.canvas({
     import cetz.draw: *
@@ -374,8 +372,8 @@
     content((0, regy - 0.5), [Registers])
     slots(
       15,
-      labels: (none, reg("temp"), reg("heap"), reg("todo")),
-      data: (0,) + (none,) * 13 + (ddd,),
+      labels: (none, none, reg("heap"), none),
+      data: (none,) * 14 + (ddd,),
       offset: (2, regy),
       open-right: true,
     )
@@ -406,11 +404,12 @@
       (5.5, -2),
     )
   })
+
+  #v(2em)
 ]
 
 #slide[
-  #set align(center + top)
-  #v(3em)
+  #set align(center + bottom)
 
   #cetz.canvas({
     import cetz.draw: *
@@ -424,8 +423,8 @@
     content((0, regy - 0.5), [Registers])
     slots(
       15,
-      labels: (none, reg("temp"), reg("heap"), reg("todo")),
-      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      labels: (none, none, reg("heap"), none),
+      data: (none,) * 14 + (ddd,),
       offset: (2, regy),
       open-right: true,
     )
@@ -460,11 +459,12 @@
       (5.5, memy1),
     )
   })
+
+  #v(2em)
 ]
 
 #slide[
-  #set align(center + top)
-  #v(3em)
+  #set align(center + bottom)
 
   #cetz.canvas({
     import cetz.draw: *
@@ -478,8 +478,8 @@
     content((0, regy - 0.5), [Registers])
     slots(
       15,
-      labels: (none, reg("temp"), reg("heap"), reg("todo")),
-      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      labels: (none, none, reg("heap"), none),
+      data: (none,) * 14 + (ddd,),
       offset: (2, regy),
       open-right: true,
     )
@@ -522,12 +522,13 @@
       (5.5, memy1 - 1),
     )
   })
+
+  #v(2em)
 ]
 
 == Optimizing for Linearity
 #slide[
-  #set align(center + top)
-  #v(3em)
+  #set align(center + bottom)
 
   #cetz.canvas({
     import cetz.draw: *
@@ -541,8 +542,8 @@
     content((0, regy - 0.5), [Registers])
     slots(
       15,
-      labels: (none, reg("temp"), reg("heap"), reg("todo")),
-      data: (0, none, none, none, ddd) + (none,) * 9 + (ddd,),
+      labels: (none, none, reg("heap"), none),
+      data: (none,) * 14 + (ddd,),
       offset: (2, regy),
       open-right: true,
     )
@@ -576,6 +577,8 @@
       (5.5, memy1),
     )
   })
+
+  #v(2em)
 ]
 
 #slide[
@@ -585,9 +588,9 @@
 
   - Better memory usage
 
-  - Less runtime overhead
-
   - Smaller code size
+
+  - Less runtime overhead
 ][
   #set align(top)
 
@@ -603,26 +606,22 @@
 == Evaluation
 
 #focus-slide[
-  SHORT DEMO & BENCHMARKS
+  BENCHMARKS
 ]
 
 == Future Work
 #slide[
-  #set align(top)
-
   *Implementation:*
 
-  - Improve the way spilling is handled
+  - implementation for `AArch64` and `RISC-V`
 
-  - Implementation for `AArch64` and `RISC-V`
+  - some implementation details (e.g. spilling)
 ][
-  #set align(top)
+  *Make Better Use of the Backend:*
 
-  *Extending the System:*
+  - full linear type system (#Fun and #Core)
 
-  - Full Linear Type System (#Fun and #Core)
-
-  - Linearity Detection in #AxCut
+  - linearity detection in #AxCut
 ]
 
 #focus-slide[
