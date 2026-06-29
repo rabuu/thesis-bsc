@@ -767,6 +767,12 @@ For the sake of completeness, the definition of (co)values and the lifting funct
         $empty$,
         $sigma, sp v$,
       ),
+
+      ($Gamma$, "Typing Contexts"),
+      alt(
+        $empty$,
+        $Gamma, sp v :^chi tau$,
+      ),
     )
   ]
 ] <def:scc:axcut>

@@ -632,9 +632,17 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
       $highlight(CREATE_q) sp v = Gamma br(X(Gamma) => s, ...); sp s$,
       $highlight(SWITCH_q) sp v br(X(Gamma) => s, ...)$,
       $INVOKE v sp X(sigma)$,
+
+      ($Gamma$, "Typing Contexts"),
+      alt(
+        $empty$,
+        $Gamma, sp v :^chi_highlight(q) tau$,
+      ),
     )
   ]
 ]
+
+#note[Is it okay that the linearity annotations appear in parameter lists?]
 
 === Typing Rules
 
