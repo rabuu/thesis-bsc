@@ -589,7 +589,7 @@ Statements and consumers always use their continuation exactly once.
       )),
       prooftree(rule(
         name: rn("IfZ"),
-        $Gamma, tack p :^prd i64$,
+        $Gamma tack p :^prd i64$,
         $Gamma, alpha :^cns tau tack s_1$,
         $Gamma, alpha :^cns tau tack s_2$,
         $Gamma, alpha :^cns tau tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
