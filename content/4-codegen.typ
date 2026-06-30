@@ -2,27 +2,34 @@
 #import deps: cetz
 
 = Optimizing Code Generation <ch:codegen>
-#note[Chapter Introduction...]
+This chapter turns the linearity information from @ch:lin into concrete backend optimizations.
+The guiding idea is straightforward:
+if a memory block is statically known to be used linearly, then runtime machinery for sharing that block is unnecessary.
+In SCC, this machinery is reference counting.
+By exploiting linearity annotations from extended #AxCut, we derive specialized memory operations for linear blocks and integrate them into the translation to #RISC-V.
 
 == The Key Observation
-A memory block that is allocated for linear use is statically known to be consumed exactly once.
-The key observation here is that such a memory block will neither be shared nor erased.
-#AxCut makes that very explicit with its $SUBSTITUTE$ statements:
-a variable introduced by $LET_1$ or $CREATE_1$ is contained in every substitution exactly once, until it is consumed by its corresponding $SWITCH_1$ or $INVOKE$ statement, respectively.
-And therefore, the reference count of a linearly allocated memory block is zero and will never change.
+A memory block allocated for linear use is statically known to be consumed exactly once.
+Such a block is neither shared nor dropped before consumption.
 
-The central idea behind the optimization we are going for is obvious:
-since the reference count is not used anyway, it can just be left out.
-This not only increases the memory space we can use for actual data, but also reduces code size and runtime overhead that is needed for maintaining the reference count.
+In #AxCut, this is reflected in the typing of substitutions:
+a (co)variable introduced by $LET_1$ or $CREATE_1$ must occur exactly once in each relevant $SUBSTITUTE$ statement
+and is ultimately consumed by the corresponding $SWITCH_1$ or $INVOKE$.
+Reference counts are modified only by $SHARE$ and $ERASE$, and these operations have an effect only when a (co)variable pointing to the block is duplicated or dropped in a $SUBSTITUTE$ statement.
+Hence, the effective reference count of a linearly allocated block is always zero and never changes.
+
+The optimization follows directly:
+if the reference count is never inspected or updated, we can omit it entirely in the linear case.
+This increases the payload capacity per block and removes instruction overhead for reference-count maintenance.
 
 == The Naïve Approach and Where it Fails <sec:codegen:naive>
-The first approach is to simply extend the memory operations $STORE$ and $LOAD$ to make use of all four fields.
-But there is an issue.
+A natural first attempt is to keep the original memory layout and simply let $STORE$ and $LOAD$ use all four fields for payload in linear blocks.
+However, this leads to an ordering conflict.
 
-Consider the following case where we want to store the registers from $Gamma_0$ to a new memory block, using every slot.
-The naïve way would be to store all slots, from back to front, into the memory block and then call $ACQUIRE$.
-In the following illustration, the latter seven slots are already stored.
-A problem arises for the very first register ($a_1$ in the example).
+Consider storing the registers from $Gamma_0$ into a fresh block while using all four fields.
+A naïve strategy is to store from back to front and then call $ACQUIRE$, just like in @sec:scc:codegen:mem.
+In the situation below, seven slots are already written.
+The conflict arises at the first register ($a_1$).
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -68,13 +75,13 @@ A problem arises for the very first register ($a_1$ in the example).
   )
 }))
 
-As soon as $a_1$ is written to the first slot of the memory block, the pointer to the next memory block is lost.
-But we cannot $ACQUIRE$ the block either because that would put a pointer to the memory block into the first register after $Gamma$,
-which would overwrite $a_1$.
+As soon as $a_1$ is written into the first slot, the pointer to the next block is lost.
+But calling $ACQUIRE$ earlier is also impossible:
+it would place a pointer into the first register after $Gamma$, overwriting $a_1$ before it is stored.
 
-And there is a completely symmetric problem when loading data from memory block.
-In the following illustration we want to load all eight slots of a memory block into registers.
-Naïvely, we would $RELEASE$ the block, and then load the slots from back to front.
+A completely symmetric issue appears for loading.
+Suppose we want to load all eight payload slots into registers.
+Naïvely, we would call $RELEASE$ and then load back to front.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -119,26 +126,32 @@ Naïvely, we would $RELEASE$ the block, and then load the slots from back to fro
   )
 }))
 
-$RELEASE$ puts the pointer to the next block of the free list into the first slot, overwriting $a_1$.
-So it must be called at least after loading $a_1$.
-But at the same time, loading $a_1$ into the first register after $Gamma$ overwrites the pointer to the memory block, which is needed for the rest of the loads and for $RELEASE$.
+$RELEASE$ writes the free-list pointer into the first slot and thus overwrites $a_1$.
+So $RELEASE$ must happen only after loading $a_1$.
+But loading $a_1$ first overwrites the block pointer register, which is still needed for the remaining loads and for $RELEASE$ itself.
 
-In both cases the deadlock results from the double meaning of the first slot.
-In the current layout (@fig:scc:codegen:layout), it is the slot where the pointer to the next block of the free list is stored.
-But it also corresponds to the register with the memory pointer to the block itself.
+In both directions, the deadlock comes from the same source:
+in the original layout (@fig:scc:codegen:layout), the first slot has a double role.
+It stores the pointer to the next block of the free list,
+but it also corresponds to the first register of the (co)variable which contains the pointer to the block itself.
 
 == Changing the Memory Layout
-To solve the deadlock, the memory layout must be modified.
-There are two equally viable possibilities.
-Either swap the components of a variable so that second slot contains the memory pointer
-or store the pointer to the next block in a free list in the second slot instead of the first.
-In this thesis, the latter approach is chosen.
+To resolve this deadlock, the layout must be changed so metadata and payload do not compete for the same critical slot.
+Two equivalent options are possible.
+Either rearrange (co)variable components so that the memory pointer is stored in the second register,
+or rearrange the free-list block layout so that the pointer to the next block is stored in the second slot.
+In this thesis, we choose the latter and place the pointer to the next block of a free list in the second slot but the first.
 
-To keep the property that the position of the next block in the free list is also the position of the reference count in an allocated block,
-we now also store the reference count in the second slot.
-This, of course, only affects nonlinear blocks, because in linear block there is no reference count.
+To preserve the alignment between the next-block pointer and reference-count position,
+nonlinear allocated blocks also store the reference count in the second slot.
+This does not apply to linear blocks, since they do not carry a reference count.
 
-Modifying the original layout in @fig:scc:codegen:layout yields the following result.
+$
+  NEXTBLOCKOFFSET & := #imm(1) \
+   REFCOUNTOFFSET & := #imm(1) \
+$
+
+Applying this modification to @fig:scc:codegen:layout yields:
 #figure(
   kind: "Figure",
   supplement: "Figure",
@@ -176,24 +189,15 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
   )
 ]
 
-As in the other figure, `next` stands for the pointer to the next block in the free list (potentially zero if there is none),
-and `rc` for the reference count of an allocated memory block.
-Reserved slots of in-use slots are illustrated with gray background, slots that can freely be used for payload data are highlighted in green.
+Importantly, this change affects the memory layout of all heap blocks, not only linearly used ones.
 
-$
-  NEXTBLOCKOFFSET & := #imm(1) \
-   REFCOUNTOFFSET & := #imm(1) \
-$
-
-Importantly, the modification affects the memory layout of all blocks, not only those used linearly.
-
-== Linear Memory Management
-#note[TODO: section intro]
+== Linear Memory Management <sec:codegen:mem>
+Using the modified layout, we now define linear variants of the memory primitives.
+They mirror the originals from @sec:scc:codegen:mem, but omit reference-count handling and exploit the new layout arrangement.
 
 === Acquire
-The job of $ACQUIRE$ is to make the first block of the linear free list available to use
-and restore the invariant that the $HEAP$ register points to a free memory block.
-The only difference for $ACQUIRE_1$, in contrast to $ACQUIRE$ from @sec:scc:codegen:mem, is that it does not have to initialize a reference count.
+$ACQUIRE_1$ removes the head of the linear free list and reestablishes the invariant that $HEAP$ points to a free block.
+Compared to $ACQUIRE$, it does not initialize a reference count.
 
 $
   ACQUIRE_1 sp r & := && MV r HEAP \
@@ -211,9 +215,9 @@ $
 
 === Store
 For $STORE_1$, there are two cases to consider.
-If only three or less of the four available fields are needed in a memory block, there is no issue like in @sec:codegen:naive.
-Like in $STORE$, the memory block is filled from back to front using $STOREV$, without touching the first field.
-Then, $ACQUIRE_1$ puts the memory pointer into the registers and restores the $HEAP$ invariant.
+
+If at most three fields are needed, no conflict occurs.
+Similar to the original $STORE$, we fill from back to front using $STOREV$, then call $ACQUIRE_1$.
 
 $
   STORE_1 sp r sp Gamma & := && STOREV r sp Gamma &&
@@ -221,8 +225,8 @@ $
   &&& ACQUIRE_1 sp r \
 $
 
-The more difficult case is when all four fields of the memory block should get filled.
-The following illustrations show how $STORE_1$ operates in this situation.
+The interesting case is where all four fields are needed.
+The following figures illustrate the required order for $STORE_1$.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -268,12 +272,11 @@ The following illustrations show how $STORE_1$ operates in this situation.
   )
 }))
 
-The goal is to store the eight registers from $Gamma_0$ into the memory block,
-which is possible now, in contrast to the same situation in @sec:codegen:naive.
-This is due to the layout modifications that cause the pointer to the next block of the free list to be stored in the second slot.
-But we have to be careful about the order of stores.
+The goal is to store all eight registers from $Gamma_0$.
+Unlike the naïve setup in @sec:codegen:naive, this is now feasible because `next` is stored in the second slot.
+Still, the operation order matters.
 
-First, the latter three fields and the very first slot can be stored as usual because this does not overwrite anything.
+First, store all non-conflicting slots: the latter three fields and the very first slot.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -321,10 +324,9 @@ First, the latter three fields and the very first slot can be stored as usual be
   )
 }))
 
-There are two actions left to do: storing $a_2$ and using $ACQUIRE_1$.
-This is not a deadlock situation anymore.
-But it is important to use $ACQUIRE_1$ before storing $a_2$, otherwise the pointer to the next memory block would be overwritten.
-By using $ACQUIRE_1$ now, the free list invariant is established.
+Two steps remain: write $a_1$ and call $ACQUIRE_1$.
+Now, there is no deadlock, but the order is fixed.
+$ACQUIRE_1$ must come first, otherwise writing $a_2$ would destroy the free-list pointer before the $HEAP$ invariant is restored.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -379,8 +381,8 @@ By using $ACQUIRE_1$ now, the free list invariant is established.
   )
 }))
 
-And finally, because $HEAP$ already points to the correct memory block,
-$a_2$ can be stored into the second slot of the memory block, overwriting the old pointer.
+Finally, write $a_2$ into the second slot.
+Since $HEAP$ already points to the correct free-list block, overwriting the `next` pointer is now safe.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -427,7 +429,7 @@ $a_2$ can be stored into the second slot of the memory block, overwriting the ol
   )
 }))
 
-Using this approach, all four fields can be used for actual data.
+Using this approach, all four fields can be used as payload in the linear case.
 
 $
   STORE_1 sp r sp (v :^chi tau, Gamma) & := && STOREV r sp Gamma &&
@@ -438,10 +440,9 @@ $
 $
 
 === Release
-When loading data from a memory block,
-$RELEASE$ is used to either decrement the reference count of the block or put it back on the free list if the reference count is zero.
-A block that is known to be used linearly does not have a reference count --- and if it had, the reference count would always be zero.
-That means that $RELEASE_1$ does not have the check any reference count and can directly put the memory block back on the linear free list.
+When loading from a block, $RELEASE$ in the nonlinear case checks and decrements reference counts and maybe returns the block to the free list.
+For a linear block, no reference-count logic is needed.
+$RELEASE_1$ directly prepends the block to the linear free list.
 
 $
   RELEASE_1 sp r & := && SW HEAP NEXTBLOCKOFFSET r \
@@ -449,11 +450,10 @@ $
 $
 
 === Load
-Analogous to $STORE_1$, there are again two cases to consider for $LOAD_1$.
-The simple case is when the memory block that is loaded from contains three or less fields of data.
-First, $RELEASE_1$ is used to put the memory block on the linear free list and stores the link to the next block of the free list into the second slot.
-This is not a problem because the first field does not store data that should be loaded.
-Then, the slots are loaded from back to front into the registers using $LOADV$.
+$LOAD_1$ is the dual of $STORE_1$, again with two cases.
+
+If at most three fields are loaded, we can call $RELEASE_1$ first, and then use $LOADV$.
+No needed payload is destroyed.
 
 $
   LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r &&
@@ -461,8 +461,7 @@ $
   &&& LOADV r sp Gamma \
 $
 
-In the case that four fields are to be loaded from the memory block into the registers,
-the procedure is slightly more complex.
+For the case that all four fields are loaded, the operation order must be adjusted again.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -507,8 +506,7 @@ the procedure is slightly more complex.
   )
 }))
 
-The first step is to load all slots which do not overwrite anything.
-These are all slots but the first ($a_1$ in the illustration).
+First load the non-conflicting slots, which are all but the very first slot ($a_1$).
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -555,9 +553,9 @@ These are all slots but the first ($a_1$ in the illustration).
   )
 }))
 
-Now, we cannot load $a_1$ directly because that would overwrite the memory pointer to the block.
-But because of the changed memory layout we can use $RELEASE_1$ here.
-It puts the pointer to the next memory block into the second slot which is already loaded.
+The first slot cannot be loaded directly, because that would overwrite the memory block pointer register.
+But at this point, we can safely call $RELEASE_1$:
+it writes the `next` pointer to the second slot which has already been loaded.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -612,7 +610,7 @@ It puts the pointer to the next memory block into the second slot which is alrea
   )
 }))
 
-And finally, $a_1$ can be loaded to complete the procedure.
+Finally, load $a_1$ to complete the operation.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -660,7 +658,7 @@ And finally, $a_1$ can be loaded to complete the procedure.
   )
 }))
 
-This method enables loading all four fields from a memory block.
+Thus, all four payload fields can be loaded in the linear case.
 
 $
   LOAD_1 sp r sp (v :^chi tau, Gamma) & := && LOADV r sp Gamma &&
@@ -674,9 +672,9 @@ $
 #note[TODO: Write this down once decided on a notation in @sec:scc:codegen:mem.]
 
 == Translation from #AxCut to #RISC-V
-Now that we added the linear variants primitives for memory management in code generation,
-we can complete the SCC pipeline by translating the corresponding #AxCut annotations.
-Here, an $omega$ annotation refers to the original definition from @sec:scc:codegen:mem.
+With linear memory primitives available, translation from extended #AxCut to #RISC-V can map quantity annotations directly to backend operations.
+An $omega$ annotation selects the original nonlinear behavior from @sec:scc:codegen:mem,
+while a $1$ annotation selects the linear variants introduced above.
 
 #figure(
   kind: "Figure",
