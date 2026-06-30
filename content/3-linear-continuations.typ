@@ -196,16 +196,23 @@ Both producer variables and continuations are introduced via $LET$ or $CREATE$, 
 For code generation, this means we must distinguish linear from nonlinear uses of $CREATE$, $LET$, $SWITCH$, and $INVOKE$.
 The rest of this chapter formalizes exactly this distinction.
 
-== The Scope of the Optimization
+== The Scope of the Optimization <sec:lin:scope>
 This thesis presents how to exploit the linearity of continuations in the SCC to improve the generated machine code.
-As discussed, a source program that makes use of control operators inherently requires the expressive power of nonlinear continuations.
-Consequently, the optimization targets only programs whose control flow is entirely local.
-#sidenote[Why not mix and match?]
+As discussed above, programs that rely on control operators inherently require the expressive power of nonlinear continuations.
+Consequently, the optimization targets only programs with entirely local control flow.
 
-The following sections describe the modifications to the compiler stages and translations required to achieve these optimized results.
-The lower-level stages of the compiler are extended to support special treatment of linearity --- for data and continuations in general.
-The higher-level stages, namely #Fun and #Core, are instead restricted to enable these lower-level optimizations for linear continuations in particular.
+This is a deliberate design choice.
+In principle, one could attempt a mixed strategy with both linear and nonlinear continuations in one program.
+However, this would require significantly more bookkeeping and analysis infrastructure across all compiler stages.
+For the purposes of this thesis, we instead prioritize a clear and robust pipeline for the fully local case.
 
+Moreover, the low-level optimization is conceptually not limited to continuations.
+The relevant memory-management mechanisms are identical for producers and consumers,
+which, in theory, makes the approach applicable to linear data in general.
+In this thesis, however, we apply it only to linear continuations, because they provide a simple but impactful entry point.
+It is sufficient to restrict control operators to statically prove that continuations are linear.
+
+The following illustration shows how we modify the SCC pipeline in the rest of this thesis.
 #figure({
   import fletcher: diagram, edge, node, shapes
 
@@ -281,8 +288,8 @@ The higher-level stages, namely #Fun and #Core, are instead restricted to enable
   )
 })
 
-The pipeline as described in @ch:scc remains largely intact.
-The remainder of this chapter discusses the class of programs for which the optimization presented in @ch:codegen is applicable and why it is correct.
+The lower-level stages (#AxCut and code generation) are _extended_ with linearity-aware mechanisms for both data and continuations in general.
+The higher-level stages (#Fun and #Core) are instead _restricted_ so that continuations are guaranteed to be linear.
 
 == Restricting #Fun <sec:lin:fun>
 The property that is required for the optimization to work is that every continuation is linear.
