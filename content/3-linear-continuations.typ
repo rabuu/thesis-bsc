@@ -345,7 +345,7 @@ Of course, the rules concerning $LABEL$, $GOTO$ and covariables are not needed.
 
 == Restricting #Core <sec:lin:core>
 After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
-To do that, one could image extending #Core to somehow annotate every continuation (or even every (co)variable) with whether it is linear or not
+To do that, one could imagine extending #Core to somehow annotate every continuation (or even every (co)variable) with whether it is linear or not
 and then translate restricted #Fun to annotate the linearity of the continuations.
 This approach would lead to an extended version of #Core with additional compile-time information about continuations.
 Although this would be attractive, especially as a compilation target for more than just #Fun, it also requires a much more complex, linear type system.
@@ -592,7 +592,7 @@ Statements and consumers always use their continuation exactly once.
         $Gamma tack p :^prd i64$,
         $Gamma, alpha :^cns tau tack s_1$,
         $Gamma, alpha :^cns tau tack s_2$,
-        $Gamma, alpha :^cns tau tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+        $Gamma, alpha :^cns tau tack IF p equiv 0 br(s_1) ELSE br(s_2)$,
       )),
       prooftree(rule(
         name: rn("Call"),
