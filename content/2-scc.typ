@@ -866,6 +866,20 @@ For the sake of completeness, the definition of (co)values and the lifting funct
         )),
       ),
     )
+
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+    #rule-set(
+      prooftree(rule(
+        name: $rn("Arg"_empty)$,
+        $Gamma tack empty : empty$,
+      )),
+      prooftree(rule(
+        name: $rn("Arg")$,
+        $Gamma tack sigma : Gamma'$,
+        $v :^chi tau in Gamma$,
+        $Gamma tack (sigma, v) : (Gamma', sp v :^chi tau)$,
+      )),
+    )
   ],
 ) <fig:scc:axcut:typing>
 

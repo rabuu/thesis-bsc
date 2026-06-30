@@ -618,11 +618,11 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
 == Linearity in #AxCut <sec:lin:axcut>
 The restricted fragments of #Fun and #Core are known to only cause local control flow and linear continuations, respectively.
 The next step is to make this information available in #AxCut.
-Of course, we could again restrict #AxCut to the exact image of the translation from restricted #Core where it would be obvious that all continuations are still linear.
+Of course, we could restrict the language to the exact image of the translation from restricted #Core where it would be obvious that all continuations are still linear.
 But in this thesis, we choose to extend #AxCut with explicit linearity annotations.
 This makes the language suitable as a target for even more optimizations regarding linearity, not only the linearity of continuations.
 
-As mentioned in @sec:lin:flow, #AxCut unifies the handling of variables for producers and covariables for consumers. All (co)variables are treated the same.
+#AxCut unifies the handling of variables for producers and covariables for consumers. All (co)variables are treated the same.
 There are two ways to introduce and consume a (co)variable: either is introduced with $LET$ and consumed by $SWITCH$, or it is introduced by $CREATE$ and consumed by $INVOKE$.
 In both cases, the (co)variable references some data. For a $LET$ (co)variable, that is its tag and the constructor or destructor fields; for a $CREATE$ (co)variable, that is the closure with its code and environment.
 We extend #AxCut now by annotating for each variable whether it must be used linearly or not.
@@ -650,7 +650,6 @@ We extend #AxCut now by annotating for each variable whether it must be used lin
       ),
     )
   ]
-  #note[Is it okay that the linearity annotations appear in parameter lists?]
 ]
 
 At each binding side, i.e. $LET$ and $CREATE$, we add an annotation where $omega$ means that the use of the (co)variable is unrestricted and $1$ means it must be used linearly.
@@ -660,7 +659,11 @@ An annotation is also added for $SWITCH$, the consuming part of a $LET$ (co)vari
 This annotation is not strictly necessary and could be inferred from the context, but it eases the presentation of the code generation step.
 Since the code generation for $INVOKE$ works the same regardless of the quantity of the (co)variable, there is no need for another annotation.
 
-=== Typing Rules
+=== Type System
+The original typing rules for #AxCut (@fig:scc:axcut:typing) must be modified to ensure that, in a well-typed #AxCut program, every linear (co)variable is actually used exactly once.
+The updated rules are shown in @fig:lin:axcut:typing.
+
+To formulate the typing rules for the extended variant of #AxCut we need some notation to distinguish linear from nonlinear bindings in the typing context.
 
 #definition(title: [Context Filtering])[
   To filter a typing context for linear and nonlinear bindings, we define the following two operations $Gamma^omega$ and $Gamma^1$ on some typing context $Gamma$:
@@ -671,65 +674,93 @@ Since the code generation for $INVOKE$ works the same regardless of the quantity
     (Gamma, v :^chi_omega tau)^1 & := Gamma^1 #h(4em)
     & (Gamma, v :^chi_1 tau)^1 & := Gamma^1, v :^chi_1 tau \
   $
+
+  $Gamma^omega$ and $Gamma^1$ contain exactly the unrestricted and linear bindings from $Gamma$, respectively.
 ]
 
-The typing rules:
+The $SUBSTITUTE$ statement is the only place where a (co)variable can be duplicated or dropped.
+So we add a condition in the #rn("Substitute") rule that every linear (co)variable in the current context must be mentioned in the $SUBSTITUTE$ statement, exactly once.
 
-#figure[
-  #rule-set(
-    manual-grouping: true,
-    (
+Furthermore, linear (co)variables must not be consumed by nonlinear (co)variables.
+That means, the fields of a nonlinear $LET$ (co)variable must consist of other nonlinear (co)variables.
+And similarly, a linear (co)variable is not allowed as part of the closure environment of a nonlinear $CREATE$ (co)variable.
+Otherwise, the inner linear (co)variable could be used in a nonlinear way by duplicating or dropping the containing nonlinear (co)variable.
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Typing rules for extended #AxCut.],
+  block(width: 100%)[
+    #def-box[Statement Typing: $Theta mid Gamma tack s$]
+    #rule-set(
+      manual-grouping: true,
+      (
+        prooftree(rule(
+          name: $#rn("Let") _1"-"pi$,
+          $pi T br(..., X(Gamma_0), ...) in Theta$,
+          $Gamma, v :^(chi_1(pi))_1 T tack s$,
+          $Theta mid Gamma, Gamma_0 tack LET_1 sp v = X(Gamma_0); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Let") _omega"-"pi$,
+          $pi T br(..., X(Gamma_0), ...) in Theta$,
+          $Gamma, v :^(chi_1(pi))_omega T tack s$,
+          $Gamma_0 = Gamma_0^omega$,
+          $Theta mid Gamma, Gamma_0 tack LET_omega sp v = X(Gamma_0); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Create") _1"-"pi$,
+          $pi T br(X_1(Gamma_1), ...) in Theta$,
+          $Gamma, v :^(chi_2(pi))_1 T tack s$,
+          $forall i: Gamma_i, Gamma_0 tack s_i$,
+          $Theta mid Gamma, Gamma_0 tack CREATE_1 sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Create") _omega"-"pi$,
+          $pi T br(X_1(Gamma_1), ...) in Theta$,
+          $Gamma, v :^(chi_2(pi))_omega T tack s$,
+          $forall i: Gamma_i, Gamma_0 tack s_i$,
+          $Gamma_0 = Gamma_0^omega$,
+          $Theta mid Gamma, Gamma_0 tack CREATE_omega sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+        )),
+        prooftree(rule(
+          name: $#rn("Switch-")pi$,
+          $pi T br(X_1(Gamma_1), ...) in Theta$,
+          $forall i: Gamma, Gamma_i tack s_i$,
+          $Theta mid Gamma, v :^(chi_1(pi))_q T tack SWITCH_q sp v br(X_1(Gamma_1) => s_1, ...)$,
+        )),
+        prooftree(rule(
+          name: $#rn("Invoke-")pi$,
+          $pi T br(..., X(Gamma), ...) in Theta$,
+          $Theta mid Gamma, v :^(chi_2(pi))_q T tack INVOKE v sp X(Gamma)$,
+        )),
+      ),
+      (
+        prooftree(rule(
+          name: rn("Substitute"),
+          $Gamma tack sigma : Gamma'$,
+          $Gamma' tack s$,
+          $forall v in Gamma^1. sp exists_1 v' in sigma. sp v = v'$,
+          $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
+        )),
+      ),
+    )
+
+    #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
+    #rule-set(
       prooftree(rule(
-        name: $#rn("Let") _1"-"pi$,
-        $pi T br(..., X(Gamma_0), ...) in Theta$,
-        $Gamma, v :^(chi_1(pi))_1 T tack s$,
-        $Theta mid Gamma, Gamma_0 tack LET_1 sp v = X(Gamma_0); sp s$,
+        name: $rn("Arg"_empty)$,
+        $Gamma tack empty : empty$,
       )),
       prooftree(rule(
-        name: $#rn("Let") _omega"-"pi$,
-        $pi T br(..., X(Gamma_0), ...) in Theta$,
-        $Gamma, v :^(chi_1(pi))_omega T tack s$,
-        $Gamma_0 = Gamma_0^omega$,
-        $Theta mid Gamma, Gamma_0 tack LET_omega sp v = X(Gamma_0); sp s$,
-      )),
-      prooftree(rule(
-        name: $#rn("Create") _1"-"pi$,
-        $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $Gamma, v :^(chi_2(pi))_1 T tack s$,
-        $forall i: Gamma_i, Gamma_0 tack s_i$,
-        $Theta mid Gamma, Gamma_0 tack CREATE_1 sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
-      )),
-      prooftree(rule(
-        name: $#rn("Create") _omega"-"pi$,
-        $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $Gamma, v :^(chi_2(pi))_omega T tack s$,
-        $forall i: Gamma_i, Gamma_0 tack s_i$,
-        $Gamma_0 = Gamma_0^omega$,
-        $Theta mid Gamma, Gamma_0 tack CREATE_omega sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
-      )),
-      prooftree(rule(
-        name: $#rn("Switch-")pi$,
-        $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma, v :^(chi_1(pi))_q T tack SWITCH_q sp v br(X_1(Gamma_1) => s_1, ...)$,
-      )),
-      prooftree(rule(
-        name: $#rn("Invoke-")pi$,
-        $pi T br(..., X(Gamma), ...) in Theta$,
-        $Theta mid Gamma, v :^(chi_2(pi))_q T tack INVOKE v sp X(Gamma)$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Substitute"),
+        name: $rn("Arg")$,
         $Gamma tack sigma : Gamma'$,
-        $Gamma' tack s$,
-        $forall v in Gamma^1. sp exists_1 v' in sigma. sp v = v'$,
-        $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
+        $v :^chi_q tau in Gamma$,
+        $Gamma tack (sigma, v) : (Gamma', sp v :^chi_q tau)$,
       )),
-    ),
-  )
-]
+    )
+  ],
+) <fig:lin:axcut:typing>
 
 == Translation from #Core to #AxCut <sec:lin:c2a>
 #figure[
