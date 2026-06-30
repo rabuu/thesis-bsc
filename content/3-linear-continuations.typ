@@ -483,7 +483,8 @@ This makes continuation usage explicit:
 producers cannot directly invoke continuations;
 if a producer contains a statement, it must first introduce a continuation;
 and consumers/statements must use their continuation exactly once.
-Intuitively, there is only _the_ continuation that can be tracked through every execution branch until it appears on the consumer side of a cut.
+Intuitively, there is only _the_ continuation that can be tracked through every execution branch until it appears in a function/destructor call or on the right side of a cut.
+And new continuations must be introduced in a producer, via $mu$ or a copattern match.
 
 #figure(
   kind: "Figure",
