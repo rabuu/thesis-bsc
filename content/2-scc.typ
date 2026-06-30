@@ -189,7 +189,7 @@ The naming of terms and covariables as _producers_ and _consumers_, respectively
 
 #note[TODO: example]
 
-=== Typing Rules
+=== Type System
 All typing rules for #Fun are shown in @app:form:fun:typing.
 
 Most of the rules are standard.
@@ -355,7 +355,7 @@ Instead, the interaction between caller and callee is generalized by allowing ar
 The equivalent of returning from a function or destructor is passing a value to a continuation.
 Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
-=== Typing Rules
+=== Type System
 @fig:scc:core:typing shows the typing rules for #Core.
 To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
 We assume that all types and names that are used in the program are well-defined and unique.
@@ -777,7 +777,7 @@ For the sake of completeness, the definition of (co)values and the lifting funct
   ]
 ] <def:scc:axcut>
 
-=== Typing Rules
+=== Type System
 #definition[
   $
     chi_1(DATA) := prd
