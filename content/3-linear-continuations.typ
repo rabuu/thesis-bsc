@@ -613,19 +613,25 @@ Since continuation linearity is enforced by typing in restricted #Core, both tra
 Intuitively, neither transformation introduces new control or new continuations.
 They only reorganize already well-typed terms while preserving the single-continuation property of the typing rules.
 
-== Linearity in #AxCut <sec:lin:axcut>
-The restricted fragments of #Fun and #Core are known to only cause local control flow and linear continuations, respectively.
-The next step is to make this information available in #AxCut.
-Of course, we could restrict the language to the exact image of the translation from restricted #Core where it would be obvious that all continuations are still linear.
-But in this thesis, we choose to extend #AxCut with explicit linearity annotations.
-This makes the language suitable as a target for even more optimizations regarding linearity, not only the linearity of continuations.
+== Extending #AxCut with Linearity Annotations <sec:lin:axcut>
+At this point, restricted #Fun guarantees local control flow, and restricted #Core guarantees linear continuations.
+The next step is to carry this information into #AxCut.
 
-#AxCut unifies the handling of variables for producers and covariables for consumers. All (co)variables are treated the same.
-There are two ways to introduce and consume a (co)variable: either is introduced with $LET$ and consumed by $SWITCH$, or it is introduced by $CREATE$ and consumed by $INVOKE$.
-In both cases, the (co)variable references some data. For a $LET$ (co)variable, that is its tag and the constructor or destructor fields; for a $CREATE$ (co)variable, that is the closure with its code and environment.
-We extend #AxCut now by annotating for each variable whether it must be used linearly or not.
+A possible approach is again to restrict #AxCut to the exact image of the translation from restricted #Core.
+In this thesis, however, we choose a more general design:
+we extend #AxCut with explicit linearity annotations for both producers and consumers.
+This keeps the intermediate representation usable for future linearity-based optimizations beyond continuations.
 
-#definition(title: [#AxCut with Linearity Annotations])[
+#AxCut unifies producer and consumer (co)variables.
+A (co)variable is either introduced by $LET$ and consumed by $SWITCH$, or introduced by $CREATE$ and consumed by $INVOKE$.
+In both cases, the binding denotes a reference to runtime data:
+for $LET$, tagged fields (of constructors and destructors);
+for $CREATE$, a closure with environment and branches.
+If it is statically known that this data is used linearly, the memory management can be specialized.
+
+Therefore, we now annotate each binding with whether it is linear or unrestricted.
+
+#definition(title: [Extended #AxCut])[
   #figure[
     #bnf(
       ($q$, "Quantities"),
@@ -650,21 +656,21 @@ We extend #AxCut now by annotating for each variable whether it must be used lin
   ]
 ]
 
-At each binding side, i.e. $LET$ and $CREATE$, we add an annotation where $omega$ means that the use of the (co)variable is unrestricted and $1$ means it must be used linearly.
-We also add this information in typing contexts so that the quantity of a binding is known everywhere.
+At binding sites ($LET$, $CREATE$), quantity $omega$ means unrestricted usage and $1$ means linear usage.
+The same quantity is tracked in typing contexts.
 
-An annotation is also added for $SWITCH$, the consuming part of a $LET$ (co)variable.
-This annotation is not strictly necessary and could be inferred from the context, but it eases the presentation of the code generation step.
-Since the code generation for $INVOKE$ works the same regardless of the quantity of the (co)variable, there is no need for another annotation.
+We also annotate $SWITCH$.
+This is not strictly --- as it could be inferred from the context ---, but it makes subsequent code-generation translations more direct.
+No additional annotation is needed for $INVOKE$, since code generation for it is independent of quantity.
 
 === Type System
-The original typing rules for #AxCut (@fig:scc:axcut:typing) must be modified to ensure that, in a well-typed #AxCut program, every linear (co)variable is actually used exactly once.
+The typing rules from @fig:scc:axcut:typing are adapted so that every linear binding is used exactly once in well-typed programs.
 The updated rules are shown in @fig:lin:axcut:typing.
 
-To formulate the typing rules for the extended variant of #AxCut we need some notation to distinguish linear from nonlinear bindings in the typing context.
+To formulate these rules, we first introduce a notation to separate linear and unrestricted parts of a typing context.
 
 #definition(title: [Context Filtering])[
-  To filter a typing context for linear and nonlinear bindings, we define the following two operations $Gamma^omega$ and $Gamma^1$ on some typing context $Gamma$:
+  To filter a typing context $Gamma$ into unrestricted and linear bindings, define $Gamma^omega$ and $Gamma^1$ by:
 
   $
     (Gamma, v :^chi_omega tau)^omega & := Gamma^omega, v :^chi_omega tau #h(4em)
@@ -673,16 +679,15 @@ To formulate the typing rules for the extended variant of #AxCut we need some no
     & (Gamma, v :^chi_1 tau)^1 & := Gamma^1, v :^chi_1 tau \
   $
 
-  $Gamma^omega$ and $Gamma^1$ contain exactly the unrestricted and linear bindings from $Gamma$, respectively.
+  Thus, $Gamma^omega$ contains exactly the unrestricted bindings and $Gamma^1$ exactly the linear bindings of $Gamma$.
 ]
 
-The $SUBSTITUTE$ statement is the only place where a (co)variable can be duplicated or dropped.
-So we add a condition in the #rn("Substitute") rule that every linear (co)variable in the current context must be mentioned in the $SUBSTITUTE$ statement, exactly once.
+The key enforcement point is $SUBSTITUTE$, since that is where duplication and dropping can occur.
+Therefore, rule #rn("SUBSTITUTE") requires each linear variable in the current context to appear exactly once in the substitution list.
 
-Furthermore, linear (co)variables must not be consumed by nonlinear (co)variables.
-That means, the fields of a nonlinear $LET$ (co)variable must consist of other nonlinear (co)variables.
-And similarly, a linear (co)variable is not allowed as part of the closure environment of a nonlinear $CREATE$ (co)variable.
-Otherwise, the inner linear (co)variable could be used in a nonlinear way by duplicating or dropping the containing nonlinear (co)variable.
+Additionally, linear bindings must not be hidden inside unrestricted containers.
+Concretely: fields of nonlinear $LET$ bindings must be unrestricted, and environments of a nonlinear $CREATE$ binding must be unrestricted.
+Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly through the unrestricted outer container.
 
 #figure(
   kind: "Figure",
@@ -761,8 +766,9 @@ Otherwise, the inner linear (co)variable could be used in a nonlinear way by dup
 ) <fig:lin:axcut:typing>
 
 == Translation from #Core to #AxCut <sec:lin:c2a>
-With the support for linear (co)variables in #AxCut, we can now retain the information we have about continuations in the restricted #Core fragment.
-Since every continuation in restricted #Core is linear, we can annotate this when translating to #AxCut.
+With linearity-aware #AxCut in place, translation can preserve and expose the continuation information from restricted #Core.
+Since all continuations in restricted #Core are linear, the translation marks them with quantity $1$.
+All producers, however, are marked with $omega$, because we have no static information about them.
 
 #figure(
   kind: "Figure",
@@ -770,6 +776,8 @@ Since every continuation in restricted #Core is linear, we can annotate this whe
   caption: [Translation from restricted #Core into extended #AxCut.],
 )[
   #set math.lr(size: 1em)
+
+  #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
   $
     c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
     &&& LET_omega sp x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, x) \
@@ -793,5 +801,5 @@ Since every continuation in restricted #Core is linear, we can annotate this whe
     "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
   $
 
-  #note[too wide :(]
+  #note[Note: Figure is too wide, improve the layout.]
 ]
