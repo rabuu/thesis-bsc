@@ -763,7 +763,14 @@ Otherwise, the inner linear (co)variable could be used in a nonlinear way by dup
 ) <fig:lin:axcut:typing>
 
 == Translation from #Core to #AxCut <sec:lin:c2a>
-#figure[
+With the support for linear (co)variables in #AxCut, we can now retain the information we have about continuations in the restricted #Core fragment.
+Since every continuation in restricted #Core is linear, we can annotate this when translating to #AxCut.
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Translation from restricted #Core into extended #AxCut.],
+)[
   #set math.lr(size: 1em)
   $
     c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
