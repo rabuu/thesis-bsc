@@ -124,7 +124,7 @@ So it must be called at least after loading $a_1$.
 But at the same time, loading $a_1$ into the first register after $Gamma$ overwrites the pointer to the memory block, which is needed for the rest of the loads and for $RELEASE$.
 
 In both cases the deadlock results from the double meaning of the first slot.
-In the current layout #sidenote[reference], it is the slot where the pointer to the next block of the free list is stored.
+In the current layout (@fig:scc:codegen:layout), it is the slot where the pointer to the next block of the free list is stored.
 But it also corresponds to the register with the memory pointer to the block itself.
 
 == Changing the Memory Layout
@@ -136,7 +136,7 @@ In this thesis, the latter approach is chosen.
 
 To keep the property that the position of the next block in the free list is also the position of the reference count in an allocated block,
 we now also store the reference count in the second slot.
-This, of course, only affects nonlinear blocks, since
+This, of course, only affects nonlinear blocks, because in linear block there is no reference count.
 
 Modifying the original layout in @fig:scc:codegen:layout yields the following result.
 #figure(
@@ -178,33 +178,35 @@ Modifying the original layout in @fig:scc:codegen:layout yields the following re
 
 As in the other figure, `next` stands for the pointer to the next block in the free list (potentially zero if there is none),
 and `rc` for the reference count of an allocated memory block.
-Reserved slots of in-use slots are illustrated with grey background, slots that can freely be used for payload data are highlighted in green.
+Reserved slots of in-use slots are illustrated with gray background, slots that can freely be used for payload data are highlighted in green.
+
+$
+  NEXTBLOCKOFFSET & := #imm(1) \
+   REFCOUNTOFFSET & := #imm(1) \
+$
 
 Importantly, the modification affects the memory layout of all blocks, not only those used linearly.
-#note[Use a auxiliary definition to parametrize this. Otherwise, the nonlinear memory mechanisms would have to be updated.]
 
 == Linear Memory Management
-#note[intro]
+#note[TODO: section intro]
 
 === Acquire
 The job of $ACQUIRE$ is to make the first block of the linear free list available to use
 and restore the invariant that the $HEAP$ register points to a free memory block.
 The only difference for $ACQUIRE_1$, in contrast to $ACQUIRE$ from @sec:scc:codegen:mem, is that it does not have to initialize a reference count.
 
-#note[Explain $BNE$, probably in @sec:scc:codegen.]
-
 $
   ACQUIRE_1 sp r & := && MV r HEAP \
-                 &    && LW HEAP #imm(1) HEAP \
-                 &    && BNE HEAP #reg(0) l_1 \
-                 &    && #hide[$l_1:$] MV HEAP TODO \
-                 &    && #hide[$l_1:$] LW TODO #imm(1) TODO \
-                 &    && #hide[$l_1:$] BEQ TODO #reg(0) l_2 \
-                 &    && #hide[$l_1:$] #hide[$l_2:$] SW #reg(0) #imm(1) HEAP \
-                 &    && #hide[$l_1:$] #hide[$l_2:$] ERASEFIELDS HEAP \
-                 &    && #hide[$l_1:$] #hide[$l_2:$] JUMP l_2 \
-                 &    && #hide[$l_1:$] l_2: ADDI TODO HEAP #imm(32) \
-                 &    && l_1:
+  & && LW HEAP NEXTBLOCKOFFSET HEAP \
+  & && BNE HEAP #reg(0) l_1 \
+  & && #hide[$l_1:$] MV HEAP TODO \
+  & && #hide[$l_1:$] LW TODO NEXTBLOCKOFFSET TODO \
+  & && #hide[$l_1:$] BEQ TODO #reg(0) l_2 \
+  & && #hide[$l_1:$] #hide[$l_2:$] SW #reg(0) NEXTBLOCKOFFSET HEAP \
+  & && #hide[$l_1:$] #hide[$l_2:$] ERASEFIELDS HEAP \
+  & && #hide[$l_1:$] #hide[$l_2:$] JUMP l_2 \
+  & && #hide[$l_1:$] l_2: ADDI TODO HEAP #imm(32) \
+  & && l_1:
 $
 
 === Store
@@ -442,7 +444,7 @@ A block that is known to be used linearly does not have a reference count --- an
 That means that $RELEASE_1$ does not have the check any reference count and can directly put the memory block back on the linear free list.
 
 $
-  RELEASE_1 sp r & := && SW HEAP #sidenote[parameter] #imm(1) sp r \
+  RELEASE_1 sp r & := && SW HEAP NEXTBLOCKOFFSET r \
                  &    && MV HEAP r \
 $
 
@@ -669,23 +671,32 @@ $
 $
 
 === Jump Tables and Virtual Tables
-#todo[TODO]
+#note[TODO: Write this down once decided on a notation in @sec:scc:codegen:mem.]
 
 == Translation from #AxCut to #RISC-V
-#figure[
-  #set math.lr(size: 1em)
+Now that we added the linear variants primitives for memory management in code generation,
+we can complete the SCC pipeline by translating the corresponding #AxCut annotations.
+Here, an $omega$ annotation refers to the original definition from @sec:scc:codegen:mem.
 
-  #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
-  $
-    a2m(mark(LET_q) sp v = X(Gamma_0)\; s) & := && mark(STORE_q) sp (REG_1 sp v) sp Gamma_0 \
-    & && LI (REG_2 sp v) sp (INDEX X) \
-    & && a2m(s) \
-    a2m(mark(CREATE_q) sp v = Gamma_0 sp b\; s) & := && mark(STORE_q) sp (REG_1 sp v) sp Gamma_0 \
-    & && LA (REG_2 sp v) sp l \
-    & && a2m(s) \
-    & && l: mark(VTABLE_q) sp b sp Gamma_0 \
-    a2m(mark(SWITCH_q) sp v sp b) & := && JR (REG_2 sp v) sp l \
-    & && l: mark(JTABLE_q) sp b sp Gamma \
-    a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
-  $
-]
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Modifications for the translation from extended #AxCut to #RISC-V.],
+  block(width: 100%)[
+    #set math.lr(size: 1em)
+
+    // #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
+    $
+      a2m(LET_q sp v = X(Gamma_0)\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 \
+      & && LI (REG_2 sp v) sp (INDEX X) \
+      & && a2m(s) \
+      a2m(CREATE_q sp v = Gamma_0 sp b\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 \
+      & && LA (REG_2 sp v) sp l \
+      & && a2m(s) \
+      & && l: VTABLE_q sp b sp Gamma_0 \
+      a2m(SWITCH_q sp v sp b) & := && JR (REG_2 sp v) sp l \
+      & && l: JTABLE_q sp b sp Gamma \
+      a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+    $
+  ],
+)

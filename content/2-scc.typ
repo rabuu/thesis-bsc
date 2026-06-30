@@ -1008,6 +1008,7 @@ Then, $LW$ loads the memory word at this address into its first operand's regist
 There are three instructions for jumping.
 The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
 The conditional branching instruction $BEQ$ compares the values of its two register operands: if they are equal, it jumps to the given destination, otherwise the execution just continues.
+#sidenote[Add $BNE$]
 
 Lastly, $ECALL$ is used to make a system call.
 Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
