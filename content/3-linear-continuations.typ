@@ -292,15 +292,12 @@ The lower-level stages (#AxCut and code generation) are _extended_ with linearit
 The higher-level stages (#Fun and #Core) are instead _restricted_ so that continuations are guaranteed to be linear.
 
 == Restricting #Fun <sec:lin:fun>
-The property that is required for the optimization to work is that every continuation is linear.
-In #Fun, most continuations are implicit, so the goal is to find the subset of #Fun programs that result in #Core and #AxCut programs with only linear continuations.
-As shown in @sec:lin:flow, #Fun programs with non-local control flow, resulting from the control operators $LABEL$ and $GOTO$,
-are translated to #Core programs with nonlinear continuations.
-In this chapter we show that restricting the surface language to programs without the usage of $LABEL$ and $GOTO$ ensures that all continuations in the lower-level compiler stages must be linear.
-This restriction leaves us with a less interesting but much more predictable language where control flow is completely implicit and local.
+The optimization requires that every continuation is linear.
+Since continuations in #Fun are mostly implicit, we first identify the fragment of #Fun whose translations have only linear continuations.
 
-The syntax of the restricted version of #Fun is, in comparison to @def:scc:fun, much simpler.
-By removing $LABEL$ and $GOTO$ from the language, we also lose the need for explicit covariables, and hence consumers in general.
+From @sec:lin:flow we know that non-local control flow in #Fun stems from $LABEL$ and $GOTO$, translating to nonlinear continuations in #Core.
+Hence, we restrict #Fun by removing these control operators.
+This leaves a less expressive language, but one with predictable, purely local control flow.
 
 #definition(title: [Restricted #Fun])[
   #figure[
@@ -341,29 +338,26 @@ By removing $LABEL$ and $GOTO$ from the language, we also lose the need for expl
   ]
 ] <def:lin:fun>
 
-The typing rules from @app:form:fun:typing also apply to this fragment of #Fun.
-Of course, the rules concerning $LABEL$, $GOTO$ and covariables are not needed.
+Syntactically, this restricted #Fun fragment is much simpler than @def:scc:fun:
+without $LABEL$ and $GOTO$, explicit covariables (and thus consumers in general) are no longer needed at the surface level.
 
-#note[
-  Maybe a small section about how restricted #Fun corresponds to intuitionistic logic.
-  See @Timothy1990formulae.
-]
+The typing rules from @app:form:fun:typing carry over to this fragment.
+Only the rules involving $LABEL$, $GOTO$ and covariables are removed.
 
 == Restricting #Core <sec:lin:core>
-After restricting #Fun, the goal is now to retain the information about linear continuations that we gained.
-To do that, one could imagine extending #Core to somehow annotate every continuation (or even every (co)variable) with whether it is linear or not
-and then translate restricted #Fun to annotate the linearity of the continuations.
-This approach would lead to an extended version of #Core with additional compile-time information about continuations.
-Although this would be attractive, especially as a compilation target for more than just #Fun, it also requires a much more complex, linear type system.
+After restricting #Fun, we must retain this linearity information in the next stage: #Core.
 
-Instead, in this thesis we chose to also restrict #Core to a fragment where every continuation must be linear.
-In #Core, there is nothing like $LABEL$ and $GOTO$ from #Fun that we can simply remove from the language.
-Instead, all continuations are explicit now, and we must structurally ensure their linearity.
+One possible approach would be to extend #Core with explicit linearity annotations on continuations --- or even all (co)variables.
+That approach is more general which could be appealing, but it would require a considerably more complex linear type system.
 
-The key idea here is that, coming from restricted #Fun, every continuation and consumer must be linear anyway,
-since in #Fun there is just no way to construct something that would result in a nonlinear usage of consumers.
-So, we identify the image of the translation from restricted #Fun.
-It is a strict subset of @def:scc:core.
+In this thesis we choose instead to restrict #Core to a fragment where continuation linearity is guaranteed by construction.
+Unlike in #Fun, this cannot be done by simply removing some control operators.
+In #Core, continuations are explicit everywhere, so linearity must be enforced structurally.
+
+The guiding idea is simple:
+because restricted #Fun cannot express non-local control effects, every consumer introduced by its translation should already be linear.
+So we restrict #Core exactly to the image of the translation (@fig:scc:f2c) from restricted #Fun.
+This image is a strict subset of @def:scc:core.
 
 #definition(title: [Restricted #Core])[
   #figure[
@@ -431,27 +425,24 @@ It is a strict subset of @def:scc:core.
 ]
 
 In #Core programs that are translated from the restricted fragment of #Fun,
-all covariables and consumer arguments must stem from the translation process.
-In argument and parameter lists, they are exactly the added consumer arguments that correspond to the implicit continuation in #Fun.
+all consumer arguments arise from the translation itself.
+In particular, consumer arguments in parameter/argument lists are exactly those introduced to represent the implicit #Fun continuation.
 
-Here, this is made explicit by restricting arguments $sigma$ and typing contexts $Gamma$ to only include producers.
-This makes it very explicit where continuations can appear:
-every top-level definition and every destructor has exactly one consumer argument at the end which is the continuation;
-constructors cannot have any consumer field.
+This is reflected by restricting $sigma$ and $Gamma$ to producers only.
+As a result, continuation positions become explicit:
+each top-level definition and destructor has exactly one consumer argument at the end --- the continuation ---,
+while constructors have no consumer fields.
 
-Restricted #Core is exactly the image of $f2c(dot)$ (see @fig:scc:f2c) for restricted #Fun.
+=== Type System
+We now adapt typing for restricted #Core so that continuations are used exactly once.
 
-=== Typing Rules
-The type system for restricted #Core is modified to ensure that every continuation is used exactly once.
-It works similar to linear type systems @Wadler1990linear, a concept originally derived from linear logic @Girard1987.
-The idea is that linearity is a structural property and can be tracked by restricting the structural rules for the context.
-The difference to full linear type systems is that, in restricted #Core, only continuations are linear, so the structural rules are only restricted for consumer bindings.
+The approach is inspired by linear type systems @Wadler1990linear, rooted in linear logic @Girard1987.
+Linearity is enforced as a structural property by restricting the usage of the typing context.
+Unlike fully linear systems, only consumer bindings are linear here; producer bindings remain unrestricted.
 
-Concretely, the structural rules like in @def:scc:core:structural are restricted to only apply to producers.
-Each continuation must be used, therefore continuations are not allowed to be dropped from the context.
-And each continuation must be used exactly once, therefore continuations are not allowed to be duplicated in the context.
-The former corresponds to restricting the #rn("Weakening") rule, the latter corresponds to the #rn("Contraction") rule.
-In restricted #Core, there cannot be more than one continuation in the context, so #rn("Exchange") does not apply to consumer bindings.
+Concretely, we keep the structural rules (as introduced in @def:scc:core:structural) for producers but disallow dropping and duplication of continuations.
+Thus, weakening and contraction remain available for producer bindings but are disallowed for continuations.
+And because there is at most one continuation in scope, exchange does not affect consumer bindings.
 
 #definition(title: [Structural Rules])[
   For statement typing, the structural rules are:
@@ -477,23 +468,22 @@ In restricted #Core, there cannot be more than one continuation in the context, 
     )),
   ))
 
-  Analogous, the three rules exist for consumer, producer, and argument typing.
+  Analogous rules exist for consumer, producer, and argument typing.
   For producer and argument typing, the additional consumer binding is omitted.
 ]
 
-The rest of the rules stays similar to the ones from @fig:scc:core:typing.
-But they are adjusted to track the continuation.
-In restricted #Core, there is always exactly one consumer, _the_ continuation, in the context when typing a statement.
-And this consumer must be invoked in the body of the statement. In every cut statement, the continuation must appear in the consumer part because a producer can only introduce new continuations --- using the $tilde(mu)$ abstraction or in a copattern match --- but never consume it.
-This is made explicit in the judgment forms.
-In #box[$Theta mid Gamma tack p :^prd tau$] there can only be producers in the context,
-in #box[$Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$] and #box[$Theta mid Gamma, alpha :^cns tau tack s$], on the other hand, there must be a single continuation in the context.
+The remaining typing rules follow @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
+In producer judgments, the typing context carries only producers, and in consumer/statement judgments, it carries exactly one additional continuation binding.
+Formally:
+- $Theta mid Gamma tack p :^prd tau$ types a producer with a producer-only context,
+- $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$ and
+- $Theta mid Gamma, alpha :^cns tau tack s$ type a consumer/statement with exactly one continuation in scope.
 
-This distinction makes it obvious where exactly the continuation is used.
-Producers cannot directly invoke continuations, and if a producers contains a statement, it first must introduce a new continuation.
-Statements and consumers always use their continuation exactly once.
-
-#note[This needs more work.]
+This makes continuation usage explicit:
+producers cannot directly invoke continuations;
+if a producer contains a statement, it must first introduce a continuation;
+and consumers/statements must use their continuation exactly once.
+Intuitively, there is only _the_ continuation that can be tracked through every execution branch until it appears on the consumer side of a cut.
 
 #figure(
   kind: "Figure",
@@ -617,9 +607,11 @@ Statements and consumers always use their continuation exactly once.
 )
 
 === Focusing and Shrinking
-The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:form:shrinking), preserve typability and therefore the linearity of continuations.
+The #Core transformations focusing (@app:form:focusing) and shrinking (@app:form:shrinking) preserve typability.
+Since continuation linearity is enforced by typing in restricted #Core, both transformations also preserve continuation linearity.
 
-#note[Why?]
+Intuitively, neither transformation introduces new control or new continuations.
+They only reorganize already well-typed terms while preserving the single-continuation property of the typing rules.
 
 == Linearity in #AxCut <sec:lin:axcut>
 The restricted fragments of #Fun and #Core are known to only cause local control flow and linear continuations, respectively.
