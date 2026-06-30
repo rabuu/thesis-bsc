@@ -616,6 +616,16 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
 #note[Why?]
 
 == Linearity in #AxCut <sec:lin:axcut>
+The restricted fragments of #Fun and #Core are known to only cause local control flow and linear continuations, respectively.
+The next step is to make this information available in #AxCut.
+Of course, we could again restrict #AxCut to the exact image of the translation from restricted #Core where it would be obvious that all continuations are still linear.
+But in this thesis, we choose to extend #AxCut with explicit linearity annotations.
+This makes the language suitable as a target for even more optimizations regarding linearity, not only the linearity of continuations.
+
+As mentioned in @sec:lin:flow, #AxCut unifies the handling of variables for producers and covariables for consumers. All (co)variables are treated the same.
+There are two ways to introduce and consume a (co)variable: either is introduced with $LET$ and consumed by $SWITCH$, or it is introduced by $CREATE$ and consumed by $INVOKE$.
+In both cases, the (co)variable references some data. For a $LET$ (co)variable, that is its tag and the constructor or destructor fields; for a $CREATE$ (co)variable, that is the closure with its code and environment.
+We extend #AxCut now by annotating for each variable whether it must be used linearly or not.
 
 #definition(title: [#AxCut with Linearity Annotations])[
   #figure[
@@ -628,21 +638,27 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
 
       ($s$, "Statements"),
       $...$,
-      $highlight(LET_q) sp v = X(sigma); sp s$,
-      $highlight(CREATE_q) sp v = Gamma br(X(Gamma) => s, ...); sp s$,
-      $highlight(SWITCH_q) sp v br(X(Gamma) => s, ...)$,
+      $LET_q sp v = X(sigma); sp s$,
+      $CREATE_q sp v = Gamma br(X(Gamma) => s, ...); sp s$,
+      $SWITCH_q sp v br(X(Gamma) => s, ...)$,
       $INVOKE v sp X(sigma)$,
 
       ($Gamma$, "Typing Contexts"),
       alt(
         $empty$,
-        $Gamma, sp v :^chi_highlight(q) tau$,
+        $Gamma, sp v :^chi_q tau$,
       ),
     )
   ]
+  #note[Is it okay that the linearity annotations appear in parameter lists?]
 ]
 
-#note[Is it okay that the linearity annotations appear in parameter lists?]
+At each binding side, i.e. $LET$ and $CREATE$, we add an annotation where $omega$ means that the use of the (co)variable is unrestricted and $1$ means it must be used linearly.
+We also add this information in typing contexts so that the quantity of a binding is known everywhere.
+
+An annotation is also added for $SWITCH$, the consuming part of a $LET$ (co)variable.
+This annotation is not strictly necessary and could be inferred from the context, but it eases the presentation of the code generation step.
+Since the code generation for $INVOKE$ works the same regardless of the quantity of the (co)variable, there is no need for another annotation.
 
 === Typing Rules
 
@@ -657,49 +673,50 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
   $
 ]
 
+The typing rules:
+
 #figure[
-  #def-box[Statement Typing: $Theta mid Gamma tack s$]
   #rule-set(
     manual-grouping: true,
     (
       prooftree(rule(
         name: $#rn("Let") _1"-"pi$,
         $pi T br(..., X(Gamma_0), ...) in Theta$,
-        $Gamma, mark(v :^(chi_1(pi))_1) T tack s$,
-        $Theta mid Gamma, Gamma_0 tack mark(LET_1) sp v = X(Gamma_0); sp s$,
+        $Gamma, v :^(chi_1(pi))_1 T tack s$,
+        $Theta mid Gamma, Gamma_0 tack LET_1 sp v = X(Gamma_0); sp s$,
       )),
       prooftree(rule(
         name: $#rn("Let") _omega"-"pi$,
         $pi T br(..., X(Gamma_0), ...) in Theta$,
-        $Gamma, mark(v :^(chi_1(pi))_omega) T tack s$,
-        note[$omega(Gamma_0) = Gamma_0$],
-        $Theta mid Gamma, Gamma_0 tack mark(LET_omega) sp v = X(Gamma_0); sp s$,
+        $Gamma, v :^(chi_1(pi))_omega T tack s$,
+        $Gamma_0 = Gamma_0^omega$,
+        $Theta mid Gamma, Gamma_0 tack LET_omega sp v = X(Gamma_0); sp s$,
       )),
       prooftree(rule(
         name: $#rn("Create") _1"-"pi$,
         $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $Gamma, mark(v :^(chi_2(pi))_1) T tack s$,
+        $Gamma, v :^(chi_2(pi))_1 T tack s$,
         $forall i: Gamma_i, Gamma_0 tack s_i$,
-        $Theta mid Gamma, Gamma_0 tack mark(CREATE_1) sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+        $Theta mid Gamma, Gamma_0 tack CREATE_1 sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
       )),
       prooftree(rule(
         name: $#rn("Create") _omega"-"pi$,
         $pi T br(X_1(Gamma_1), ...) in Theta$,
-        $Gamma, mark(v :^(chi_2(pi))_omega) T tack s$,
+        $Gamma, v :^(chi_2(pi))_omega T tack s$,
         $forall i: Gamma_i, Gamma_0 tack s_i$,
-        note[$omega(Gamma_0)=Gamma_0$],
-        $Theta mid Gamma, Gamma_0 tack mark(CREATE_omega) sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
+        $Gamma_0 = Gamma_0^omega$,
+        $Theta mid Gamma, Gamma_0 tack CREATE_omega sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
       )),
       prooftree(rule(
         name: $#rn("Switch-")pi$,
         $pi T br(X_1(Gamma_1), ...) in Theta$,
         $forall i: Gamma, Gamma_i tack s_i$,
-        $Theta mid Gamma, mark(v :^(chi_1(pi))_q) T tack mark(SWITCH_q) sp v br(X_1(Gamma_1) => s_1, ...)$,
+        $Theta mid Gamma, v :^(chi_1(pi))_q T tack SWITCH_q sp v br(X_1(Gamma_1) => s_1, ...)$,
       )),
       prooftree(rule(
         name: $#rn("Invoke-")pi$,
         $pi T br(..., X(Gamma), ...) in Theta$,
-        $Theta mid Gamma, mark(v :^(chi_2(pi))_q) T tack INVOKE v sp X(Gamma)$,
+        $Theta mid Gamma, v :^(chi_2(pi))_q T tack INVOKE v sp X(Gamma)$,
       )),
     ),
     (
@@ -707,41 +724,8 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
         name: rn("Substitute"),
         $Gamma tack sigma : Gamma'$,
         $Gamma' tack s$,
-        note[Linearity Condition: $forall v in "lin"(Gamma). exists_1 v' in sigma. v = v'$],
+        $forall v in Gamma^1. sp exists_1 v' in sigma. sp v = v'$,
         $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("Lit"),
-        $Gamma, v:^prd i64 tack s$,
-        $Gamma tack LIT v <- n; sp s$,
-      )),
-      prooftree(rule(
-        name: rn("Plus"),
-        $v_1 :^prd i64 in Gamma$,
-        $v_2 :^prd i64 in Gamma$,
-        $Gamma, v :^prd i64 tack s$,
-        $Gamma tack v <- v_1 + v_2; sp s$,
-      )),
-    ),
-    (
-      prooftree(rule(
-        name: rn("IfZ"),
-        $v :^prd i64 in Gamma$,
-        $Gamma tack s_1$,
-        $Gamma tack s_2$,
-        $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
-      )),
-      prooftree(rule(
-        name: rn("Call"),
-        $DEF f(Gamma) br(...) in Theta$,
-        $Theta mid Gamma tack f(Gamma)$,
-      )),
-      prooftree(rule(
-        name: rn("Exit"),
-        $v :^prd i64 in Gamma$,
-        $Gamma tack EXIT v$,
       )),
     ),
   )
@@ -750,30 +734,28 @@ The transformations on #Core, focusing (@app:form:focusing) and shrinking (@app:
 == Translation from #Core to #AxCut <sec:lin:c2a>
 #figure[
   #set math.lr(size: 1em)
-
-  #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
   $
     c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
-    &&& mark(LET_omega) sp x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, x) \
+    &&& LET_omega sp x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, x) \
     "where" &&& Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(mu alpha. s, D(Gamma_0)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
-    &&& mark(LET_1) sp alpha = D(Gamma_0^f); sp c2a(s, ctx: Gamma'\, alpha) \
+    c2a(cut(mu alpha. s, D(Gamma_0, alpha_0 : tau)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0, alpha_0^f := alpha_0]; \
+    &&& LET_1 sp alpha = D(Gamma_0^f, alpha :^cns_1 tau); sp c2a(s, ctx: Gamma'\, alpha) \
     "where" &&& Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(x, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', x^f := x]; \
-    &&& mark(SWITCH_omega) sp x br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
-    c2a(cut(NEW br(D_1(Gamma_1) => s_1, ...), alpha), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
-    &&& mark(SWITCH_1) sp alpha br(D_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
     c2a(cut(mu alpha. s, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
-    &&& mark(CREATE_1) sp alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
+    &&& CREATE_1 sp alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
     &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, alpha) \
     "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(NEW br(D_1(Gamma_1) => s_1, ...), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
-    &&& mark(CREATE_omega) sp x = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
+    c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
+    &&& CREATE_omega sp x = Gamma_0 br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma_1\, alpha_1\, Gamma_0), ...); \
     &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, x) \
     "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
+    c2a(cut(x, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', x^f := x]; \
+    &&& SWITCH_omega sp x br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
+    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
+    c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), alpha), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
+    &&& SWITCH_1 sp alpha br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma'\,Gamma_1\,alpha_1), ...) \
+    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
   $
-]
 
-#note[The (maybe) new #Core syntax is not used here yet. Maybe also include other cases.]
+  #note[too wide :(]
+]
