@@ -6,6 +6,8 @@
 }
 
 = Abstract
+#todo[TODO]
+
 The Sequent Calculus Compiler (SCC) uses sequent-calculus-based intermediate representations to compile a functional programming language to native machine code.
 Within the SCC, control flow is explicitly encoded using consumers.
 A continuation is a consumer that represents the remainder of a computation.
@@ -21,6 +23,8 @@ In this work, these improvements are only applied specifically to continuations,
   #set text(lang: "de")
 
   = Zusammenfassung
+  #todo[TODO]
+
   Der Sequent Calculus Compiler (SCC) nutzt Zwischenrepräsentationen, die auf dem Sequenzenkalkül basieren, um eine funktionale Programmiersprache in nativen Maschinencode zu übersetzen.
   Im SCC wird der Kontrollfluss explizit durch sogenannte Consumer kodiert.
   Eine Continuation ist ein Consumer, der den Rest einer Berechnung repräsentiert.

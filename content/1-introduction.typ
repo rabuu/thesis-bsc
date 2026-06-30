@@ -1,6 +1,8 @@
 #import "/lib/lib.typ": *
 
 = Introduction <ch:intro>
+#todo[TODO]
+
 Compilers translate high-level programming languages into executable machine code
 through a sequence of intermediate representations and transformations.
 One of the main challenges in compiler design is finding the right intermediate representations that are expressive enough for analysis and optimization and are suitable for generating efficient low-level machine code.

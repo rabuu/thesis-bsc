@@ -2,6 +2,8 @@
 #import deps: cetz, fletcher
 
 = The Sequent Calculus Compiler <ch:scc>
+#todo[TODO]
+
 This chapter provides a summary of the entire Sequent Calculus Compiler (SCC) pipeline as described by Müller et al. @Mueller2026,
 and serves as the foundation for the subsequent chapters that will modify and extend it.
 The presentation follows the original paper closely, adapted here to establish the notation and terminology used throughout this thesis.
