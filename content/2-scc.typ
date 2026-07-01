@@ -213,17 +213,11 @@ Interesting are the control operators.
       $Gamma tack GOTO alpha sp (p) : tau'$,
     )),
   ),
-  prooftree(rule(
-    name: rn("Exit"),
-    $Gamma tack p : i64$,
-    $Gamma tack EXIT p : tau$,
-  )),
 ))
 In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
 If there is a covariable in the current context, #rn("Goto") can be used to invoke it.
 Here, the argument must be of the same type as the consumer covariable.
 The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
-Similarly, the type of an $EXIT$ expression is also arbitrary, since it terminates the program anyway.
 
 == The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
@@ -398,8 +392,8 @@ that define how bindings in the local context can be manipulated.
   The same rules also exist analogously for producer, consumer, and argument typing.
 ] <def:scc:core:structural>
 
-The rules make it possible to drop, duplicate, and reorder bindings in the context.
-Since we can freely use all of the rules, it would also be possible to represent the context as a set
+The structural rules make it possible to drop, duplicate, and reorder bindings in the context.
+Since we can freely use all the rules, it would also be possible to represent the context as a set
 and then, in the rules #rn("Var") and #rn("Covar"), look up whether the (co)variable exists in the context.
 For this thesis, the presentation is so explicit because in @ch:lin we will adapt the typing system of #Core for linear continuations which involves modifying the structural properties of the context.
 
@@ -408,6 +402,15 @@ For this thesis, the presentation is so explicit because in @ch:lin we will adap
   supplement: "Figure",
   caption: [Typing rules for #Core.],
   block(width: 100%)[
+    #def-box[Declaration Typing: $Theta tack delta$]
+    #rule-set(
+      prooftree(rule(
+        name: rn("Def"),
+        $Theta mid Gamma tack s$,
+        $Theta tack DEF f(Gamma) br(s)$,
+      )),
+    )
+
     #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
 
     #rule-set(
@@ -535,31 +538,36 @@ For this thesis, the presentation is so explicit because in @ch:lin we will adap
   ],
 ) <fig:scc:core:typing>
 
-Most of the rules exist similarly in #Fun (@app:form:fun:typing).
-We present all of them here to highlight the symmetry of #Core. #sidenote[And maybe for the contrast to later.]
-Except for #rn("Lit") and #rn("Plus"), which are identical to the corresponding rules in #Fun,
-all the rules for producers and consumers come in pairs of two: one for the producer, and one for the corresponding consumer.
+Most of the rules have similar counterparts in #Fun (@app:form:fun:typing).
+We present all rules here because we will adapt it for linear continuations in @ch:lin.
 
-Concerning (co)data types, the only differences to the rules of #Fun are that (co)pattern matches now have statements as branch bodies
-and destructors no longer have a special return type.
+Also, have all the rules side-by-side really highlights the symmetry of #Core.
+Except for #rn("Lit") and #rn("Plus") all the rules for producers and consumers come in pairs of two:
+one for the producer, and one for the corresponding consumer.
 
-New are the two activation rules.
+#rn("Var") and #rn("Covar") are the axioms or leaves of the system.
+They ensure that a mentioned (co)variable is indeed bound in the current context.
+Note that a (co)variable must not necessarily be the only binding because bindings can always be dropped using #rn("Weakening").
+
+The rules regarding (co)data are completely dual.
+A data type is produced by a constructor and consumed by a pattern match.
+A codata type is produced by a copattern match and consumed by a corresponding destructor.
+
 The right activation rule #rn("Act-R") types a producer $mu alpha. s$ which abstracts over a consumer in the body statement.
 And, dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ which abstracts over a producer in its body.
 In both cases, the type of the abstracted (co)variable must match the type of the abstraction, but with switched chirality.
 
-The statement judgments differ from their corresponding #Fun rules in that they do not yield any return type.
+The statement judgments do not yield any return type.
 In #rn("IfZ") only the condition producer must have a specific type, namely $i64$, while the branches are now statements themselves.
 Calls to top-level definitions do not have a return type, so they become statements, too.
-In contrast to #Fun, where the $EXIT$ expression has an arbitrary type, in #Core it is a statement because it represents a computation.
-The new #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
+In #Core, $EXIT$ is a statement without the need of a return type, in contrast to the corresponding rule for #Fun, which fits because $EXIT$ terminates the computation.
+The #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
 This guarantees that they can meaningfully interact.
-
-#note[Too much mention of #Fun rules that I moved to the appendix.]
 
 == Translation from #Fun to #Core <sec:scc:f2c>
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
 this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
+The complete translation definition is presented in @fig:scc:f2c.
 
 This translation bridges the gap between the direct-style #Fun and the two-sided world of the sequent calculus.
 It resembles a CPS transformation @Danvy2003cps and works by passing the current continuation as argument of the translation to the correct position.
@@ -579,7 +587,7 @@ For the sake of completeness, the definition of (co)values and the lifting funct
 
     #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
     $
-      f2c(DEF f(Gamma) : i64 br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
+      f2c(DEF f(Gamma) : tau br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
       f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
       f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
     $
@@ -641,11 +649,22 @@ For the sake of completeness, the definition of (co)values and the lifting funct
   ],
 ) <fig:scc:f2c>
 
-#note[
-  Explain the translation. I am not sure yet how much of is relevant enough to explain.
+In #Fun, control flow is mostly and implicit through function calls and return values.
+As discussed, #Core generalizes this with explicit continuations.
+Top-level definitions and destructors no longer have return type.
+Instead, the translation adds the formerly implicit continuation explicitly by adding an additional consumer argument to the end of the parameter list.
 
-  - Mention `main`
-]
+When translating the body of a top-level definition, this added covariable becomes the current continuation.
+And similarly, the translation of the branch statements in a copattern match use the newly introduced covariable as current continuation.
+And when translating a definition call or destructor invocation from #Fun, the current continuation is used as additional argument.
+
+The control operators from #Fun integrate seamlessly into the #Core system.
+A $LABEL$ in #Fun captures the current continuation, this is exactly what the $mu$ operator does in #Core.
+The translation of $GOTO$ is special: the translation recursively translates the argument but with the specified covariable as new continuation, dropping the previously current continuation argument.
+
+An observation that will get important in @ch:lin is that the translation function always passes the current continuation linearly.
+That means the argument $c$ is never duplicated and never dropped, always passed through until it ends up as argument to function/destructor call or cut.
+The _only_ exception is the in the translation of $GOTO$ where $c$ is dropped.
 
 == Transformations on #Core <sec:scc:transformations>
 
