@@ -43,7 +43,7 @@ The conflict arises at the first register ($a_1$).
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd)
+    data: (imm(0), none, none, none, ddd, ddd)
       + (data($a_1$),)
       + range(2, 9).map(i => data($a_#i$, active: false))
       + (ddd,),
@@ -95,7 +95,7 @@ Naïvely, we would call $RELEASE$ and then load back to front.
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd) + (none,) * 8 + (ddd,),
+    data: (imm(0), none, none, none, ddd, ddd) + (none,) * 8 + (ddd,),
     offset: (2, regy),
     open-right: true,
   )
@@ -240,7 +240,7 @@ The following figures illustrate the required order for $STORE_1$.
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd)
+    data: (imm(0), none, none, none, ddd, ddd)
       + range(1, 9).map(i => data($a_#i$))
       + (ddd,),
     offset: (2, regy),
@@ -290,7 +290,7 @@ First, store all non-conflicting slots: the latter three fields and the very fir
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd)
+    data: (imm(0), none, none, none, ddd, ddd)
       + (data($a_1$, active: false), data($a_2$))
       + range(3, 9).map(i => data($a_#i$, active: false))
       + (ddd,),
@@ -340,7 +340,7 @@ $ACQUIRE_1$ must come first, otherwise writing $a_2$ would destroy the free-list
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd)
+    data: (imm(0), none, none, none, ddd, ddd)
       + (none, data($a_2$))
       + range(3, 9).map(i => data($a_#i$, active: false))
       + (ddd,),
@@ -396,7 +396,7 @@ Since $HEAP$ already points to the correct free-list block, overwriting the `nex
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd, none)
+    data: (imm(0), none, none, none, ddd, ddd, none)
       + range(2, 9).map(i => data($a_#i$, active: false))
       + (ddd,),
     offset: (2, regy),
@@ -475,7 +475,7 @@ For the case that all four fields are loaded, the operation order must be adjust
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd) + (none,) * 8 + (ddd,),
+    data: (imm(0), none, none, none, ddd, ddd) + (none,) * 8 + (ddd,),
     offset: (2, regy),
     open-right: true,
   )
@@ -520,7 +520,7 @@ First load the non-conflicting slots, which are all but the very first slot ($a_
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd, none)
+    data: (imm(0), none, none, none, ddd, ddd, none)
       + range(2, 9).map(i => data($a_#i$))
       + (ddd,),
     offset: (2, regy),
@@ -569,7 +569,7 @@ it writes the `next` pointer to the second slot which has already been loaded.
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd, none)
+    data: (imm(0), none, none, none, ddd, ddd, none)
       + range(2, 9).map(i => data($a_#i$))
       + (ddd,),
     offset: (2, regy),
@@ -624,7 +624,7 @@ Finally, load $a_1$ to complete the operation.
   slots(
     15,
     labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
-    data: (0, none, none, none, ddd, ddd)
+    data: (imm(0), none, none, none, ddd, ddd)
       + range(1, 9).map(i => data($a_#i$))
       + (ddd,),
     offset: (2, regy),
