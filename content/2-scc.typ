@@ -1058,6 +1058,9 @@ This is the subset of #RISC-V used as target of the code generation:
         $JUMP o$,
         $JR r sp o$,
         $BEQ r sp r sp o$,
+        $BNE r sp r sp o$,
+      ),
+      alt(
         $ECALL$,
       ),
 
@@ -1110,20 +1113,90 @@ Then, $LW$ loads the memory word at this address into its first operand's regist
 
 There are three instructions for jumping.
 The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
-The conditional branching instruction $BEQ$ compares the values of its two register operands: if they are equal, it jumps to the given destination, otherwise the execution just continues.
-#sidenote[Add $BNE$]
+The conditional branching instructions $BEQ$ and $BNE$ compare the values of the two register operands:
+$BNE$ jumps to the given destination if they are equal, otherwise the execution just continues;
+$BNE$ branches if they are not equal.
 
 Lastly, $ECALL$ is used to make a system call.
 Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
-=== The Model
+=== The Runtime Model
+#AxCut is already pretty close to how the program execution works in machine code.
+
+A program in machine code is a sequence of instructions that primarily modify the state of the processor registers for computation.
+Besides the registers, it also uses the main memory to store data.
+A program in #AxCut is a sequence of statements that modify the state of the typing context.
+Indeed, the current state of the context in #AxCut directly models the registers while execution.
+
+In a running program, we reserve some registers for special purposes, the rest is used to store the (co)variable bindings.
+Each (co)variable occupies two registers.
+
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
+
+  let regy = 4
+
+  slots(
+    11,
+    labels: (none, reg("temp"), reg("heap"), reg("todo"), none),
+    data: (imm(0),) + (none,) * 9 + (ddd,),
+    offset: (0, regy),
+    open-right: true,
+  )
+
+  brace(6, offset: (4, regy), label: $Gamma$)
+  brace(2, offset: (4, regy - 1), label: $v_1$, flipped: true)
+  brace(2, offset: (6, regy - 1), label: $v_2$, flipped: true)
+  brace(2, offset: (8, regy - 1), label: ddd, flipped: true)
+}))
+
+The register #reg(0) is always #imm(0), $TEMP$ is used as scratch register, and $HEAP$ and $TODO$ are used for memory management.
+The rest of the registers is used for storing the context bindings.
+Of course, in practice there is only a limited number of registers (32 in #RISC-V), which means sometimes not all (co)variables can be stored in the registers.
+We ignore this restriction in this thesis, but in the implementation this is solved by spilling any (co)variables that do not fit to memory.
+
 #note[
-  - $Gamma$ is registers
-  - A variable living in $Gamma$ takes up two registers
   - $REG_1$, $REG_2$
   - Memory blocks and their layout
   - Constant-time lazy reference counting @Lam2024
 ]
+
+=== Memory Management <sec:scc:codegen:mem>
+(Co)variables can reference memory-allocated data.
+In particular, a $LET$ statement stores the fields of the constructor/destructor in memory, and $CREATE$ stores the closure environment in memory.
+This means, we need an automatic memory management to track allocated memory.
+
+
+In the SCC, we do not maintain a stack like what other compilers commonly do.
+Instead, we only use heap memory that is managed using a constant-time reference counting @Lam2024 strategy.
+That means, we conceptually divide the memory into equal-sized blocks that we allocate and free individually.
+Each block contains eight slots that hold one word.
+Two consecutive slots are referred to as field, so there are four fields per block.
+
+The memory blocks are managed in two separate free lists.
+The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediatly free to use.
+The $TODO$ register points to the lazy free list. The blocks in the lazy free list may still contain references to other blocks and that must be erased before using the block.
+
+==== Memory Layout
+For both free lists, the first slot of each block stores the pointer to the next block. If there is no next block, this first slot must contain #imm(0).
+We will refer to the offset into the memory block to get to pointer to the next block of the free list as $NEXTBLOCKOFFSET$.
+$ NEXTBLOCKOFFSET := #imm(0) $
+
+We always maintain the invariant that $HEAP$ must point to a free-to-use memory block.
+The $TODO$ register, on the other hand, may be #imm(0) if there is no block in the lazy free list.
+
+If a memory block was allocated from a free list and is in use,
+only the latter three fields can be used for actual payload.
+The first field is reserved for metadata.
+In the current design, that is only the reference count for the allocated memory block.
+This reference count is stored in the first slot, the offset into the block to reach the reference count is referred to as $REFCOUNTOFFSET$.
+$ REFCOUNTOFFSET := #imm(0) $
+
+The following figure illustrates the layout of memory blocks.
+Here, `next` stands for the pointer to the next block of the free list --- potentially #imm(0) if there is none ---,
+and `rc` denotes the reference count for allocated blocks.
+They reserved slots are marked in gray, the slots that are free-to-use are highlighted in green.
 
 #figure(
   kind: "Figure",
@@ -1153,6 +1226,44 @@ Before invoking it, the required arguments must be placed in certain registers, 
     }),
   )
 ] <fig:scc:codegen:layout>
+
+==== TODO
+#figure[
+  $
+    LOAD r sp Gamma & := && RELEASE r \
+    & && LOADV r sp Gamma \
+    LOADV r sp (Gamma, v:^chi tau) & := && LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r \
+    & && LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r \
+    & && LOADV r sp Gamma \
+    STORE r sp Gamma & := && STOREV r sp Gamma \
+    & && ACQUIRE r \
+    STOREV (Gamma, v:^chi tau) & := && SW (REG_2 sp v) sp (OFFSET_2 sp v) sp HEAP \
+    & && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
+    & && STOREV r sp Gamma \
+    RELEASE r & := && LW TEMP #imm(0) sp r \
+    &&& BEQ TEMP #reg(0) l_1 \
+    &&& #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
+    &&& #hide[$l_1:$] SW TEMP #imm(0) sp r \
+    &&& #hide[$l_1:$] SHAREFIELDS r \
+    &&& #hide[$l_1:$] JUMP l_2 \
+    &&& l_1: SW HEAP #imm(0) sp r \
+    &&& #hide[$l_1:$] MV HEAP r \
+    &&& l_2: \
+    ACQUIRE r & := && MV r HEAP \
+    &&& LW HEAP #imm(0) HEAP \
+    &&& BEQ HEAP #reg(0) l_1 \
+    &&& #hide[$l_1:$] SW #reg(0) #imm(0) sp r \
+    &&& #hide[$l_1:$] JUMP l_2 \
+    &&& l_1: MV HEAP TODO \
+    &&& #hide[$l_1:$] LW TODO #imm(0) TODO \
+    &&& #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
+    &&& #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(0) HEAP \
+    &&& #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
+    &&& #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
+    &&& #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
+    &&& l_2: \
+  $
+]
 
 === Translating #AxCut to #RISC-V
 The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
@@ -1281,41 +1392,3 @@ $
                                    &    && l: VTABLE b sp Gamma_0 \
          a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
 $
-
-=== Memory Management <sec:scc:codegen:mem>
-#figure[
-  $
-    LOAD r sp Gamma & := && RELEASE r \
-    & && LOADV r sp Gamma \
-    LOADV r sp (Gamma, v:^chi tau) & := && LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r \
-    & && LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r \
-    & && LOADV r sp Gamma \
-    STORE r sp Gamma & := && STOREV r sp Gamma \
-    & && ACQUIRE r \
-    STOREV (Gamma, v:^chi tau) & := && SW (REG_2 sp v) sp (OFFSET_2 sp v) sp HEAP \
-    & && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
-    & && STOREV r sp Gamma \
-    RELEASE r & := && LW TEMP #imm(0) sp r \
-    &&& BEQ TEMP #reg(0) l_1 \
-    &&& #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
-    &&& #hide[$l_1:$] SW TEMP #imm(0) sp r \
-    &&& #hide[$l_1:$] SHAREFIELDS r \
-    &&& #hide[$l_1:$] JUMP l_2 \
-    &&& l_1: SW HEAP #imm(0) sp r \
-    &&& #hide[$l_1:$] MV HEAP r \
-    &&& l_2: \
-    ACQUIRE r & := && MV r HEAP \
-    &&& LW HEAP #imm(0) HEAP \
-    &&& BEQ HEAP #reg(0) l_1 \
-    &&& #hide[$l_1:$] SW #reg(0) #imm(0) sp r \
-    &&& #hide[$l_1:$] JUMP l_2 \
-    &&& l_1: MV HEAP TODO \
-    &&& #hide[$l_1:$] LW TODO #imm(0) TODO \
-    &&& #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
-    &&& #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(0) HEAP \
-    &&& #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
-    &&& #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
-    &&& #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
-    &&& l_2: \
-  $
-]

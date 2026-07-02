@@ -12,11 +12,27 @@
 #let reserved = gray.lighten(20%)
 #let free-to-use = green.lighten(40%)
 
-#let brace(range, offset: (0, 0), label: none) = {
+#let brace(
+  range,
+  offset: (0, 0),
+  label: none,
+  flipped: false,
+) = {
   let (dx, dy) = offset
-  cetz.decorations.brace((dx, dy), (dx + range, dy))
+
+  let start = (dx, dy)
+  let end = (dx + range, dy)
+
+  if flipped {
+    cetz.decorations.brace(end, start)
+  } else {
+    cetz.decorations.brace(start, end)
+  }
+
   if label != none {
-    content((dx + (range / 2), dy + 0.5), t(label))
+    let x = dx + (range / 2)
+    let y = if flipped { dy - 0.5 } else { dy + 0.5 }
+    content((x, y), t(label))
   }
 }
 
