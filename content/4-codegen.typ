@@ -671,7 +671,7 @@ $
 === Jump Tables and Virtual Tables
 #note[TODO: Write this down once decided on a notation in @sec:scc:codegen:mem.]
 
-== Translation from #AxCut to #RISC-V
+== Extending the Translation from #AxCut to #RISC-V
 With linear memory primitives available, translation from extended #AxCut to #RISC-V can map quantity annotations directly to backend operations.
 An $omega$ annotation selects the original nonlinear behavior from @sec:scc:codegen:mem,
 while a $1$ annotation selects the linear variants introduced above.

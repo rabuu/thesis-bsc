@@ -766,7 +766,7 @@ Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly
   ],
 ) <fig:lin:axcut:typing>
 
-== Translation from #Core to #AxCut <sec:lin:c2a>
+== Extending the Translation from #Core to #AxCut <sec:lin:c2a>
 With linearity-aware #AxCut in place, translation can preserve and expose the continuation information from restricted #Core.
 Since all continuations in restricted #Core are linear, the translation marks them with quantity $1$.
 All producers, however, are marked with $omega$, because we have no static information about them.

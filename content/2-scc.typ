@@ -564,7 +564,7 @@ In #Core, $EXIT$ is a statement without the need of a return type, in contrast t
 The #rn("Cut") rule ensures that a producer and a consumer that meet in a cut have the same type.
 This guarantees that they can meaningfully interact.
 
-== Translation from #Fun to #Core <sec:scc:f2c>
+== Translating #Fun to #Core <sec:scc:f2c>
 Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
 this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
 The complete translation definition is presented in @fig:scc:f2c.
@@ -925,7 +925,7 @@ Thus, the transformation leaves us with a shrunk fragment of #Core that only con
   ],
 ) <fig:scc:axcut:typing>
 
-== Translation from #Core to #AxCut <sec:scc:c2a>
+== Translating #Core to #AxCut <sec:scc:c2a>
 #note[Improve formatting.]
 #big-figure[
   #set math.lr(size: 1em)
@@ -1093,7 +1093,7 @@ Before invoking it, the required arguments must be placed in certain registers, 
   )
 ] <fig:scc:codegen:layout>
 
-=== Translation from #AxCut to #RISC-V
+=== Translating #AxCut to #RISC-V
 The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
 Each #AxCut construct is explained separately.
 
