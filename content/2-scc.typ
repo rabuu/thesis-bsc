@@ -667,8 +667,15 @@ That means the argument $c$ is never duplicated and never dropped, always passed
 The _only_ exception is the in the translation of $GOTO$ where $c$ is dropped.
 
 == Transformations on #Core <sec:scc:transformations>
+Before translating a #Core program to #AxCut, we must bring it in a certain normal form.
+We split this process into two transformations, each targeting a small fragment of #Core.
 
 === Focusing
+The focusing transformation $focus(dot)$ gives names to all subterms by lifting complex terms out of argument position.
+This is an extension of static focusing @Curien2000.
+The full transformation definition can be found in @app:form:focusing.
+The resulting focused #Core fragment is similar to A-normal form @Flanagan1993anf @Binder2022anf in that terms in argument position must be a variable or covariable.
+
 #definition(title: [Focused #Core])[
   #figure[
     #bnf(
@@ -718,7 +725,20 @@ The _only_ exception is the in the translation of $GOTO$ where $c$ is dropped.
   ]
 ] <def:scc:focused>
 
+#note[TODO: example]
+
 === Shrinking
+After focusing, we apply the shrinking transformation $shrink(dot)$.
+It reduces the syntax of the language to only statements by inlining all producers and consumers into cuts.
+Then, it eliminates as many cut combinations as possible from the language.
+
+Many combinations of producers and consumers meeting in a cut cannot occur anyway because of typing.
+Cuts that only introduce new names for (co)variables can be removed by renaming.
+Critical pairs --- where a $mu$ abstraction meets a $tilde(mu)$ abstraction --- can be removed by choosing the side to expand;
+this choice exactly corresponds to evaluation order, we choose call-by-value for data and call-by-name for codata.
+Unknown cuts --- where a variable and a covariable meet --- can be removed by $eta$-expansion of one side, again depending on the polarity.
+
+Thus, the transformation leaves us with a shrunk fragment of #Core that only consists of certain cuts and statements.
 
 #definition(title: [Shrunk #Core])[
   #figure[
@@ -758,6 +778,7 @@ The _only_ exception is the in the translation of $GOTO$ where $c$ is dropped.
   ]
 ] <def:scc:shrunk>
 
+#note[TODO: example]
 
 == The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
 

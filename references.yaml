@@ -26,6 +26,24 @@ Appel1991cps:
   author: Appel, Andrew W.
   date: 1991
   publisher: Cambridge University Press
+Binder2022anf:
+  type: anthos
+  title: Administrative Normal Forms and Focusing for Lambda Calculi
+  author:
+  - Binder, David
+  - Piecha, Thomas
+  date: 2022
+  editor:
+  - Materna, Pavel
+  - Jespersen, Bjørn
+  parent:
+    type: anthology
+    title: Logically Speaking. A Festschrift for Marie Du{ž}{í}
+    publisher: College Publications
+    volume: 49
+    parent:
+      type: anthology
+      title: Tributes
 Binder2024grokking:
   type: article
   title: Grokking the Sequent Calculus (Functional Pearl)
@@ -124,7 +142,28 @@ Downen2019codata:
     publisher:
       name: Springer International Publishing
       location: Cham
-
+Flanagan1993anf:
+  type: article
+  title: The essence of compiling with continuations
+  author:
+  - Flanagan, Cormac
+  - Sabry, Amr
+  - Duba, Bruce F.
+  - Felleisen, Matthias
+  date: 1993-06
+  page-range: 237-247
+  url: https://doi.org/10.1145/173262.155113
+  serial-number:
+    doi: 10.1145/173262.155113
+    issn: 0362-1340
+  parent:
+    type: periodical
+    title: SIGPLAN Not.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: 6
+    volume: 28
 Gentzen1935a:
   type: article
   title: Untersuchungen über das logische Schließen. I.
@@ -222,6 +261,27 @@ Mueller2026scc:
   - Binder, David
   date: 2026
   url: https://github.com/SequentCalculus/sequent-calculus-compiler
+Ostermann2022:
+  type: article
+  title: Introduction and elimination, left and right
+  author:
+  - Ostermann, Klaus
+  - Binder, David
+  - Skupin, Ingo
+  - Süberkrüb, Tim
+  - Downen, Paul
+  date: 2022-08
+  url: https://doi.org/10.1145/3547637
+  serial-number:
+    doi: 10.1145/3547637
+  parent:
+    type: periodical
+    title: Proc. ACM Program. Lang.
+    publisher:
+      name: Association for Computing Machinery
+      location: New York, NY, USA
+    issue: ICFP
+    volume: 6
 Reynolds1972letcc:
   type: article
   title: Definitional interpreters for higher-order programming languages
