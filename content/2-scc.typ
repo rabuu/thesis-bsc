@@ -816,8 +816,8 @@ This resembles the register operations that are needed in machine code.
       $LIT v <- n; sp s$,
       $v <- v + v; sp s$,
       $IF v equiv 0 br(s) ELSE br(s)$,
-      $f(sigma)$,
       $EXIT v$,
+      $f(sigma)$,
       $SUBSTITUTE[Gamma := sigma]; sp s$,
 
       ($sigma$, "Arguments"),
@@ -838,6 +838,11 @@ This resembles the register operations that are needed in machine code.
 #note[Explain every construct of #AxCut]
 
 === Type System
+#note[Some intro sentence.]
+
+The duality of the rules allows for a uniform presentation of the rules.
+We formulate these symmetric rules using the following notation, connecting polarity and chirality.
+
 #definition[
   $
     chi_1(DATA) := prd
@@ -849,6 +854,11 @@ This resembles the register operations that are needed in machine code.
     chi_2(CODATA) := prd
   $
 ]
+
+At its basis, the type system of #AxCut is ordered.
+That means, there are no structural rules --- like for #Core --- that can be used to implicitly manipulate the context.
+Instead, the context in #AxCut should be understood as strictly ordered list which is only modified explicitly by the statements of the program.
+The only exception to that are the rules concerning built-in integers where the position in the context does not matter.
 
 #figure(
   kind: "Figure",
@@ -886,14 +896,6 @@ This resembles the register operations that are needed in machine code.
       ),
       (
         prooftree(rule(
-          name: rn("Substitute"),
-          $Gamma tack sigma : Gamma'$,
-          $Gamma' tack s$,
-          $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
-        )),
-      ),
-      (
-        prooftree(rule(
           name: rn("Lit"),
           $Gamma, v:^prd i64 tack s$,
           $Gamma tack LIT v <- n; sp s$,
@@ -915,14 +917,22 @@ This resembles the register operations that are needed in machine code.
           $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
         )),
         prooftree(rule(
+          name: rn("Exit"),
+          $v :^prd i64 in Gamma$,
+          $Gamma tack EXIT v$,
+        )),
+      ),
+      (
+        prooftree(rule(
           name: rn("Call"),
           $DEF f(Gamma) br(...) in Theta$,
           $Theta mid Gamma tack f(Gamma)$,
         )),
         prooftree(rule(
-          name: rn("Exit"),
-          $v :^prd i64 in Gamma$,
-          $Gamma tack EXIT v$,
+          name: rn("Substitute"),
+          $Gamma tack sigma : Gamma'$,
+          $Gamma' tack s$,
+          $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
         )),
       ),
     )
@@ -943,8 +953,41 @@ This resembles the register operations that are needed in machine code.
   ],
 ) <fig:scc:axcut:typing>
 
+The #rn("Substitute") rule is the explicit replacement for the structural rules of exchange, weakening, and contraction.
+It allows rearranging the current context, where the new context can arbitrarily reorder, duplicate, and drop (co)variables from the old context.
+
+In the rules #rn("Plus"), #rn("IfZ"), and #rn("Exit"), the arguments are checked to be integers.
+Notably, it is only important that the corresponding binding exists somewhere in the context, the position is not relevant.
+This is different for all other rules.
+
+By rule #rn("Call"), a top-level function invocation is only valid if the arguments exactly match the current context.
+This is denotet by $f(Gamma)$, meaning $f$ is applied exactly to the (co)variables in the context.
+This means, in a program a function call is usually preceded by an $SUBSTITUTE$ statement that brings the context into the right shape.
+
+The most important rules for the purposes of this thesis are the four rules concerning (co)variables of (co)data types.
+They are parameterized by the polarity (data or codata) of the variable they introduce/eliminate.
+
+In #rn("Let"), a constructor or destructor is bound to a (co)variable.
+The fields must exactly match the last part of the current context and are then removed from the context.
+The subsequent statement is typed with the (co)variable in scope, with the binding annotating the chirality:
+producer for a constructor and as consumer for a destructor.
+
+#rn("Create") is similar to #rn("Let").
+Here we allocate a closure object and bind it to a (co)variable.
+Like the fields of $LET$, the $CREATE$ statement consumes its closure environment $Gamma_0$ from the context.
+This closure environment is used to type check the branches of the object.
+In the subsequent statement, the object (co)variable is now in scope; as consumer for data types and as producer for codata types.
+
+The #rn("Switch") rule ensures that $SWITCH$ consumes the (co)variable it acts on from the context,
+the remaining context is used to type check the branches.
+Because a producer scrutinee must be data and a consumer scrutinee must be codata, the (co)variable must stem from a $LET$ statement.
+
+And dually, the #rn("Invoke") only allows for (co)variables that were introduced by $CREATE$.
+Here, the (co)variable must be the final binding of the context and the rest must exactly match the arguments of the constructor/destructor.
+
 == Translating #Core to #AxCut <sec:scc:c2a>
-#note[Improve formatting.]
+#note[Intro text for the final translation.]
+
 #big-figure[
   #set math.lr(size: 1em)
 
