@@ -684,7 +684,7 @@ To formulate these rules, we first introduce a notation to separate linear and u
 ]
 
 The key enforcement point is $SUBSTITUTE$, since that is where duplication and dropping can occur.
-Therefore, rule #rn("SUBSTITUTE") requires each linear variable in the current context to appear exactly once in the substitution list.
+Therefore, rule #rn("Substitute") requires each linear variable in the current context to appear exactly once in the substitution list.
 
 Additionally, linear bindings must not be hidden inside unrestricted containers.
 Concretely: fields of nonlinear $LET$ bindings must be unrestricted, and environments of a nonlinear $CREATE$ binding must be unrestricted.
