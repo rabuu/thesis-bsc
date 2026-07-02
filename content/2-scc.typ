@@ -781,8 +781,24 @@ Thus, the transformation leaves us with a shrunk fragment of #Core that only con
 #note[TODO: example]
 
 == The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
+The next compiler stage is #AxCut.
+This is the final intermediate representation of the pipeline which is directly translated into machine code.
+It is close to shrunk #Core but is structured to make it better suitable for code generation.
+
+Due to the symmetry of #Core, there are still some redundancies left.
+Specifically, shrunk #Core has a number of completely dual constructs that carry the exact same computational meaning @Ostermann2022.
+For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ bind a tagged variant to a name.
+In #AxCut, these dual constructs are merged into a unified syntax.
+This also means, the distinction between producers and consumers becomes blurrier: variables and covariables are treated identically.
+
+In #AxCut, the context of currently active bindings has an explicit order and statements expect it to be in a certain shape.
+Explicit substitutions manipulate the (co)variables that are currently in scope and to prepare them for subsequent statements.
+Formerly implicit context operations --- reordering, duplicating, and dropping of (co)variables --- become explicit on the term level in #AxCut.
+This resembles the register operations that are needed in machine code.
 
 === Syntax
+#note[very short introduction for this section]
+
 #definition(title: [Syntax of #AxCut])[
   #figure[
     #bnf(
@@ -818,6 +834,8 @@ Thus, the transformation leaves us with a shrunk fragment of #Core that only con
     )
   ]
 ] <def:scc:axcut>
+
+#note[Explain every construct of #AxCut]
 
 === Type System
 #definition[
