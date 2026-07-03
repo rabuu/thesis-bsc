@@ -943,15 +943,19 @@ Dually, the #rn("Invoke") only permits (co)variables introduced by $CREATE$.
 The invoked (co)variable must be the final binding in the context, while the remainder of the context must exactly match the arguments of the corresponding constructor or destructor.
 
 == Translating #Core to #AxCut <sec:scc:c2a>
-#note[Intro text for the final translation.]
+After shrinking, #Core statements are translated to #AxCut by $c2a(dot)$.
+This translation makes context restructuring explicit and maps dual cut patterns to unified #AxCut constructs.
+The full translation is given in @fig:scc:c2a.
 
-#big-figure[
+The translation frequently introduces fresh names for bindings in explicit substitutions.
+We use the following notation: $v^f$ denotes a fresh name for the variable $v$, and in $Gamma^f$ every binding is replaced with a fresh name.
+
+#figure(
+  kind: "Figure",
+  supplement: "Figure",
+  caption: [Translation from shrunk #Core to #AxCut.],
+)[
   #set math.lr(size: 1em)
-
-  #def-box[$c2a(dot) : "Definition"_("Shrunk" Core) -> "Definition"_AxCut$]
-  $
-    c2a(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(c2a(s, ctx: Gamma))
-  $
 
   #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
   $
@@ -965,18 +969,18 @@ The invoked (co)variable must be the final binding in the context, while the rem
     c2a(cut(x, D(Gamma_0)), ctx: Gamma) & := && SUBSTITUTE[Gamma_0^f := Gamma_0, x := x]; sp INVOKE x sp D(Gamma_0^f) \
     c2a(cut(x, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', x^f := x]; \
     &&& SWITCH x br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
+    "where" &&& Gamma' = union_i "freeVars"(s_i) subset Gamma \
     c2a(cut(NEW br(D_1(Gamma_1) => s_1, ...), alpha), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
     &&& SWITCH alpha br(D_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
+    "where" &&& Gamma' = union_i "freeVars"(s_i) subset Gamma \
     c2a(cut(mu alpha. s, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
     &&& CREATE alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
     &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, alpha) \
-    "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
+    "where" &&& Gamma_0 = union_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
     c2a(cut(NEW br(D_1(Gamma_1) => s_1, ...), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
     &&& CREATE x = Gamma_0 br(D_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
     &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, x) \
-    "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
+    "where" &&& Gamma_0 = union_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
     c2a(cut(n, tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma']; sp LIT x <- n; sp c2a(s, ctx: Gamma'\, x) \
     "where" &&& Gamma' = "freeVars"(s) subset Gamma \
     c2a(cut(x_1 + x_2, tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma']; sp x <- x_1 + x_2; sp c2a(s, ctx: Gamma'\, x) \
@@ -985,7 +989,7 @@ The invoked (co)variable must be the final binding in the context, while the rem
     c2a(f(Gamma_0), ctx: Gamma) & := && SUBSTITUTE[Gamma_0^f := Gamma_0]; sp f(Gamma_0^f) \
     c2a(EXIT x, ctx: Gamma) & := && EXIT x
   $
-]
+] <fig:scc:c2a>
 
 == Code Generation <sec:scc:codegen>
 The final step of the SCC is code generation, translating #AxCut into native machine code.
