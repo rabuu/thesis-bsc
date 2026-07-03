@@ -1130,7 +1130,6 @@ We ignore this restriction in this thesis, but this is solved by spilling any ad
 #note[
   TODO:
   - $REG_1$, $REG_2$, $OFFSET_1$, $OFFSET_2$
-  - $ACQUIRE$, $STORE$, $RELEASE$, $LOAD$
 ]
 
 === Memory Management <sec:scc:codegen:mem>
@@ -1302,43 +1301,116 @@ $
 
 $ERASEFIELDS$ applies #box[$ERASEBLOCK f$] to all child field pointers $f$.
 
-==== TODO
-#figure[
-  $
-    LOAD r sp Gamma & := && RELEASE r \
-    & && LOADV r sp Gamma \
-    LOADV r sp (Gamma, v:^chi tau) & := && LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r \
-    & && LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r \
-    & && LOADV r sp Gamma \
-    STORE r sp Gamma & := && STOREV r sp Gamma \
-    & && ACQUIRE r \
-    STOREV (Gamma, v:^chi tau) & := && SW (REG_2 sp v) sp (OFFSET_2 sp v) sp HEAP \
-    & && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
-    & && STOREV r sp Gamma \
-    RELEASE r & := && LW TEMP #imm(0) sp r \
-    &&& BEQ TEMP #reg(0) l_1 \
-    &&& #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
-    &&& #hide[$l_1:$] SW TEMP #imm(0) sp r \
-    &&& #hide[$l_1:$] SHAREFIELDS r \
-    &&& #hide[$l_1:$] JUMP l_2 \
-    &&& l_1: SW HEAP #imm(0) sp r \
-    &&& #hide[$l_1:$] MV HEAP r \
-    &&& l_2: \
-    ACQUIRE r & := && MV r HEAP \
-    &&& LW HEAP #imm(0) HEAP \
-    &&& BEQ HEAP #reg(0) l_1 \
-    &&& #hide[$l_1:$] SW #reg(0) #imm(0) sp r \
-    &&& #hide[$l_1:$] JUMP l_2 \
-    &&& l_1: MV HEAP TODO \
-    &&& #hide[$l_1:$] LW TODO #imm(0) TODO \
-    &&& #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
-    &&& #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) #imm(0) HEAP \
-    &&& #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
-    &&& #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
-    &&& #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
-    &&& l_2: \
-  $
-]
+==== Acquire
+$ACQUIRE$ allocates a new memory block.
+More precisely, it removes the first block from the linear free list, initializes its reference count to #imm(0), and stores a pointer to the block in the register $r$.
+It then reestablishes the invariant that $HEAP$ always points a block that can be allocated immediately.
+
+// The following illustration depicts the state of the registers and heap after $ACQUIRE$ has completed.
+//
+// #figure(cetz.canvas({
+//   import cetz.draw: *
+//   import diagram: *
+//
+//   scale(0.8)
+//
+//   let regy = 4
+//
+//   content((0, regy - 0.5), [Registers])
+//   slots(
+//     15,
+//     labels: (none, reg("temp"), reg("heap"), reg("todo"), none, reg("r")),
+//     data: (imm(0), none, none, none, ddd) + (none,) * 9 + (ddd,),
+//     offset: (2, regy),
+//     open-right: true,
+//   )
+//
+//   let memy1 = 2
+//   let memy2 = 0
+//   content((0, memy1 - 0.5), [Memory])
+//   memblock(offset: (5, memy1), data: (imm(0),))
+//   memblock(offset: (5, memy2))
+//
+//   ptr(
+//     (4.5, regy - 0.6),
+//     (4.5, memy2 - 0.5),
+//     (5, memy2 - 0.5),
+//   )
+//
+//   ptr(
+//     (7.5, regy - 0.6),
+//     (7.5, regy - 1.5),
+//     (5.5, regy - 1.5),
+//     (5.5, memy1),
+//   )
+// }))
+
+In the best case, the linear free list contains another block.
+In this case, $HEAP$ is simply updated to point to the next block in the list.
+
+If the linear free list contains only a single block, $ACQUIRE$ attempts to restore the invariant by moving the first block of the lazy free list to the linear free list.
+Before this block can be reused, its children must be erased by $ERASEFIELDS$.
+
+Finally, if the lazy free list is also empty, a new block is obtained using bump allocation.
+
+$
+  ACQUIRE r & := && MV r HEAP \
+            &    && LW HEAP NEXTBLOCKOFFSET HEAP \
+            &    && BEQ HEAP #reg(0) l_1 \
+            &    && #hide[$l_1:$] SW #reg(0) REFCOUNTOFFSET r \
+            &    && #hide[$l_1:$] JUMP l_2 \
+            &    && l_1: MV HEAP TODO \
+            &    && #hide[$l_1:$] LW TODO NEXTBLOCKOFFSET TODO \
+            &    && #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
+            &    && #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) NEXTBLOCKOFFSET HEAP \
+            &    && #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
+            &    && #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
+            &    && #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
+            &    && l_2: \
+$
+
+==== Store
+To store the bindings in $Gamma$ to memory, $STORE$ writes them from back to front to the first block of the linear free list
+and then uses $ACQUIRE$ to move the block's pointer into a register.
+
+$
+            STORE r sp Gamma & := && STOREV r sp Gamma \
+                             &    && ACQUIRE r \
+  STOREV (Gamma, v:^chi tau) & := && SW (REG_2 sp v) sp (OFFSET_2 sp v) sp HEAP \
+                             &    && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
+                             &    && STOREV r sp Gamma \
+$
+
+If $Gamma$ contains more bindings than can fit into a single memory block, multiple blocks are chained together.
+This details of this mechanism are not relevant to this thesis and therefore omitted.
+
+==== Release
+$RELEASE$ is used to free a memory block that is loaded into registers.
+If its reference count is #imm(0), the block is preprended to the linear free list.
+Otherwise, it cannot be freed.
+Instead, its reference count is decremented, and its children are shared, since the values loaded into the registers now hold additional references two them.
+
+$
+  RELEASE r & := && LW TEMP REFCOUNTOFFSET r \
+            &    && BEQ TEMP #reg(0) l_1 \
+            &    && #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
+            &    && #hide[$l_1:$] SW TEMP REFCOUNTOFFSET sp r \
+            &    && #hide[$l_1:$] SHAREFIELDS r \
+            &    && #hide[$l_1:$] JUMP l_2 \
+            &    && l_1: SW HEAP #imm(0) sp r \
+            &    && #hide[$l_1:$] MV HEAP r \
+            &    && l_2: \
+$
+
+==== Load
+To load values from memory into registers, $LOAD$ first releases the memory block and then copies its into the corresponding registers from back to front.
+$
+                 LOAD r sp Gamma & := && RELEASE r \
+                                 &    && LOADV r sp Gamma \
+  LOADV r sp (Gamma, v:^chi tau) & := && LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r \
+                                 &    && LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r \
+                                 &    && LOADV r sp Gamma \
+$
 
 === Translating #AxCut to #RISC-V
 We now present $a2m(dot)$, the translation from #AxCut statements to #RISC-V instructions.
