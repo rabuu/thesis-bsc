@@ -1117,9 +1117,8 @@ We ignore this restriction in this thesis, but this is solved by spilling any ad
 
 #note[
   TODO:
-  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
-  - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
-  - $REG_1$, $REG_2$
+  - $REG_1$, $REG_2$, $OFFSET_1$, $OFFSET_2$
+  - $ACQUIRE$, $STORE$, $RELEASE$, $LOAD$
 ]
 
 === Memory Management <sec:scc:codegen:mem>
