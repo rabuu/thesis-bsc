@@ -340,6 +340,8 @@ and corresponds to $LET$-bindings and control operators.
 
 In #Core, each context binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
 
+#note[TODO: example]
+
 === Type System
 @fig:scc:core:typing shows the typing rules for #Core.
 To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
@@ -628,14 +630,17 @@ $GOTO$ discards the current continuation altogether and continues the translatio
 ) <fig:scc:f2c>
 
 == Transformations on #Core <sec:scc:transformations>
-Before translating a #Core program to #AxCut, we must bring it in a certain normal form.
-We split this process into two transformations, each targeting a small fragment of #Core.
+Before translating #Core to #AxCut, the SCC applies two normalization steps.
+Both transformations target a progressively smaller subset of #Core.
 
 === Focusing
-The focusing transformation $focus(dot)$ gives names to all subterms by lifting complex terms out of argument position.
+The focusing transformation $focus(dot)$ lifts complex subterms out of argument positions by binding them to a name.
 This is an extension of static focusing @Curien2000.
-The full transformation definition can be found in @app:form:focusing.
-The resulting focused #Core fragment is similar to A-normal form @Flanagan1993anf @Binder2022anf in that terms in argument position must be a variable or covariable.
+The full definition is in @app:form:focusing.
+
+The resulting fragment resembles A-normal form @Flanagan1993anf @Binder2022anf:
+arguments are restricted to variables and covariables.
+The differences to @def:scc:core are highlighted.
 
 #definition(title: [Focused #Core])[
   #figure[
@@ -689,17 +694,16 @@ The resulting focused #Core fragment is similar to A-normal form @Flanagan1993an
 #note[TODO: example]
 
 === Shrinking
-After focusing, we apply the shrinking transformation $shrink(dot)$.
-It reduces the syntax of the language to only statements by inlining all producers and consumers into cuts.
-Then, it eliminates as many cut combinations as possible from the language.
+After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and the eliminating reducible cut patterns.
 
-Many combinations of producers and consumers meeting in a cut cannot occur anyway because of typing.
-Cuts that only introduce new names for (co)variables can be removed by renaming.
-Critical pairs --- where a $mu$ abstraction meets a $tilde(mu)$ abstraction --- can be removed by choosing the side to expand;
-this choice exactly corresponds to evaluation order, we choose call-by-value for data and call-by-name for codata.
-Unknown cuts --- where a variable and a covariable meet --- can be removed by $eta$-expansion of one side, again depending on the polarity.
+Many cuts are ruled out directly by typing.
+Trivial naming cuts are removed by renaming.
+Critical pairs ($mu$ against $tilde(mu)$) are resolved by expanding one side.
+The choice which side to expand corresponds to the evaluation strategy:
+we choose call-by-value for data and call-by-name for codata.
+Unknown cuts (variable against covariable) are handled by $eta$-expansion.
 
-Thus, the transformation leaves us with a shrunk fragment of #Core that only consists of certain cuts and statements.
+The result is a small statement-only fragment.
 
 #definition(title: [Shrunk #Core])[
   #figure[
