@@ -1,16 +1,9 @@
 #import "/lib/lib.typ": *
 
 = Supplementary Formalization <app:form>
+#todo[TODO]
 
 == Typing Rules for #Fun <app:form:fun:typing>
-There are three judgment forms for producers, consumers, and argument lists, respectively.
-The judgment $Theta mid Gamma tack p : tau$ means that under the global context $Theta$, which keeps track of top-level declarations,
-and the local context $Gamma$, which keeps track of currently active (co)variable bindings, the term $p$ has the type $tau$.
-Similarly, $Theta mid Gamma tack c :^cns tau$ denotes that $c$ is a well-typed consumer of $tau$.
-The judgment $Theta mid Gamma tack sigma : Gamma'$ means that the arguments list $sigma$ matches the parameter list $Gamma'$.
-In many rules, the global context $Theta$ is not referenced.
-If that is the case, it is omitted to improve readability.
-
 #figure(
   block(width: 100%)[
     #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
@@ -200,9 +193,7 @@ If that is the case, it is omitted to improve readability.
 
 + Inline all possible pairs of producers and consumers in cuts.
 
-+ "Six of these combinations are precluded by typing."
-
-+ Removing Renaming:
++ Remove renaming:
   #figure[
     $
       shrink(cut(mu alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
@@ -212,7 +203,7 @@ If that is the case, it is omitted to improve readability.
     $
   ]
 
-+ Removing Critical Pairs:
++ Remove critical pairs:
   #figure[
     $
       shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
@@ -226,7 +217,7 @@ If that is the case, it is omitted to improve readability.
     $
   ]
 
-+ Removing Unknown Cuts:
++ Remove unknown cuts:
   #figure[
     $
       shrink(cut(x, alpha)_T) & := && cut(x, CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
@@ -236,9 +227,9 @@ If that is the case, it is omitted to improve readability.
     $
   ]
 
-+ Dealing with Built-In Types:
++ Deal with built-in types:
 
-  Define: $DATA "Cont" br("Ret"(x :^prd i64))$
+  Define $DATA "Cont" br("Ret"(x :^prd i64)) in Theta$
 
   #figure[
     $
