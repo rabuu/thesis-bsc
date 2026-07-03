@@ -1157,9 +1157,11 @@ Of course, in practice there is only a limited number of registers (32 in #RISC-
 We ignore this restriction in this thesis, but in the implementation this is solved by spilling any (co)variables that do not fit to memory.
 
 #note[
+  TODO:
+  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
+  - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
+  - $SHARE$, $ERASE$, and $MOVE$
   - $REG_1$, $REG_2$
-  - Memory blocks and their layout
-  - Constant-time lazy reference counting @Lam2024
 ]
 
 === Memory Management <sec:scc:codegen:mem>
@@ -1227,6 +1229,53 @@ They reserved slots are marked in gray, the slots that are free-to-use are highl
   )
 ] <fig:scc:codegen:layout>
 
+Now we will introduce the memory management primitives.
+
+==== Share and Erase
+Memory blocks that are in use store a reference count in their first slot.
+If there is exactly one (co)variable that stores a pointer to this block, the reference count is #imm(0).
+For each additional reference, it is increased by one.
+The primitive operation that increments the reference count is called sharing, and the operation that decrements it is called erasing.
+
+$SHAREBLOCK$ expects the address of a memory block in a register $r$ and an immediate value $n$.
+It checks if $r$ contains a valid pointer and then increments the reference count of the block by $n$.
+The label $l$ is fresh.
+$
+  SHAREBLOCK r sp n & := && BEQ r #reg(0) l \
+                    &    && #hide[$l:$] LW TEMP REFCOUNTOFFSET r \
+                    &    && #hide[$l:$] ADDI TEMP TEMP n \
+                    &    && #hide[$l:$] SW TEMP REFCOUNTOFFSET sp r \
+                    &    && l: \
+$
+
+$SHAREFIELDS$ is used to share the children of a given memory block.
+It calls #box[$SHAREBLOCK f sp 1$] for every field of the block where $f$ is the content of the first slot of the field.
+This is #imm(0) for integers --- and thus skipped by $SHAREBLOCK$ --- and a pointer to the referenced data for (co)variables of (co)data types.
+
+Corresponding primitives exists for erasing.
+
+$ERASEBLOCK$ handles the situation if a reference to memory block is dropped.
+If the given register $r$ contains a valid pointer, it checks if the reference count is #imm(0).
+If that is the case, it prepends the block to the lazy free list.
+Importantly, it does not free its children fields in this process, this will happen on demand when the block is needed.
+If the reference count is positive, it is just decremented.
+The labels $l_1,l_2$ are fresh.
+
+$
+  ERASEBLOCK r & := && BEQ r #reg(0) l_1 \
+               &    && #hide[$l_1:$] LW TEMP REFCOUNTOFFSET r \
+               &    && #hide[$l_1:$] BEQ TEMP #reg(0) l_2 \
+               &    && #hide[$l_1:$] #hide[$l_2:$] ADDI TEMP TEMP #imm(-1) \
+               &    && #hide[$l_1:$] #hide[$l_2:$] SW TEMP REFCOUNTOFFSET r \
+               &    && #hide[$l_1:$] #hide[$l_2:$] JUMP l_1 \
+               &    && #hide[$l_1:$] l_2: SW TODO NEXTBLOCKOFFSET r \
+               &    && #hide[$l_1:$] #hide[$l_2:$] MV TODO r \
+               &    && l_1: \
+$
+
+$ERASEFIELDS$ erases the children of a given memory block by calling #box[$ERASEBLOCK f$] for all fields of the block.
+Again, $f$ refers to the first slot of each field.
+
 ==== TODO
 #figure[
   $
@@ -1268,13 +1317,6 @@ They reserved slots are marked in gray, the slots that are free-to-use are highl
 === Translating #AxCut to #RISC-V
 The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
 Each #AxCut construct is explained separately.
-
-#note[
-  TODO:
-  - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
-  - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
-  - Share increases refcount, erase decreases refcount
-]
 
 ==== Programs, Top-Level Definitions, and Calls
 An #AxCut program is a list of type declarations and top-level definitions.
