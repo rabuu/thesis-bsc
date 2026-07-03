@@ -753,14 +753,14 @@ There are two main differences to shrunk #Core.
 First, #AxCut merges dual constructs from #Core that have identical computational content @Ostermann2022.
 For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ bind a tagged variant to a name.
 #AxCut represents such duals uniformly.
-As a consequence, variable/covariable distinctions become less visible, syntactically and operationally.
+As a consequence, the distinction between variables and covariables becomes less visible, syntactically and operationally.
 
-Second, context order and operations are made explicit:
+Second, context operations are made explicit:
 reordering, duplication, and dropping of context bindings are no longer implicit structural properties,
 but explicit term-level actions via substitutions.
 
 === Syntax
-#note[very short introduction for this section]
+We first define #AxCut's syntax.
 
 #definition(title: [Syntax of #AxCut])[
   #figure[
@@ -798,16 +798,28 @@ but explicit term-level actions via substitutions.
   ]
 ] <def:scc:axcut>
 
-#note[Explain every construct of #AxCut]
+Conditionals, $EXIT$, and calls to top-level definitions remain unchanged.
+Integers and arithmetic have separate syntactic constructs.
+
+The treatment of (co)data and (co)variables is unified and appears in dual pairs.
+$LET$ binds a constructor or destructor to a name and $SWITCH$ matches on it.
+$CREATE$ introduces a closure object with methods, which can be invoked with a destructor/constructor via $INVOKE$.
+
+In #Fun and #Core, bound (co)variables may be used multiple times or not at all.
+In #AxCut, however, the context must be managed via explicit substitutions.
+The new #box[$SUBSTITUTE[Gamma := sigma]$] statement replaces the context with $Gamma$, which is constructed from currently active bindings.
+Within $Gamma$, bindings may be reordered, duplicated, or omitted.
+The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a substitution in which $v'_1, v'_2, ...$ form the new context $Gamma$.
 
 #note[TODO: example]
 
 === Type System
-The #AxCut type system is ordered: the context is treated as strictly ordered list.
+The #AxCut type system is ordered: the context is treated as list.
 Hence, there are no implicit structural rules as in #Core.
 Context manipulation is done through statements.
 
 We relate polarity and chirality via the following notation.
+This allows for compact presentation of dual rules.
 
 #definition[
   $
@@ -821,7 +833,7 @@ We relate polarity and chirality via the following notation.
   $
 ]
 
-This allows for compact presentation of dual rules.
+The typing rules are presented in @fig:scc:axcut:typing.
 
 #figure(
   kind: "Figure",
