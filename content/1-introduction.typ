@@ -7,8 +7,8 @@ Compilers translate high-level programming languages into executable machine cod
 through a sequence of intermediate representations and transformations.
 One of the main challenges in compiler design is finding the right intermediate representations that are expressive enough for analysis and optimization and are suitable for generating efficient low-level machine code.
 
-For functional programming languages in particular, the design of such intermediate representations is usually based on the $lambda$-calculus and, closely related, Gentzen's natural deduction @Gentzen1935a[ section II].
-In recent times, however, the sequent calculus @Gentzen1935a[ section III], another logical proof system like natural deduction by Gentzen, or specifically its corresponding term assignment system, the $lambda mu tilde(mu)$-calculus @Curien2000, has been found to offer a compelling alternative as basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
+For functional programming languages in particular, the design of such intermediate representations is usually based on the $lambda$-calculus and, closely related, Gentzen's natural deduction @Gentzen1935a[ sec. II].
+In recent times, however, the sequent calculus @Gentzen1935a[ sec. III], another logical proof system like natural deduction by Gentzen, or specifically its corresponding term assignment system, the $lambda mu tilde(mu)$-calculus @Curien2000, has been found to offer a compelling alternative as basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
 A main selling point for sequent-calculus-based intermediate representations is that it makes control flow and its duality to data flow very explicit.
 The treatment of computation contexts as first-class concept is especially suitable for compilers that have to handle advanced control operators and complex control flow.
 
