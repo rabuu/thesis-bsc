@@ -3,7 +3,7 @@
 
 // Rule name
 #let rn(name) = {
-  box(smallcaps(name))
+  smallcaps(name)
 }
 
 #let mid = scale(sym.bar.v, y: 50%)
