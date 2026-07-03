@@ -5,7 +5,7 @@
 This chapter turns the linearity information from @ch:lin into concrete backend optimizations.
 The guiding idea is straightforward:
 if a memory block is statically known to be used linearly, then runtime machinery for sharing that block is unnecessary.
-In SCC, this machinery is reference counting.
+In the SCC, this machinery is reference counting.
 By exploiting linearity annotations from extended #AxCut, we derive specialized memory operations for linear blocks and integrate them into the translation to #RISC-V.
 
 == The Key Observation
