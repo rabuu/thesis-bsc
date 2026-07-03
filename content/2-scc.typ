@@ -746,20 +746,18 @@ The result is a small statement-only fragment.
 #note[TODO: example]
 
 == The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
-The next compiler stage is #AxCut.
-This is the final intermediate representation of the pipeline which is directly translated into machine code.
-It is close to shrunk #Core but is structured to make it better suitable for code generation.
+#AxCut is the final compiler stage before machine code.
+It is close to shrunk #Core, but restructured to be more suitable for code generation.
+There are two main differences to shrunk #Core.
 
-Due to the symmetry of #Core, there are still some redundancies left.
-Specifically, shrunk #Core has a number of completely dual constructs that carry the exact same computational meaning @Ostermann2022.
+First, #AxCut merges dual constructs from #Core that have identical computational content @Ostermann2022.
 For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ bind a tagged variant to a name.
-In #AxCut, these dual constructs are merged into a unified syntax.
-This also means, the distinction between producers and consumers becomes blurrier: variables and covariables are treated identically.
+#AxCut represents such duals uniformly.
+As a consequence, variable/covariable distinctions become less visible, syntactically and operationally.
 
-In #AxCut, the context of currently active bindings has an explicit order and statements expect it to be in a certain shape.
-Explicit substitutions manipulate the (co)variables that are currently in scope and to prepare them for subsequent statements.
-Formerly implicit context operations --- reordering, duplicating, and dropping of (co)variables --- become explicit on the term level in #AxCut.
-This resembles the register operations that are needed in machine code.
+Second, context order and operations are made explicit:
+reordering, duplication, and dropping of context bindings are no longer implicit structural properties,
+but explicit term-level actions via substitutions.
 
 === Syntax
 #note[very short introduction for this section]
@@ -803,10 +801,11 @@ This resembles the register operations that are needed in machine code.
 #note[Explain every construct of #AxCut]
 
 === Type System
-#note[Some intro sentence.]
+The #AxCut type system is ordered: the context is treated as strictly ordered list.
+Hence, there are no implicit structural rules as in #Core.
+Context manipulation is done through statements.
 
-The duality of the rules allows for a uniform presentation of the rules.
-We formulate these symmetric rules using the following notation, connecting polarity and chirality.
+We relate polarity and chirality via the following notation.
 
 #definition[
   $
@@ -820,10 +819,7 @@ We formulate these symmetric rules using the following notation, connecting pola
   $
 ]
 
-At its basis, the type system of #AxCut is ordered.
-That means, there are no structural rules --- like for #Core --- that can be used to implicitly manipulate the context.
-Instead, the context in #AxCut should be understood as strictly ordered list which is only modified explicitly by the statements of the program.
-The only exception to that are the rules concerning built-in integers where the position in the context does not matter.
+This allows for compact presentation of dual rules.
 
 #figure(
   kind: "Figure",
@@ -918,37 +914,33 @@ The only exception to that are the rules concerning built-in integers where the 
   ],
 ) <fig:scc:axcut:typing>
 
-The #rn("Substitute") rule is the explicit replacement for the structural rules of exchange, weakening, and contraction.
-It allows rearranging the current context, where the new context can arbitrarily reorder, duplicate, and drop (co)variables from the old context.
+#rn("Substitute") is the explicit replacement for exchange, weakening, and contraction.
+It can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
 
-In the rules #rn("Plus"), #rn("IfZ"), and #rn("Exit"), the arguments are checked to be integers.
-Notably, it is only important that the corresponding binding exists somewhere in the context, the position is not relevant.
-This is different for all other rules.
+For most rules, the order of the context matters.
+Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
+The exception are integer-specific statements:
+#rn("Plus"), #rn("IfZ"), and #rn("Exit") only require the existence of integer bindings in the context, not exact position.
 
-By rule #rn("Call"), a top-level function invocation is only valid if the arguments exactly match the current context.
-This is denotet by $f(Gamma)$, meaning $f$ is applied exactly to the (co)variables in the context.
-This means, in a program a function call is usually preceded by an $SUBSTITUTE$ statement that brings the context into the right shape.
+For this thesis, the four (co)data rules are particularly relevant.
 
-The most important rules for the purposes of this thesis are the four rules concerning (co)variables of (co)data types.
-They are parameterized by the polarity (data or codata) of the variable they introduce/eliminate.
+The #rn("Let") rule binds a constructor or destructor to a (co)variable.
+The fields must exactly match the final part of the current context and are then removed from it.
+The body is type-checked with the bound (co)variable in scope, where the binding is annotated with its chirality:
+as a producer for constructors and as a consumer for destructors.
 
-In #rn("Let"), a constructor or destructor is bound to a (co)variable.
-The fields must exactly match the last part of the current context and are then removed from the context.
-The subsequent statement is typed with the (co)variable in scope, with the binding annotating the chirality:
-producer for a constructor and as consumer for a destructor.
-
-#rn("Create") is similar to #rn("Let").
-Here we allocate a closure object and bind it to a (co)variable.
-Like the fields of $LET$, the $CREATE$ statement consumes its closure environment $Gamma_0$ from the context.
-This closure environment is used to type check the branches of the object.
-In the subsequent statement, the object (co)variable is now in scope; as consumer for data types and as producer for codata types.
+#rn("Create") is similar.
+It allocates a closure object and binds it to a (co)variable.
+As with the fields consumed by $LET$, the $CREATE$ statement removes its closure environment $Gamma_0$ from the context.
+The closure environment is used to type-check the methods of the object.
+In the subsequent statement, the object (co)variable is in scope, acting as a consumer for data and as a producer for codata.
 
 The #rn("Switch") rule ensures that $SWITCH$ consumes the (co)variable it acts on from the context,
-the remaining context is used to type check the branches.
-Because a producer scrutinee must be data and a consumer scrutinee must be codata, the (co)variable must stem from a $LET$ statement.
+while the remaining context is used to type-check the branches.
+Since a producer scrutinee must be data and a consumer scrutinee must be codata, the (co)variable must have been introduced by a $LET$ statement.
 
-And dually, the #rn("Invoke") only allows for (co)variables that were introduced by $CREATE$.
-Here, the (co)variable must be the final binding of the context and the rest must exactly match the arguments of the constructor/destructor.
+Dually, the #rn("Invoke") only permits (co)variables introduced by $CREATE$.
+The invoked (co)variable must be the final binding in the context, while the remainder of the context must exactly match the arguments of the corresponding constructor or destructor.
 
 == Translating #Core to #AxCut <sec:scc:c2a>
 #note[Intro text for the final translation.]
