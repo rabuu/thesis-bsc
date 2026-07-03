@@ -8,6 +8,8 @@
 #let reg(it) = t(raw(it))
 #let data(it, active: true) = text(fill: if active { green } else { gray }, it)
 #let ptr = line.with(stroke: purple, mark: (end: (symbol: ")>", fill: purple)))
+#let halfptr1 = line.with(stroke: (paint: purple, dash: "solid"))
+#let halfptr2 = line.with(stroke: (paint: purple, dash: "dashed"))
 
 #let reserved = gray.lighten(20%)
 #let free-to-use = green.lighten(40%)

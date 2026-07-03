@@ -55,6 +55,7 @@
 #let ERASEBLOCK = _macro("EraseBlock")
 #let ERASEFIELDS = _macro("EraseFields")
 #let MOVE = _macro("Move")
+#let NUMREFS = _macro("NumRefs")
 #let METAIF = text(font: settings.font-serif, weight: "bold", "if")
 
 // RISC-V

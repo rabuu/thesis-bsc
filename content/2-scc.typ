@@ -994,12 +994,12 @@ We use the following notation: $v^f$ denotes a fresh name for the variable $v$, 
 ] <fig:scc:c2a>
 
 == Code Generation <sec:scc:codegen>
-The final step of the SCC is code generation, translating #AxCut into native machine code.
-For the purposes of this thesis, #RISC-V @Waterman2014riscv was chosen as the target architecture due to its simplicity.
-The translation works nearly identically for other architectures since it only relies on ubiquitous assembly concepts and does not apply any techniques or optimizations that depend on a particular instruction set.
+The final step is code generation from #AxCut to native machine code.
+For this thesis, we target #RISC-V @Waterman2014riscv.
+The translation style is largely backend-independent and uses only common assembly-level mechanisms.
 
 === The Target Language #RISC-V <sec:scc:codegen:riscv>
-This is the subset of #RISC-V used as target of the code generation:
+We use the following subset of #RISC-V.
 
 #definition(title: [Syntax of #RISC-V])[
   #figure[
@@ -1059,39 +1059,34 @@ This is the subset of #RISC-V used as target of the code generation:
 ] <def:scc:riscv>
 
 In #RISC-V, there are 32 registers, each containing one word.
-The register #reg(0) always contains the value 0, all other registers can be used freely.
-A program consists of a list of instructions.
-Labels can be attached to instructions and then be referenced by other instructions.
+The register #reg(0) always hold the value #imm(0); all other registers are general-purpose.
+A program is a sequence of instructions.
+Labels may be attached to instructions and referenced as jump destinations.
 
-With $ADD$ and $ADDI$, the two values of the second and third operand are added:
-For $ADD$, that is the contents of two registers, for $ADDI$ the contents of a register and an immediate value.
-The sum is put into the register specified by the first operand.
+$ADD$ and $ADDI$ add the values of their second and third operand and write the sum into the first operand's register.
 $MV$ copies the contents of the second register into the first.
-The $LI$ and $LA$ instructions directly load values into a register.
-For $LI$, that is an immediate integer value, and for $LA$ an instruction address, given by a label.
+$LI$ loads an integer into a register and $LA$ loads an instruction address, given by a label.
 
 $LW$ and $SW$ are responsible for memory access.
 Both of them compute a memory address by adding an offset, given by the immediate operand, to the value in the third operand's register.
-Then, $LW$ loads the memory word at this address into its first operand's register, and $SW$ writes the contents of the first register to the memory address.
+Then, $LW$ loads the word at this address in memory into its first operand's register,
+and $SW$ writes the contents of the first register to the memory address.
 
-There are three instructions for jumping.
+There are four instructions for jumping.
 The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
 The conditional branching instructions $BEQ$ and $BNE$ compare the values of the two register operands:
-$BNE$ jumps to the given destination if they are equal, otherwise the execution just continues;
-$BNE$ branches if they are not equal.
+$BNE$ jumps to the given destination if they are equal, $BNE$ if they are not;
+otherwise the execution just continues.
 
 Lastly, $ECALL$ is used to make a system call.
 Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
 === The Runtime Model
-#AxCut is already pretty close to how the program execution works in machine code.
+#AxCut already resembles the low-level execution model closely.
+Its context state corresponds to the register state during execution.
 
-A program in machine code is a sequence of instructions that primarily modify the state of the processor registers for computation.
-Besides the registers, it also uses the main memory to store data.
-A program in #AxCut is a sequence of statements that modify the state of the typing context.
-Indeed, the current state of the context in #AxCut directly models the registers while execution.
-
-In a running program, we reserve some registers for special purposes, the rest is used to store the (co)variable bindings.
+Some registers are reserved for special purposes.
+All remaining registers encode currently active (co)variable bindings.
 Each (co)variable occupies two registers.
 
 #figure(cetz.canvas({
@@ -1114,54 +1109,121 @@ Each (co)variable occupies two registers.
   brace(2, offset: (8, regy - 1), label: ddd, flipped: true)
 }))
 
-The register #reg(0) is always #imm(0), $TEMP$ is used as scratch register, and $HEAP$ and $TODO$ are used for memory management.
-The rest of the registers is used for storing the context bindings.
-Of course, in practice there is only a limited number of registers (32 in #RISC-V), which means sometimes not all (co)variables can be stored in the registers.
-We ignore this restriction in this thesis, but in the implementation this is solved by spilling any (co)variables that do not fit to memory.
+Register #reg(0) is constant #imm(0), $TEMP$ is a scratch register, $HEAP$ and $TODO$ are used for memory management.
+All other registers are mapped to context bindings.
+
+There is only a limited number of registers (32 in #RISC-V), which means, in practice, sometimes not all (co)variables can be stored in registers.
+We ignore this restriction in this thesis, but this is solved by spilling any additional (co)variables to memory.
 
 #note[
   TODO:
   - Objects are Virtual Tables, Closures are Memory Blocks, Destructor Invocations are Indirect Jumps
   - Highlight: $LET$ and $CREATE$ acquire memory, $SWITCH$ and $INVOKE$ release memory
-  - $SHARE$, $ERASE$, and $MOVE$
   - $REG_1$, $REG_2$
 ]
 
 === Memory Management <sec:scc:codegen:mem>
-(Co)variables can reference memory-allocated data.
-In particular, a $LET$ statement stores the fields of the constructor/destructor in memory, and $CREATE$ stores the closure environment in memory.
-This means, we need an automatic memory management to track allocated memory.
+(Co)variables may point to heap-allocated memory.
+In particular, $LET$ stores constructor/destructor fields in memory, and $CREATE$ stores closure environments.
+Therefore, code generation requires automatic memory management.
 
+The SCC uses heap-only allocation with constant-time reference counting @Lam2024.
+This means, memory is conceptually partitioned into equal-sized blocks that are allocated and freed individually.
+Each block contains eight slots --- one slot is one word --- and two slots form a field.
 
-In the SCC, we do not maintain a stack like what other compilers commonly do.
-Instead, we only use heap memory that is managed using a constant-time reference counting @Lam2024 strategy.
-That means, we conceptually divide the memory into equal-sized blocks that we allocate and free individually.
-Each block contains eight slots that hold one word.
-Two consecutive slots are referred to as field, so there are four fields per block.
+#figure(cetz.canvas({
+  import cetz.draw: *
+  import diagram: *
 
-The memory blocks are managed in two separate free lists.
-The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediatly free to use.
-The $TODO$ register points to the lazy free list. The blocks in the lazy free list may still contain references to other blocks and that must be erased before using the block.
+  scale(0.7)
+
+  let regy = 4
+
+  content((0, regy - 0.5), [Registers])
+  slots(
+    17,
+    labels: (none, reg("temp"), reg("heap"), reg("todo")),
+    data: (imm(0),) + (none,) * 15 + (ddd,),
+    offset: (2, regy),
+    open-right: true,
+  )
+
+  let memy1 = 2
+  let memy2 = 0
+  let memx1 = 2
+  let memx2 = 11
+  content((0, memy1 - 0.5), [Memory])
+  memblock(offset: (memx1, memy1))
+  memblock(offset: (memx1, memy2))
+  memblock(offset: (memx2, memy1))
+  memblock(offset: (memx2, memy2))
+
+  // linear free list
+  ptr(
+    (4.5, regy - 0.6),
+    (4.5, regy - 1.4),
+    (memx1 + 0.5, regy - 1.4),
+    (memx1 + 0.5, memy1),
+  )
+
+  ptr(
+    (memx1 + 0.5, memy1 - 0.6),
+    (memx1 + 0.5, memy2),
+  )
+
+  halfptr1(
+    (memx1 + 0.5, memy2 - 0.6),
+    (memx1 + 0.5, memy2 - 1.2),
+  )
+
+  halfptr2(
+    (memx1 + 0.5, memy2 - 1.2),
+    (memx1 + 0.5, memy2 - 2),
+  )
+
+  // lazy free list
+  ptr(
+    (5.5, regy - 0.6),
+    (5.5, regy - 1.4),
+    (memx2 + 0.5, regy - 1.4),
+    (memx2 + 0.5, memy1),
+  )
+
+  ptr(
+    (memx2 + 0.5, memy1 - 0.6),
+    (memx2 + 0.5, memy2),
+  )
+
+  halfptr1(
+    (memx2 + 0.5, memy2 - 0.6),
+    (memx2 + 0.5, memy2 - 1.2),
+  )
+
+  halfptr2(
+    (memx2 + 0.5, memy2 - 1.2),
+    (memx2 + 0.5, memy2 - 2),
+  )
+}))
+
+Unallocated memory blocks are managed in two separate free lists.
+The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediately free to use.
+The $TODO$ register points to the lazy free list where blocks may still contain references to other blocks that must be erased before it can be used.
 
 ==== Memory Layout
-For both free lists, the first slot of each block stores the pointer to the next block. If there is no next block, this first slot must contain #imm(0).
-We will refer to the offset into the memory block to get to pointer to the next block of the free list as $NEXTBLOCKOFFSET$.
+In both free lists, the first slot stores the next-block pointer, or #imm(0) if there is no next block.
 $ NEXTBLOCKOFFSET := #imm(0) $
 
-We always maintain the invariant that $HEAP$ must point to a free-to-use memory block.
-The $TODO$ register, on the other hand, may be #imm(0) if there is no block in the lazy free list.
+The memory management operations must always maintain the invariant that $HEAP$ points to a directly usable block.
+$TODO$ may be #imm(0) if the lazy free list is empty.
 
-If a memory block was allocated from a free list and is in use,
-only the latter three fields can be used for actual payload.
-The first field is reserved for metadata.
-In the current design, that is only the reference count for the allocated memory block.
-This reference count is stored in the first slot, the offset into the block to reach the reference count is referred to as $REFCOUNTOFFSET$.
+When a block is allocated, its first field contains metadata.
+Hence, only the latter three fields are usable for payload.
+Here, that metadata is the reference count that is stored in the first slot.
 $ REFCOUNTOFFSET := #imm(0) $
 
 The following figure illustrates the layout of memory blocks.
-Here, `next` stands for the pointer to the next block of the free list --- potentially #imm(0) if there is none ---,
-and `rc` denotes the reference count for allocated blocks.
-They reserved slots are marked in gray, the slots that are free-to-use are highlighted in green.
+Here, `next` stands for the pointer to the next block of the free list and `rc` denotes the reference count for allocated blocks.
+They reserved slots are marked in gray, the slots that can contain payload are highlighted in green.
 
 #figure(
   kind: "Figure",
@@ -1192,17 +1254,14 @@ They reserved slots are marked in gray, the slots that are free-to-use are highl
   )
 ] <fig:scc:codegen:layout>
 
-Now we will introduce the memory management primitives.
+Now, we will introduce the memory management primitives.
 
 ==== Share and Erase
-Memory blocks that are in use store a reference count in their first slot.
-If there is exactly one (co)variable that stores a pointer to this block, the reference count is #imm(0).
-For each additional reference, it is increased by one.
-The primitive operation that increments the reference count is called sharing, and the operation that decrements it is called erasing.
+Allocated blocks store reference counts.
+If exactly one (co)variable references a block, the count is #imm(0).
+Each additional reference increments it by one.
 
-$SHAREBLOCK$ expects the address of a memory block in a register $r$ and an immediate value $n$.
-It checks if $r$ contains a valid pointer and then increments the reference count of the block by $n$.
-The label $l$ is fresh.
+$SHAREBLOCK$ increments the count of a block by $n$ if $r$ contains a non-null memory pointer.
 $
   SHAREBLOCK r sp n & := && BEQ r #reg(0) l \
                     &    && #hide[$l:$] LW TEMP REFCOUNTOFFSET r \
@@ -1211,19 +1270,13 @@ $
                     &    && l: \
 $
 
-$SHAREFIELDS$ is used to share the children of a given memory block.
-It calls #box[$SHAREBLOCK f sp 1$] for every field of the block where $f$ is the content of the first slot of the field.
-This is #imm(0) for integers --- and thus skipped by $SHAREBLOCK$ --- and a pointer to the referenced data for (co)variables of (co)data types.
+$SHAREFIELDS$ applies #box[$SHAREBLOCK f sp 1$] to each child field pointer $f$ in a block.
+#sidenote[Explain children layout.]
 
-Corresponding primitives exists for erasing.
-
-$ERASEBLOCK$ handles the situation if a reference to memory block is dropped.
-If the given register $r$ contains a valid pointer, it checks if the reference count is #imm(0).
-If that is the case, it prepends the block to the lazy free list.
-Importantly, it does not free its children fields in this process, this will happen on demand when the block is needed.
-If the reference count is positive, it is just decremented.
-The labels $l_1,l_2$ are fresh.
-
+Erasing is dual.
+$ERASEBLOCK$ checks whether a memory block has a reference count of #imm(0):
+if yes, it prepends the block to the lazy free list (without recursively erasing its children);
+if not, it decrements the reference count.
 $
   ERASEBLOCK r & := && BEQ r #reg(0) l_1 \
                &    && #hide[$l_1:$] LW TEMP REFCOUNTOFFSET r \
@@ -1236,8 +1289,7 @@ $
                &    && l_1: \
 $
 
-$ERASEFIELDS$ erases the children of a given memory block by calling #box[$ERASEBLOCK f$] for all fields of the block.
-Again, $f$ refers to the first slot of each field.
+$ERASEFIELDS$ applies #box[$ERASEBLOCK f$] to all child field pointers $f$.
 
 ==== TODO
 #figure[
@@ -1278,26 +1330,36 @@ Again, $f$ refers to the first slot of each field.
 ]
 
 === Translating #AxCut to #RISC-V
-The next subsections define the translation function $a2m(dot)$ that generates RISC-V assembly code from #AxCut.
-Each #AxCut construct is explained separately.
+We now present $a2m(dot)$, the translation from #AxCut statements to #RISC-V instructions.
 
 ==== Programs, Top-Level Definitions, and Calls
 An #AxCut program is a list of type declarations and top-level definitions.
-Since type declarations have no computational relevance, only the definitions are translated to machine code.
-This is as easy as attaching the definition label to the first instruction of the translated body statement.
+Type declarations have no runtime behavior and are not translated.
+
+Top-level definitions are translated by attaching labels to translated bodies.
 $ a2m(DEF f(Gamma) br(s)) & := && f: a2m(s) $
-A call to top-level definition can now be translated as an unconditional jump to the definition's label.
+
+A function call translates to a direct jump.
 $ a2m(f(Gamma)) := JUMP f $
-The parameters $Gamma$ are just the current state of the registers and thus handled by #AxCut's $SUBSTITUTE$ statement.
 
-==== Substitutions
-The current context in #AxCut corresponds to the register values in the machine.
-It is the job of the $SUBSTITUTE$ statements to prepare the registers for the subsequent statements which means reordering the contents of the registers.
-If this involves dropping or duplicating variables that point to heap-allocated data, it must also modify the reference count of that data.
+Argument handling is done beforehand via $SUBSTITUTE$.
 
-The reordering is achieved by a parallel moves algorithm @Rideau2008parallelmoves written as $MOVE$ that is not further explained here.
+==== Explicit Substitutions
+$SUBSTITUTE$ prepares registers for the next statement.
 
-#note[$SHARE$ and $ERASE$]
+If bindings are duplicated or dropped, heap reference counts must be updated accordingly.
+For this, we introduce the following operations:
+$
+  SHARE [Gamma' := sigma] sp (Gamma, v :^chi tau) & := && METAIF NUMREFS v sp [Gamma' := sigma] > 1 \
+  &&& quad SHAREBLOCK (REG_1 sp v) sp (NUMREFS v sp [Gamma' := sigma] - 1) \
+  &&& SHARE [Gamma' := sigma] sp Gamma \
+  ERASE [Gamma' := sigma] sp (Gamma, v :^chi tau) & := && METAIF NUMREFS v sp [Gamma' := sigma] = 0 \
+  &&& quad ERASEBLOCK (REG_1 sp v) \
+  &&& ERASE [Gamma' := sigma] sp Gamma \
+$
+Here, $NUMREFS v sp [Gamma' := sigma]$ denotes how many times $v$ is mentioned in the substitution.
+
+Register reordering uses a parallel moves algorithm @Rideau2008parallelmoves, written as $MOVE$.
 
 $
   a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
@@ -1307,26 +1369,19 @@ $
 $
 
 ==== Machine Integers, Conditionals, and Termination
-The use of extern constructs translates to hardware instructions and system calls.
-For integer literals and arithmetic expressions, this is a simple application of the primitive machine instructions.
+Literals, arithmetic, and conditionals map directly to machine instructions.
 $
   a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
   & && a2m(s) \
   a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 sp v_1) sp (REG_2 sp v_2) \
   & && a2m(s) \
-$
-
-An $IF$ statement in #AxCut translates to a conditional branch.
-For that, we introduce a fresh label $l$.
-$
   a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
-                                         &    && #hide[$l:$] a2m(s_2) \
-                                         &    && l: a2m(s_1) \
+  & && #hide[$l:$] a2m(s_2) \
+  & && l: a2m(s_1) \
 $
 
-And lastly, the $EXIT$ statement results in a system call to terminate the program.
-The exact requirements for a system call depend on the operating system.
-This is an exemplary translation for the Linux Kernel which requires the system call number #imm(93) in #reg(17) and the argument in #reg(10).
+The $EXIT$ statement results in a system call to terminate the program.
+On Linux, this requires the system call number #imm(93) in #reg(17) and the exit code in #reg(10).
 $
   a2m(EXIT v) & := && LI #reg(17) #imm(93) \
               &    && MV #reg(10) (REG_2 sp v) \
@@ -1334,22 +1389,24 @@ $
 $
 
 ==== Let-Bindings and Pattern Matches
-A $LET$-binding in #AxCut binds a constructor or destructor to a variable.
-In the machine code, the fields of the constructor (or destructor) are stored in newly allocated memory using $STORE$ which is explained later in @sec:scc:codegen:mem.
-The registers that were occupied by those fields are free use to again.
-Instead, a new variable is created in the registers. It consists of a pointer to the stored memory block and the index of the constructor (or destructor) tag.
+$LET$ binds a constructor/destructor to a variable.
+Code generation stores fields in memory via $STORE$, then creates a two-register runtime representation:
+pointer in the first component, tag index in the second.
 $
   a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
                               &    && LI (REG_2 sp v) sp (INDEX X) \
                               &    && a2m(s)
 $
-The index of the constructor (or destructor) is an offset value for the jump table that is explained next.
-It is calculated by multiplying the position of the constructor (or destructor) in its type declaration by four.
+$INDEX X$ is the jump-table byte offset of tag $X$ (constructor/destructor position multiplied by four).
 
-$LET$-bound variables in #AxCut are consumed by pattern matches using the $SWITCH$ statement.
-The translation function turns a $SWITCH$ statement into an indirect jump into a so-called jump table.
+$LET$-bound (co)variables in #AxCut are consumed by pattern matches using the $SWITCH$ statement.
+The translation function turns it into an indirect jump into a generated jump table.
+$
+  a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
+                     &    && l: JTABLE b sp Gamma \
+$
 
-Jump tables are defined as follows. Here the labels $l_i$ are fresh.
+Jump tables are defined as follows.
 $
   JTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma & := && JUMP l_1 \
   &&& JUMP l_2 \
@@ -1359,24 +1416,24 @@ $
   &&& #hide[$l_1:$] a2m(s_1) \
   &&& JTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
 $
+#sidenote[Improve presentation. Add example.]
 
-With this definition of jump tables, the translation of $SWITCH$ statements is easy.
-$
-  a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
-                     &    && l: JTABLE b sp Gamma
-$
-The variable which the pattern match acts on has two components:
-the pointer to the fields of the constructor or destructor that were stored in memory and the tag index.
-Firstly, the tag index is used to get to the correct $JUMP$ instruction, and then the jump table itself is generated.
-In every branch the fields are loaded back into the registers. This is done using a the variable that stand after $Gamma$, above called $x$, which is exactly the variable $v$ which holds the memory pointer.
-
-#note[This needs more work. Examples would be good.]
+The tag selects the entry of the jump table; each entry reloads the fields from memory and continues with the translation of the branch code.
 
 ==== Objects and Invocations
-The $CREATE$ instruction is similar to the $LET$ instruction in that it also creates a new variable.
-But in contrast to binding a constructor or destructor to a variable, it creates a closure object.
+$CREATE$ allocates a closure object.
+It stores the captures environment to memory and generates a virtual table.
+The pointer to the environment is stored in the first component of the created (co)variable,
+the pointer to the virtual table in the second.
 
-#note[Unfinished!]
+$
+  a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 \
+                                      &    && LA (REG_2 sp v) sp l \
+                                      &    && a2m(s) \
+                                      &    && l: VTABLE b sp Gamma_0 \
+$
+
+Virtual tables are defined as follows.
 
 $
   VTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma_0 & := && JUMP l_1 \
@@ -1387,13 +1444,10 @@ $
   &&& #hide[$l_1:$] a2m(s_1) \
   &&& VTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
 $
+#sidenote[Improve presentation. Add example.]
 
-#note[Note the $Gamma_0$ in the $LOAD$.]
-
+A (co)variable that was introduced by $CREATE$ is consumed by $INVOKE$.
+In machine code, that is an indirect jump into the virtual table.
 $
-  a2m(CREATE v = Gamma_0 sp b\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-                                   &    && LA (REG_2 sp v) sp l \
-                                   &    && a2m(s) \
-                                   &    && l: VTABLE b sp Gamma_0 \
-         a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
+  a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
 $
