@@ -1278,7 +1278,6 @@ $
 $
 
 $SHAREFIELDS$ applies #box[$SHAREBLOCK f sp 1$] to each child field pointer $f$ in a block.
-#sidenote[Explain children layout.]
 
 Erasing is dual.
 $ERASEBLOCK$ checks whether a memory block has a reference count of #imm(0):
@@ -1411,7 +1410,7 @@ $
                                  &    && LOADV r sp Gamma \
 $
 
-=== Translating #AxCut to #RISC-V
+=== Translating #AxCut to #RISC-V <sec:scc:codegen:a2m>
 We now present $a2m(dot)$, the translation from #AxCut statements to #RISC-V instructions.
 
 ==== Programs, Top-Level Definitions, and Calls
@@ -1490,15 +1489,12 @@ $
 
 Jump tables are defined as follows.
 $
-  JTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma & := && JUMP l_1 \
-  &&& JUMP l_2 \
-  &&& ... \
-  &&& JTABLEB { X_1(Gamma_1) => s_1, ... } sp Gamma sp (l_1, l_2, ...) \
-  JTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma sp (l_1, l_2, ...) & := && l_1: LOAD (REG_1 sp x) sp Gamma_1 \
+  JTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma & := && overline(JUMP l_i) \
+  &&& JTABLEB br(overline(X_i (Gamma_i) => s_i)) sp Gamma sp overline(l_i) \
+  JTABLEB br(X_1(Gamma_1) => s_1, b) sp Gamma sp \(l_1, overline(l)\) & := && l_1: LOAD (REG_1 sp x) sp Gamma_1 #h(4em) && (x "fresh after" Gamma) \
   &&& #hide[$l_1:$] a2m(s_1) \
-  &&& JTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
+  &&& JTABLEB b sp Gamma sp overline(l)
 $
-#sidenote[Improve presentation. Add example.]
 
 The tag selects the entry of the jump table; each entry reloads the fields from memory and continues with the translation of the branch code.
 
@@ -1518,15 +1514,12 @@ $
 Virtual tables are defined as follows.
 
 $
-  VTABLE { X_1(Gamma_1) => s_1, ... } sp Gamma_0 & := && JUMP l_1 \
-  &&& JUMP l_2 \
-  &&& ... \
-  &&& VTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma_0 (l_1, l_2, ...) \
-  VTABLEB { X_1(Gamma_1) => s_1, ...} sp Gamma sp (l_1, l_2, ...) & := && l_1: LOAD (REG_1 sp x) sp Gamma_0 \
+  VTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma_0 & := && overline(JUMP l_i) \
+  &&& VTABLEB br(overline(X_i (Gamma_i) => s_i)) sp Gamma_0 sp overline(l_i) \
+  VTABLEB br(X_1(Gamma_1) => s_1, b) sp Gamma sp \(l_1, overline(l)\) & := && l_1: LOAD (REG_1 sp x) sp Gamma_0 #h(4em) && (x "fresh after" Gamma_1) \
   &&& #hide[$l_1:$] a2m(s_1) \
-  &&& VTABLEB { X_2(Gamma_2) => s_2, ... } sp Gamma sp (l_2, l_3, ...)
+  &&& VTABLEB b sp Gamma_0 sp overline(l)
 $
-#sidenote[Improve presentation. Add example.]
 
 A (co)variable that was introduced by $CREATE$ is consumed by $INVOKE$.
 In machine code, that is an indirect jump into the virtual table.

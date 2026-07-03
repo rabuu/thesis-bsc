@@ -666,8 +666,8 @@ $
   &&& LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r && \
 $
 
-=== Jump Tables and Virtual Tables
-#note[TODO: Write this down once decided on a notation in @sec:scc:codegen:mem.]
+The linear variants for jump tables $JTABLE_1$ and virtual tables $VTABLE_1$ make use of $LOAD_1$.
+Apart from this, they are identical to their nonlinear counterparts in @sec:scc:codegen:a2m.
 
 == Extending the Translation from #AxCut to #RISC-V
 With linear memory primitives available, translation from extended #AxCut to #RISC-V can map quantity annotations directly to backend operations.
@@ -696,3 +696,5 @@ while a $1$ annotation selects the linear variants introduced above.
     $
   ],
 )
+
+#note[TODO: example]
