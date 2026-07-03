@@ -2,21 +2,19 @@
 #import deps: cetz, fletcher
 
 = The Sequent Calculus Compiler <ch:scc>
-#todo[TODO]
-
-This chapter provides a summary of the entire Sequent Calculus Compiler (SCC) pipeline as described by Müller et al. @Mueller2026,
-and serves as the foundation for the subsequent chapters that will modify and extend it.
-The presentation follows the original paper closely, adapted here to establish the notation and terminology used throughout this thesis.
+This chapter summarizes the complete Sequent Calculus Compiler (SCC) pipeline as presented by Müller et al. @Mueller2026.
+It provides the technical foundation for the remainder of this thesis.
 
 The SCC compiles a functional programming language, called #Fun, to native machine code.
-The concrete target architecture is not very relevant here and can easily be adapted.
-In the implementation @Mueller2026scc, multiple backend architectures are supported but for the sake of simplicity we only consider #RISC-V in this thesis.
+The concrete target architecture is not conceptually essential and can easily be adapted.
+In the implementation @Mueller2026scc, multiple backends are supported.
+For this thesis, we pick #RISC-V as target architecture for simplicity.
 
-The compiler is a pipeline of translations between the four representation stages that become progressively lower-level.
-The intermediate languages #Core and #AxCut are directly based on the classical sequent calculus and thus form the heart of the SCC.
+The compiler consists of a sequence of translations through progressively lower-level representations.
+The intermediate languages #Core and #AxCut are directly based on the classical sequent calculus and therefore form the conceptual center of the SCC design.
 
-Here is an illustration of the complete SCC compilation pipeline,
-where each box represents a compiler stage and the arrows represent the translations between them:
+The following figure shows the full pipeline.
+Each box represents a compiler stage and the arrows represent the translations between them.
 
 #figure({
   import fletcher: diagram, edge, node
@@ -81,18 +79,20 @@ where each box represents a compiler stage and the arrows represent the translat
   )
 })
 
-The following sections will explain every stage and translation step-by-step.
+The rest of this chapter introduces each stage and translation step-by-step.
 
 == The Surface Language #Fun <sec:scc:fun>
-Every compiler pipeline starts with a surface language: the language of its source programs, typically written by a human.
-In the case of the SCC, this language is called #Fun @Binder2024grokking.
-It is an expression-oriented, functional programming language, extended with some advanced features to showcase the power of the compiler pipeline.
-#Fun is not intended as a production-ready programming language, but rather as vehicle for demonstrating what the SCC can handle and how it functions.
+Every compiler pipeline begins with a surface language: the language in which source programs are written.
+For the SCC, this language is #Fun @Binder2024grokking.
+
+#Fun is an expression-oriented, functional programming language.
+It is not intended to be a production language, but a compact vehicle for demonstrating the SCC's concepts.
+In particular, its support for control operators makes it well suited for studying how complex control flow is represented and compiled.
 
 === Syntax
-This thesis covers a multiple languages, each with their own syntax.
-To help readability, syntax elements that are common to more than one language share the same notation.
-Here, we establish a nomenclature that is valid for the rest of this thesis.
+This thesis uses several related languages, each with their own syntax.
+To keep notation brief and consistent, shared concepts are written uniformly across sections.
+We first fix naming conventions that remain valid throughout the thesis.
 
 #definition(title: "Naming Conventions")[
   - $x,y,...$ are _variable names_,
@@ -102,7 +102,7 @@ Here, we establish a nomenclature that is valid for the rest of this thesis.
   - and $f$ is a _label_ used for top-level definitions.
 ] <naming>
 
-With these conventions in place, we can define the syntax of the surface language.
+With these conventions in place, we can define #Fun.
 
 #definition(title: [Syntax of #Fun])[
   #figure[
@@ -171,32 +171,27 @@ With these conventions in place, we can define the syntax of the surface languag
   ]
 ] <def:scc:fun>
 
-At its core, #Fun is an ordinary functional language, supporting standard features such as top-level (first-order) functions, variables, (non-recursive) let-bindings, simple integer arithmetic --- in this thesis, only addition is presented as an example ---, and conditional expressions.
+At its core, #Fun is an ordinary direct-style functional language:
+top-level (first-order) function definitions, variables, non-recursive let-bindings, machine integers, arithmetic (only addition is shown), and conditionals.
 
-Besides built-in machine integers ($i64$), there are user-definable algebraic data and codata types.
-Algebraic data types are a familiar concept from many popular statically-typed programming languages --- like Haskell's `data` or Rust's `enum` types.
-They are defined by their constructors $K(sigma)$, which produce elements of the data type, and are consumed by pattern matching ($CASE$).
-Dually, the less common algebraic codata types @Hagino1989 @Downen2019codata are defined by their destructors $D(sigma)$, which consume elements of the codata type, and are produced by copattern matching ($NEW$) @Abel2013copattern;
-they are closely related to interfaces and objects in object-oriented programming.
-Together, data and codata provide a general framework for user-defined types, subsuming other desirable features of popular programming languages like lists, streams, and even higher-order function types.
+Besides built-in integers ($i64$), #Fun has user-defined algebraic data and codata types.
+Data types are defined by constructors $K(sigma)$ that produce elements of the data type and consumed by pattern matching ($CASE$).
+Dually, the less common codata types @Hagino1989 @Downen2019codata are defined by destructors $D(sigma)$ that consume elements of the codata type and produced by copattern matching ($NEW$) @Abel2013copattern.
+This gives a uniform framework that can model many familiar language abstractions like lists, streams, and higher-order function types.
 
-A very interesting feature, especially with regard to the contents of this thesis, are the control operators $LABEL$ and $GOTO$.
-They work in a similar fashion to `let/cc` @Reynolds1972letcc, known from the Scheme family of programming languages.
-$LABEL$ captures the current computation context --- the so-called _continuation_ --- and binds it to a covariable.
-With $GOTO$ such a computation context can be invoked, resulting in non-local control flow.
-Another way of breaking the usual control flow of programs is the $EXIT$ expression
-that terminates the program with a given exit code.
+For this thesis, a crucial #Fun feature are control operators.
+$LABEL$ captures the current computation context, the so-called _continuation_, and binds it to a covariable;
+$GOTO$ invokes such a continuation and can therefore cause non-local control flow.
+This is similar to how some Scheme languages provide explicit access to the current continuation via `let/cc` @Reynolds1972letcc.
 
-The naming of terms and covariables as _producers_ and _consumers_, respectively, are chosen to mimic the terminology used for the languages that get introduced later.
+Additionally, $EXIT$ terminates the program immediately with a status code.
 
 #note[TODO: example]
 
 === Type System
-All typing rules for #Fun are shown in @app:form:fun:typing.
-
-Most of the rules are standard.
-Interesting are the control operators.
-#sidenote[Some explanation of the judgments.]
+All #Fun typing rules are listed in @app:form:fun:typing.
+Most rules are standard.
+For later chapters, the interesting rules are those for control operators:
 
 #figure(rule-set(
   manual-grouping: true,
@@ -214,10 +209,10 @@ Interesting are the control operators.
     )),
   ),
 ))
-In #rn("Label"), a covariable $alpha$ is added to the context when typing the body of the expression.
-If there is a covariable in the current context, #rn("Goto") can be used to invoke it.
-Here, the argument must be of the same type as the consumer covariable.
-The expression as a whole, however, is allowed to have any type $tau'$ because the computation will not continue at this point, which makes the type irrelevant.
+
+Rule #rn("Label") extends the context with a continuation binding.
+Rule #rn("Goto") invokes a continuation that is in scope and has a type matching the argument.
+The whole expression may have an arbitrary type $tau'$ because control flow does not continue at this point.
 
 == The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage in the compilation pipeline is the intermediate representation #Core.
