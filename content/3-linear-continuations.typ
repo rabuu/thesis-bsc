@@ -2,8 +2,8 @@
 #import deps: fletcher
 
 = Linear Continuations <ch:lin>
-A central feature of the SCC is its explicit representation of control flow.
-This follows the sequent-calculus view in which data and computation contexts are treated symmetrically.
+A central feature of the SCC is its explicit representation of control flow
+by leveraging the symmetric properties of the sequent calculus.
 Consumers become first-class objects that naturally allow for a very expressive handling of control flow.
 
 However, many programs do not require this full expressive power.
@@ -34,7 +34,7 @@ which eventually returns control to the caller along with a return value.
   How the computation continues is determined entirely by the body of $f$.
 ] <ex:lin:fun:local>
 
-There is one important exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual call-return local control flow
+But there is an important exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual local control flow
 by providing explicit control of where a computation continues.
 In #Fun, $LABEL$ is the only way to get an explicit handle to the otherwise implicit current continuation.
 This continuation is bound to a covariable and can be passed around, duplicated, and dropped, so control flow can become non-local.
@@ -155,7 +155,7 @@ Both producer variables and continuations are introduced via $LET$ or $CREATE$, 
     $DEF g(): Fun { sp ... sp }$,
   ))
 
-  The green and blue fragments, bind data to variables.
+  The green and blue fragments bind data to variables.
   The orange fragment concerns control flow and continuation passing.
 
   The corresponding #AxCut translation shows how $LET$ and $CREATE$ are used for both continuations and data.
@@ -611,7 +611,7 @@ And new continuations must be introduced in a producer, via $mu$ or a copattern 
 The #Core transformations focusing (@app:form:focusing) and shrinking (@app:form:shrinking) preserve typability.
 Since continuation linearity is enforced by typing in restricted #Core, both transformations also preserve continuation linearity.
 
-Intuitively, neither transformation introduces new control or new continuations.
+Intuitively, neither transformation introduces new control effects or continuations.
 They only reorganize already well-typed terms while preserving the single-continuation property of the typing rules.
 
 == Extending #AxCut with Linearity Annotations <sec:lin:axcut>
@@ -621,13 +621,13 @@ The next step is to carry this information into #AxCut.
 A possible approach is again to restrict #AxCut to the exact image of the translation from restricted #Core.
 In this thesis, however, we choose a more general design:
 we extend #AxCut with explicit linearity annotations for both producers and consumers.
-This keeps the intermediate representation usable for future linearity-based optimizations beyond continuations.
+This makes the intermediate representation usable for more general linearity-based optimizations beyond continuations.
 
-#AxCut unifies producer and consumer (co)variables.
+#AxCut unifies the treatment of producer and consumer (co)variables.
 A (co)variable is either introduced by $LET$ and consumed by $SWITCH$, or introduced by $CREATE$ and consumed by $INVOKE$.
-In both cases, the binding denotes a reference to runtime data:
+In both cases, it contains a reference to runtime data:
 for $LET$, tagged fields (of constructors and destructors);
-for $CREATE$, a closure with environment and branches.
+for $CREATE$, a closure object with environment and methods.
 If it is statically known that this data is used linearly, the memory management can be specialized.
 
 Therefore, we now annotate each binding with whether it is linear or unrestricted.
@@ -661,7 +661,7 @@ At binding sites ($LET$, $CREATE$), quantity $omega$ means unrestricted usage an
 The same quantity is tracked in typing contexts.
 
 We also annotate $SWITCH$.
-This is not strictly --- as it could be inferred from the context ---, but it makes subsequent code-generation translations more direct.
+This is not strictly necessary --- as it could be inferred from the context ---, but it makes subsequent code-generation translations more direct.
 No additional annotation is needed for $INVOKE$, since code generation for it is independent of quantity.
 
 === Type System
@@ -680,15 +680,17 @@ To formulate these rules, we first introduce a notation to separate linear and u
     & (Gamma, v :^chi_1 tau)^1 & := Gamma^1, v :^chi_1 tau \
   $
 
-  Thus, $Gamma^omega$ contains exactly the unrestricted bindings and $Gamma^1$ exactly the linear bindings of $Gamma$.
+  Thus, $Gamma^omega$ contains exactly the unrestricted bindings and $Gamma^1$ the linear bindings of $Gamma$.
 ]
 
-The key enforcement point is $SUBSTITUTE$, since that is where duplication and dropping can occur.
+The key enforcement point for the linearity of continuations is $SUBSTITUTE$, since that is where duplication and dropping can occur.
 Therefore, rule #rn("Substitute") requires each linear variable in the current context to appear exactly once in the substitution list.
 
 Additionally, linear bindings must not be hidden inside unrestricted containers.
 Concretely: fields of nonlinear $LET$ bindings must be unrestricted, and environments of a nonlinear $CREATE$ binding must be unrestricted.
 Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly through the unrestricted outer container.
+
+The additional premises for linear continuations are highlighted.
 
 #figure(
   kind: "Figure",
@@ -709,7 +711,7 @@ Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly
           name: $#rn("Let") _omega"-"pi$,
           $pi T br(..., X(Gamma_0), ...) in Theta$,
           $Gamma, v :^(chi_1(pi))_omega T tack s$,
-          $Gamma_0 = Gamma_0^omega$,
+          highlight($Gamma_0 = Gamma_0^omega$),
           $Theta mid Gamma, Gamma_0 tack LET_omega sp v = X(Gamma_0); sp s$,
         )),
         prooftree(rule(
@@ -724,7 +726,7 @@ Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly
           $pi T br(X_1(Gamma_1), ...) in Theta$,
           $Gamma, v :^(chi_2(pi))_omega T tack s$,
           $forall i: Gamma_i, Gamma_0 tack s_i$,
-          $Gamma_0 = Gamma_0^omega$,
+          highlight($Gamma_0 = Gamma_0^omega$),
           $Theta mid Gamma, Gamma_0 tack CREATE_omega sp v = Gamma_0 br(X_1(Gamma_1) => s_1, ...); sp s$,
         )),
         prooftree(rule(
@@ -744,7 +746,7 @@ Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly
           name: rn("Substitute"),
           $Gamma tack sigma : Gamma'$,
           $Gamma' tack s$,
-          $forall v in Gamma^1. sp exists_1 v' in sigma. sp v = v'$,
+          highlight($forall v in Gamma^1. sp exists_1 v' in sigma. sp v = v'$),
           $Gamma tack SUBSTITUTE[Gamma' := sigma]; sp s$,
         )),
       ),
@@ -775,32 +777,37 @@ All producers, however, are marked with $omega$, because we have no static infor
   kind: "Figure",
   supplement: "Figure",
   caption: [Translation from restricted #Core into extended #AxCut.],
-)[
-  #set math.lr(size: 1em)
+  block(width: 100%)[
+    #set math.lr(size: 1em)
 
-  #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
-  $
-    c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
-    &&& LET_omega sp x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, x) \
-    "where" &&& Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(mu alpha. s, D(Gamma_0, alpha_0 : tau)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0, alpha_0^f := alpha_0]; \
-    &&& LET_1 sp alpha = D(Gamma_0^f, alpha :^cns_1 tau); sp c2a(s, ctx: Gamma'\, alpha) \
-    "where" &&& Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(mu alpha. s, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
-    &&& CREATE_1 sp alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
-    &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, alpha) \
-    "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), tilde(mu)x. s), ctx: Gamma) & := && SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
-    &&& CREATE_omega sp x = Gamma_0 br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma_1\, alpha_1\, Gamma_0), ...); \
-    &&& c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, x) \
-    "where" &&& Gamma_0 = union.big_i "freeVars"(s_i) subset Gamma quad Gamma' = "freeVars"(s) subset Gamma \
-    c2a(cut(x, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', x^f := x]; \
-    &&& SWITCH_omega sp x br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
-    c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), alpha), ctx: Gamma) & := && SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
-    &&& SWITCH_1 sp alpha br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma'\,Gamma_1\,alpha_1), ...) \
-    "where" &&& Gamma' = union.big_i "freeVars"(s_i) subset Gamma \
-  $
-
-  #note[Note: Figure is too wide, improve the layout.]
-]
+    #def-box[$c2a(dot, ctx: dot.o) : "Statement"_("Shrunk" Core) times "Context"_AxCut -> "Statement"_AxCut$]
+    $
+      & c2a(cut(K(Gamma_0), tilde(mu)x. s), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0]; \
+      & #h(4em) LET_omega sp x = K(Gamma_0^f); sp c2a(s, ctx: Gamma'\, sp x) \
+      & #h(4em) "where" quad Gamma' = "freeVars"(s) subset Gamma \
+      & c2a(cut(mu alpha. s, D(Gamma_0, alpha_0 : tau)), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma' := Gamma', Gamma_0^f := Gamma_0, alpha_0^f := alpha_0]; \
+      & #h(4em) LET_1 sp alpha = D(Gamma_0^f, alpha :^cns_1 tau); sp c2a(s, ctx: Gamma'\, alpha) \
+      & #h(4em) "where" quad Gamma' = "freeVars"(s) subset Gamma \
+      & c2a(cut(mu alpha. s, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
+      & #h(4em) CREATE_1 sp alpha = Gamma_0 br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma_1\, Gamma_0), ...); \
+      & #h(4em) c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, alpha) \
+      & #h(4em) "where" quad Gamma_0 = union_i "freeVars"(s_i) subset Gamma quad "and" quad Gamma' = "freeVars"(s) subset Gamma \
+      & c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), tilde(mu)x. s), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma'^f := Gamma', Gamma_0 := Gamma_0]; \
+      & #h(4em) CREATE_omega sp x = Gamma_0 br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma_1\, alpha_1\, Gamma_0), ...); \
+      & #h(4em) c2a(s[Gamma' mapsto Gamma'^f], ctx: Gamma'^f\, x) \
+      & #h(4em) "where" quad Gamma_0 = union_i "freeVars"(s_i) subset Gamma quad "and" quad Gamma' = "freeVars"(s) subset Gamma \
+      & c2a(cut(x, CASE br(K_1(Gamma_1) => s_1, ...)), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma' := Gamma', x^f := x]; \
+      & #h(4em) SWITCH_omega sp x br(K_1(Gamma_1) => c2a(s_1, ctx: Gamma'\,Gamma_1), ...) \
+      & #h(4em) "where" quad Gamma' = union_i "freeVars"(s_i) subset Gamma \
+      & c2a(cut(NEW br(D_1(Gamma_1, alpha_1 :^cns tau_1) => s_1, ...), alpha), ctx: Gamma) := \
+      & #h(4em) SUBSTITUTE[Gamma' := Gamma', alpha^f := alpha]; \
+      & #h(4em) SWITCH_1 sp alpha br(D_1(Gamma_1, alpha_1 :^cns_1 tau_1) => c2a(s_1, ctx: Gamma'\,Gamma_1\,alpha_1), ...) \
+      & #h(4em) "where" quad Gamma' = union_i "freeVars"(s_i) subset Gamma \
+    $
+  ],
+)

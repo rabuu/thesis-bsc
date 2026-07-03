@@ -2,11 +2,11 @@
 #import deps: cetz, fletcher
 
 = The Sequent Calculus Compiler <ch:scc>
-This chapter summarizes the complete Sequent Calculus Compiler (SCC) pipeline as presented by Müller et al. @Mueller2026.
+This chapter summarizes the complete Sequent Calculus Compiler (SCC) pipeline @Mueller2026.
 It provides the technical foundation for the remainder of this thesis.
 
 The SCC compiles a functional programming language, called #Fun, to native machine code.
-The concrete target architecture is not conceptually essential and can easily be adapted.
+The concrete target architecture is not conceptually relevant and can easily be adapted.
 In the implementation @Mueller2026scc, multiple backends are supported.
 For this thesis, we pick #RISC-V as target architecture for simplicity.
 
@@ -90,7 +90,7 @@ It is not intended to be a production language, but a compact vehicle for demons
 In particular, its support for control operators makes it well suited for studying how complex control flow is represented and compiled.
 
 === Syntax
-This thesis uses several related languages, each with their own syntax.
+This thesis covers several related languages, each with their own syntax.
 To keep notation brief and consistent, shared concepts are written uniformly across sections.
 We first fix naming conventions that remain valid throughout the thesis.
 
@@ -325,7 +325,7 @@ The central computational form is the cut $cut(p, c)$ where a matching pair of a
 A defining property of #Core is its producer/consumer symmetry.
 For (co)data, constructs appear in dual pairs: constructors and destructors, pattern matches and copattern matches.
 This is possible because, in contrast to #Fun, pattern matches and destructor invocations are represented independently of the value they act on.
-Built-in integers and arithmetic are the main asymmetric exception.
+Built-in integers and arithmetic are the main asymmetric exception as they have no consumer counterparts.
 
 Top-level definitions and destructors in #Core do not have a return type.
 Instead, the interaction between caller and callee is generalized by allowing arbitrary consumer arguments that act as _continuations_.
@@ -537,8 +537,8 @@ In both cases, the abstracted (co)variable must have the same base type as the a
 This ensures that they can meaningfully interact.
 
 == Translating #Fun to #Core <sec:scc:f2c>
-We now define the translation $f2c(dot)$ that maps direct-style #Fun to continuation-explicit #Core.
-The definition is shown in @fig:scc:f2c.
+We now define the translation $f2c(dot)$ that maps direct-style #Fun to #Core with exlicit continuations.
+The full definition is shown in @fig:scc:f2c.
 
 Generally, the translation is designed to avoid unnecessary administrative redexes.
 However, this thesis presents a simplified version.
@@ -694,7 +694,7 @@ The differences to @def:scc:core are highlighted.
 #note[TODO: example]
 
 === Shrinking
-After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and the eliminating reducible cut patterns.
+After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating reducible cut patterns.
 
 Many cuts are ruled out directly by typing.
 Trivial naming cuts are removed by renaming.
@@ -1071,7 +1071,7 @@ We use the following subset of #RISC-V.
 ] <def:scc:riscv>
 
 In #RISC-V, there are 32 registers, each containing one word.
-The register #reg(0) always hold the value #imm(0); all other registers are general-purpose.
+The register #reg(0) always holds the value #imm(0), all other registers are general-purpose.
 A program is a sequence of instructions.
 Labels may be attached to instructions and referenced as jump destinations.
 
@@ -1214,7 +1214,7 @@ Each block contains eight slots --- one slot is one word --- and two slots form 
 
 Unallocated memory blocks are managed in two separate free lists.
 The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediately free to use.
-The $TODO$ register points to the lazy free list where blocks may still contain references to other blocks that must be erased before it can be used.
+The $TODO$ register points to the lazy free list where blocks may still contain references to other blocks that must be erased before being used.
 
 ==== Memory Layout
 In both free lists, the first slot stores the next-block pointer, or #imm(0) if there is no next block.
@@ -1225,12 +1225,12 @@ $TODO$ may be #imm(0) if the lazy free list is empty.
 
 When a block is allocated, its first field contains metadata.
 Hence, only the latter three fields are usable for payload.
-Here, that metadata is the reference count that is stored in the first slot.
+That metadata is the reference count that is stored in the first slot.
 $ REFCOUNTOFFSET := #imm(0) $
 
 The following figure illustrates the layout of memory blocks.
 Here, `next` stands for the pointer to the next block of the free list and `rc` denotes the reference count for allocated blocks.
-They reserved slots are marked in gray, the slots that can contain payload are highlighted in green.
+The reserved slots are marked in gray, the slots that can contain payload are highlighted in green.
 
 #figure(
   kind: "Figure",
@@ -1268,7 +1268,7 @@ Allocated blocks store reference counts.
 If exactly one (co)variable references a block, the count is #imm(0).
 Each additional reference increments it by one.
 
-$SHAREBLOCK$ increments the count of a block by $n$ if $r$ contains a non-null memory pointer.
+$SHAREBLOCK$ increments the reference count of a block by $n$ if $r$ contains a non-null memory pointer.
 $
   SHAREBLOCK r sp n & := && BEQ r #reg(0) l \
                     &    && #hide[$l:$] LW TEMP REFCOUNTOFFSET r \
@@ -1281,7 +1281,7 @@ $SHAREFIELDS$ applies #box[$SHAREBLOCK f sp 1$] to each child field pointer $f$ 
 
 Erasing is dual.
 $ERASEBLOCK$ checks whether a memory block has a reference count of #imm(0):
-if yes, it prepends the block to the lazy free list (without recursively erasing its children);
+if yes, it prepends the block to the lazy free list (but without erasing its children);
 if not, it decrements the reference count.
 $
   ERASEBLOCK r & := && BEQ r #reg(0) l_1 \
@@ -1341,8 +1341,8 @@ It then reestablishes the invariant that $HEAP$ always points a block that can b
 //   )
 // }))
 
-In the best case, the linear free list contains another block.
-In this case, $HEAP$ is simply updated to point to the next block in the list.
+In the best case, the linear free list contains another block
+and $HEAP$ is simply updated to point to the next block in the list.
 
 If the linear free list contains only a single block, $ACQUIRE$ attempts to restore the invariant by moving the first block of the lazy free list to the linear free list.
 Before this block can be reused, its children must be erased by $ERASEFIELDS$.
@@ -1384,9 +1384,9 @@ This details of this mechanism are not relevant to this thesis and therefore omi
 
 ==== Release
 $RELEASE$ is used to free a memory block that is loaded into registers.
-If its reference count is #imm(0), the block is preprended to the linear free list.
+If its reference count is #imm(0), the block is prepended to the linear free list.
 Otherwise, it cannot be freed.
-Instead, its reference count is decremented, and its children are shared, since the values loaded into the registers now hold additional references two them.
+Instead, its reference count is decremented, and its children are shared, since the values loaded into the registers now hold additional references to them.
 
 $
   RELEASE r & := && LW TEMP REFCOUNTOFFSET r \
@@ -1442,6 +1442,8 @@ Here, $NUMREFS v sp [Gamma' := sigma]$ denotes how many times $v$ is mentioned i
 
 Register reordering uses a parallel moves algorithm @Rideau2008parallelmoves, written as $MOVE$.
 
+Together, these three operations --- sharing duplicated (co)variables, erasing dropped ones, and reordering registers --- form explicit substitution.
+
 $
   a2m(SUBSTITUTE[Gamma' := sigma]\; sp s) & := && SHARE [Gamma' := sigma] \
                                           &    && ERASE [Gamma' := sigma] \
@@ -1461,7 +1463,7 @@ $
   & && l: a2m(s_1) \
 $
 
-The $EXIT$ statement results in a system call to terminate the program.
+The $EXIT$ statement is translated to a system call that terminates the program.
 On Linux, this requires the system call number #imm(93) in #reg(17) and the exit code in #reg(10).
 $
   a2m(EXIT v) & := && LI #reg(17) #imm(93) \
@@ -1471,7 +1473,7 @@ $
 
 ==== Let-Bindings and Pattern Matches
 $LET$ binds a constructor/destructor to a variable.
-Code generation stores fields in memory via $STORE$, then creates a two-register runtime representation:
+Code generation stores fields in memory via $STORE$, then creates a two-register (co)variable:
 pointer in the first component, tag index in the second.
 $
   a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \
@@ -1500,9 +1502,9 @@ The tag selects the entry of the jump table; each entry reloads the fields from 
 
 ==== Objects and Invocations
 $CREATE$ allocates a closure object.
-It stores the captures environment to memory and generates a virtual table.
+It stores the captured environment to memory and generates a virtual table.
 The pointer to the environment is stored in the first component of the created (co)variable,
-the pointer to the virtual table in the second.
+the instruction pointer to the virtual table in the second.
 
 $
   a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 \

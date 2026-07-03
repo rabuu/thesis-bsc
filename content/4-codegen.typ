@@ -4,7 +4,7 @@
 = Optimizing Code Generation <ch:codegen>
 This chapter turns the linearity information from @ch:lin into concrete backend optimizations.
 The guiding idea is straightforward:
-if a memory block is statically known to be used linearly, then runtime machinery for sharing that block is unnecessary.
+if a memory block is statically known to be used linearly, then runtime machinery for sharing and erasing that block is unnecessary.
 In the SCC, this machinery is reference counting.
 By exploiting linearity annotations from extended #AxCut, we derive specialized memory operations for linear blocks and integrate them into the translation to #RISC-V.
 
@@ -323,7 +323,7 @@ First, store all non-conflicting slots: the latter three fields and the very fir
   )
 }))
 
-Two steps remain: write $a_1$ and call $ACQUIRE_1$.
+Two steps remain: write $a_2$ and call $ACQUIRE_1$.
 Now, there is no deadlock, but the order is fixed.
 $ACQUIRE_1$ must come first, otherwise writing $a_2$ would destroy the free-list pointer before the $HEAP$ invariant is restored.
 
@@ -696,5 +696,3 @@ while a $1$ annotation selects the linear variants introduced above.
     $
   ],
 )
-
-#note[TODO: example]
