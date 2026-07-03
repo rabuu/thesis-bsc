@@ -800,6 +800,8 @@ but explicit term-level actions via substitutions.
 
 #note[Explain every construct of #AxCut]
 
+#note[TODO: example]
+
 === Type System
 The #AxCut type system is ordered: the context is treated as strictly ordered list.
 Hence, there are no implicit structural rules as in #Core.
