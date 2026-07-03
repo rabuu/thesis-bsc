@@ -220,9 +220,8 @@ If at most three fields are needed, no conflict occurs.
 Similar to the original $STORE$, we fill from back to front using $STOREV$, then call $ACQUIRE_1$.
 
 $
-  STORE_1 sp r sp Gamma & := && STOREV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
-  &&& ACQUIRE_1 sp r \
+  STORE_1 sp r sp Gamma & := && STOREV r sp Gamma && #h(2em) METAIF |Gamma| < 4 \
+                        &    && ACQUIRE_1 sp r \
 $
 
 The interesting case is where all four fields are needed.
@@ -433,7 +432,7 @@ Using this approach, all four fields can be used as payload in the linear case.
 
 $
   STORE_1 sp r sp (v :^chi tau, Gamma) & := && STOREV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |v :^chi tau, Gamma| = 4 \
+  #h(2em) METAIF |v :^chi tau, Gamma| = 4 \
   &&& SW (REG_1 sp v) sp (OFFSET_1 sp v) HEAP && \
   &&& ACQUIRE_1 sp r && \
   &&& SW (REG_2 sp v) sp (OFFSET_2 sp v) HEAP && \
@@ -456,9 +455,8 @@ If at most three fields are loaded, we can call $RELEASE_1$ first, and then use 
 No needed payload is destroyed.
 
 $
-  LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |Gamma| < 4 \
-  &&& LOADV r sp Gamma \
+  LOAD_1 sp r sp Gamma & := && RELEASE_1 sp r   && #h(2em) METAIF |Gamma| < 4 \
+                       &    && LOADV r sp Gamma \
 $
 
 For the case that all four fields are loaded, the operation order must be adjusted again.
@@ -662,7 +660,7 @@ Thus, all four payload fields can be loaded in the linear case.
 
 $
   LOAD_1 sp r sp (v :^chi tau, Gamma) & := && LOADV r sp Gamma &&
-  #h(2em) #text(font: settings.font-serif, weight: "bold", "if") |v :^chi tau, Gamma| = 4 \
+  #h(2em) METAIF |v :^chi tau, Gamma| = 4 \
   &&& LW (REG_2 sp v) sp (OFFSET_2 sp v) sp r && \
   &&& RELEASE_1 sp r && \
   &&& LW (REG_1 sp v) sp (OFFSET_1 sp v) sp r && \

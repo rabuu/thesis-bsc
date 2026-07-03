@@ -1,3 +1,5 @@
+#import "settings.typ"
+
 #let _kw(it) = text(weight: "bold", raw(it))
 #let _macro(it) = smallcaps(it)
 #let _reg(it) = raw(it)
@@ -53,6 +55,7 @@
 #let ERASEBLOCK = _macro("EraseBlock")
 #let ERASEFIELDS = _macro("EraseFields")
 #let MOVE = _macro("Move")
+#let METAIF = text(font: settings.font-serif, weight: "bold", "if")
 
 // RISC-V
 #let reg(num) = raw("x" + str(num))
