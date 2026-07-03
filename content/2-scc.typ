@@ -1124,13 +1124,10 @@ Each (co)variable occupies two registers.
 Register #reg(0) is constant #imm(0), $TEMP$ is a scratch register, $HEAP$ and $TODO$ are used for memory management.
 All other registers are mapped to context bindings.
 
+For each (co)variable $v$ in the context, we denote its corresponding first register by $REG_1 sp v$ and its corresponding second register as $REG_2 sp v$.
+
 There is only a limited number of registers (32 in #RISC-V), which means, in practice, sometimes not all (co)variables can be stored in registers.
 We ignore this restriction in this thesis, but this is solved by spilling any additional (co)variables to memory.
-
-#note[
-  TODO:
-  - $REG_1$, $REG_2$, $OFFSET_1$, $OFFSET_2$
-]
 
 === Memory Management <sec:scc:codegen:mem>
 (Co)variables may point to heap-allocated memory.
@@ -1380,6 +1377,8 @@ $
                              &    && SW (REG_1 sp v) sp (OFFSET_1 sp v) sp HEAP \
                              &    && STOREV r sp Gamma \
 $
+
+Here, $OFFSET_1 sp v$ and $OFFSET_2 sp v$ denote the offsets within a memory block that correspond to the first and second components of the (co)variable $v$, respectively.
 
 If $Gamma$ contains more bindings than can fit into a single memory block, multiple blocks are chained together.
 This details of this mechanism are not relevant to this thesis and therefore omitted.
