@@ -535,18 +535,31 @@ In both cases, the abstracted (co)variable must have the same base type as the a
 This ensures that they can meaningfully interact.
 
 == Translating #Fun to #Core <sec:scc:f2c>
-Now that we formally introduced the surface language #Fun and the first intermediate representation #Core,
-this section presents the translation function $f2c(dot)$ that transforms the former into the latter.
-The complete translation definition is presented in @fig:scc:f2c.
+We now define the translation $f2c(dot)$ that maps direct-style #Fun to continuation-explicit #Core.
+The definition is shown in @fig:scc:f2c.
 
-This translation bridges the gap between the direct-style #Fun and the two-sided world of the sequent calculus.
-It resembles a CPS transformation @Danvy2003cps and works by passing the current continuation as argument of the translation to the correct position.
-The transformation is designed to avoid administrative redexes.
+Generally, the translation is designed to avoid unnecessary administrative redexes.
+However, this thesis presents a simplified version.
+The original definition @Mueller2026[ sec. 5] incorporates several optimizations to eliminate as many administrative redexes as possible,
+along with additional performance-oriented improvements.
 
-At one point, i.e. translating a destructor invocation, the translation makes use of a function $bindvals(dot, dot)$
-to lift non-(co)values out of argument position for the destructor.
-The reason behind this is not relevant to this thesis.
-For the sake of completeness, the definition of (co)values and the lifting function can be found in @app:form:bindval.
+Conceptually, this step resembles a CPS transformation @Danvy2003cps:
+the translation is parameterized by the current continuation and threads it to the right place.
+In this way, the translation turns implicit return flow into explicit continuation passing.
+
+Top-level definitions and codata destructors receive an additional consumer argument at the end of their parameter lists.
+Calls and destructor invocations pass the current continuation explicitly.
+
+The translations of the control operators are of particular relevance to this thesis,
+as they are the only constructs for which the current continuation $c$ is not passed through linearly.
+$
+  f2c(LABEL alpha br(p), with: c) := cut(mu alpha. f2c(p, with: alpha), c) #h(4em)
+  f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
+$
+$LABEL$ translates to a $mu$ abstraction directly.
+By explicitly binding the right-hand side of the cut to a covariable,
+it makes it possible for the current continuation to be referenced multiple times.
+$GOTO$ discards the current continuation altogether and continues the translation using the specified covariable instead.
 
 #figure(
   kind: "Figure",
@@ -590,24 +603,19 @@ For the sake of completeness, the definition of (co)values and the lifting funct
         f2c(LABEL alpha br(p), with: c) & := cut(mu alpha. f2c(p, with: alpha), c) \
       $
     ][
+      // @typstyle off
       $
-        #hide[$f2c(x, with: c) := cut(x, c)$] \
+      f2c(LET x = p_1\; sp p_2, with: c) & := cut(f2c(p_1), tilde(mu) x. f2c(p_2, with: c))\
         f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
-        f2c(p.D(sigma), with: c) & := bindvals(f2c(sigma), lambda overline(a). f2c(p, with: D(overline(a), c))) \
+        f2c(p.D(sigma), with: c) & := cut(f2c(p), D(f2c(sigma), c)) \
         f2c(EXIT p, with: c) & := EXIT f2c(p) \
         f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
       $
     ]
     $
-      f2c(LET x = p_1\; sp p_2, with: c) & := && cases(
-        cut(f2c(p_1), tilde(mu)x. f2c(p_2, with: c)) quad & "if" p_1: CODATA T br(...),
-        f2c(p_1, with: tilde(mu)x. f2c(p_2, with: c)) quad & "otherwise",
-      ) \
       f2c(NEW br(D_1(Gamma_1) => p_1, ...), with: c) & := && cut(NEW br(D_1(Gamma_1, alpha_1) => f2c(p_1, with: alpha_1), ...), c) \
-      f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: c_0) quad "where" c_0 equiv CASE br(K_1(Gamma_1) => f2c(p_1, with: tilde(mu)x. j(Gamma)), ...) \
-      "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
-      f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: tilde(mu)x. j(Gamma))) ELSE br(f2c(p_2, with: tilde(mu)x. j(Gamma))) \
-      "with" quad DEF j(Gamma) br(cut(x, c)) quad &&& "and" quad Gamma := "freeVars"(c), sp x :^prd tau quad ("where" c :^cns tau) \
+      f2c(p.CASE br(K_1(Gamma_1) => p_1, ...), with: c) & := && f2c(p, with: CASE br(K_1(Gamma_1) => f2c(p_1, with: c), sp ...)) \
+      f2c(IF p equiv 0 br(p_1) ELSE br(p_2), with: c) & := && IF f2c(p) equiv 0 br(f2c(p_1, with: c)) ELSE br(f2c(p_2, with: c)) \
     $
 
     #def-box[$f2c(dot) : "Arguments"_Fun -> "Arguments"_Core$]
@@ -618,23 +626,6 @@ For the sake of completeness, the definition of (co)values and the lifting funct
     $
   ],
 ) <fig:scc:f2c>
-
-In #Fun, control flow is mostly and implicit through function calls and return values.
-As discussed, #Core generalizes this with explicit continuations.
-Top-level definitions and destructors no longer have return type.
-Instead, the translation adds the formerly implicit continuation explicitly by adding an additional consumer argument to the end of the parameter list.
-
-When translating the body of a top-level definition, this added covariable becomes the current continuation.
-And similarly, the translation of the branch statements in a copattern match use the newly introduced covariable as current continuation.
-And when translating a definition call or destructor invocation from #Fun, the current continuation is used as additional argument.
-
-The control operators from #Fun integrate seamlessly into the #Core system.
-A $LABEL$ in #Fun captures the current continuation, this is exactly what the $mu$ operator does in #Core.
-The translation of $GOTO$ is special: the translation recursively translates the argument but with the specified covariable as new continuation, dropping the previously current continuation argument.
-
-An observation that will get important in @ch:lin is that the translation function always passes the current continuation linearly.
-That means the argument $c$ is never duplicated and never dropped, always passed through until it ends up as argument to function/destructor call or cut.
-The _only_ exception is the in the translation of $GOTO$ where $c$ is dropped.
 
 == Transformations on #Core <sec:scc:transformations>
 Before translating a #Core program to #AxCut, we must bring it in a certain normal form.

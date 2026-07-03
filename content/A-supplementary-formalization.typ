@@ -128,51 +128,6 @@ If that is the case, it is omitted to improve readability.
   ],
 )
 
-== Lifting Non-(Co)Values <app:form:bindval>
-
-#figure(
-  bnf(
-    row-gutter: 1.2em,
-    ($phi$, "Value"),
-    alt(
-      $n$,
-      $K(overline(psi))$,
-      $NEW#hide[`E`] { ... }$,
-      $p quad "where" p :^prd CODATA T sp { ... }$,
-    ),
-
-    ($phi.alt$, "Covalue"),
-    alt(
-      $#hide[$n quad | quad$]D(overline(psi))$,
-      $CASE { ... }$,
-      $c quad " unless" c :^cns CODATA T sp { ... }$,
-    ),
-
-    ($psi$, "(Co)Value"),
-    alt($phi$, $phi.alt$),
-  ),
-)
-
-#figure(
-  block(width: 100%)[
-    #def-box(
-      $bindval(dot, dot) : "Argument"_Core -> ("(Co)Value"_Core -> "Statement"_Core) -> "Statement"_Core$,
-    )
-    $
-      bindval(e, k) & := && cut(e, tilde(mu)x. k(x)) && quad quad #text(font: settings.font-serif, weight: "bold", "if") e eq.not psi \
-      bindval(psi, k) & := && k(psi)
-    $
-
-    #def-box(
-      $bindvals(dot, dot) : "Arguments"_Core -> ("(Co)Values"_Core -> "Statement"_Core) -> "Statement"_Core$,
-    )
-    $
-      bindvals(empty, k) & := && k(empty) \
-      bindvals(e :: sigma, k) & := && bindval(e, lambda a. bindvals(sigma, lambda overline(a). k(a :: overline(a))))
-    $
-  ],
-)
-
 == The Focusing Transformation <app:form:focusing>
 #figure(
   block(width: 100%)[
