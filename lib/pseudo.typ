@@ -1,6 +1,5 @@
-#let default-number-style(i, size: 0.6em) = {
-  set align(horizon)
-  text(size: size, str(i))
+#let default-number-style(i) = {
+  raw(str(i))
   h(1em)
 }
 
@@ -14,44 +13,50 @@
   fill: none,
   stroke: (:),
   radius: (:),
-  inset: 0.3em,
+  inset: (:),
   outset: (:),
 ) = {
   let lines = lines.pos()
 
-  let apply(it, depth: 0, line: 1, first: true) = {
+  let apply-indent(it, depth: 0, first: true) = {
     if type(it) == array {
       let depth = if first { depth } else { depth + 1 }
-      return it
-        .map(apply.with(depth: depth, line: line, first: false))
-        .flatten()
+      return it.map(apply-indent.with(depth: depth, first: false)).flatten()
     }
 
     let it = [#it]
-
     let indent = ((h(indent),) * depth).join()
-    (
-      math.equation({
-        $&$
-        indent
-        it
-      })
-    )
+
+    indent
+    it
   }
 
-  let body = for (i, line) in apply(lines).enumerate(start: 1) {
-    let number = if numbers != none {
-      let number-style = if numbers == auto {
-        default-number-style
-      } else {
-        numbers
-      }
-      number-style(i)
+  let lines = apply-indent(lines)
+
+  if numbers != none {
+    let number-style = if numbers == auto {
+      default-number-style
+    } else {
+      numbers
     }
-    math.equation[#number#line#linebreak()]
+
+    lines = lines
+      .enumerate(start: 1)
+      .map(iline => {
+        let (i, line) = iline
+        (number-style(i), line)
+      })
   }
 
   set math.lr(size: 1em) if not resize-parens
+
+  let columns = auto
+  let align = left + horizon
+
+  if numbers != none {
+    columns = (auto, columns)
+    align = (right + horizon, align)
+  }
 
   block(
     width: width,
@@ -61,6 +66,11 @@
     radius: radius,
     inset: inset,
     outset: outset,
-    math.equation(block: true, body),
+    grid(
+      columns: columns,
+      rows: 1.5em,
+      align: align,
+      ..lines.flatten()
+    ),
   )
 }
