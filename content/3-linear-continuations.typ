@@ -30,7 +30,7 @@ which eventually returns control to the caller along with a return value.
   ))
 
   The function $f$ invokes $g$ with an argument.
-  Function $g$ must return some value --- unless it terminates the program --- and cannot influence what happend after the return.
+  Function $g$ must return some value --- unless it terminates the program --- and cannot influence what happens after the return.
   How the computation continues is determined entirely by the body of $f$.
 ] <ex:lin:fun:local>
 
@@ -43,7 +43,7 @@ This continuation is bound to a covariable and can be passed around, duplicated,
   This #Fun program uses control operators and therefore exhibits non-local control flow.
 
   #figure(pseudo(
-    $DEF f(): i64 { quad LABEL alpha sp { sp g(#imm(1), sp alpha) + #imm(2) sp } quad }$,
+    $DEF f(): i64 { quad LABEL alpha sp { quad g(#imm(1), sp alpha) + #imm(2) sp } quad }$,
     $DEF g(x: i64, sp alpha :^cns i64): i64 sp {$,
     (
       $IF x equiv #imm(0) sp { quad GOTO alpha sp (x) quad }$,
