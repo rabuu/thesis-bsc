@@ -37,6 +37,13 @@
 #set list(marker: ([–], [‣]))
 #set figure(gap: 2em)
 
+#set table(
+  stroke: (x, y) => (
+    bottom: if y == 0 { black },
+    rest: none,
+  ),
+)
+
 #show heading: set text(font: settings.font-sans)
 #show heading.where(level: 1): set text(size: settings.font-size-chapter)
 #show heading.where(level: 1): set heading(supplement: "Chapter")

@@ -261,6 +261,18 @@ Mueller2026scc:
   - Binder, David
   date: 2026
   url: https://github.com/SequentCalculus/sequent-calculus-compiler
+Mueller2026sccbench:
+  type: misc
+  title: 'SCC - Sequent Calculus Compiler - Benchmark Suite'
+  author:
+  - Müller, Marius
+  - Tzschentke, Marco
+  - Schuster, Philipp
+  - Brachthäuser, Jonathan Immanuel
+  - Ostermann, Klaus
+  - Binder, David
+  date: 2026
+  url: https://github.com/SequentCalculus/sequent-calculus-compiler-bench
 Ostermann2022:
   type: article
   title: Introduction and elimination, left and right
@@ -282,6 +294,23 @@ Ostermann2022:
       location: New York, NY, USA
     issue: ICFP
     volume: 6
+Partain1993nofib:
+  type: article
+  title: The nofib Benchmark Suite of Haskell Programs
+  author: Partain, Will
+  date: 1993
+  editor:
+  - Launchbury, John
+  - Sansom, Patrick
+  page-range: 195-202
+  serial-number:
+    isbn: 978-1-4471-3215-8
+  parent:
+    type: proceedings
+    title: Functional Programming, Glasgow 1992
+    publisher:
+      name: Springer London
+      location: London
 Reynolds1972letcc:
   type: article
   title: Definitional interpreters for higher-order programming languages
