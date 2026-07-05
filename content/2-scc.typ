@@ -183,7 +183,57 @@ $LABEL$ captures the current computation context, the so-called _continuation_, 
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
 This is similar to how some Scheme languages provide explicit access to the current continuation via `let/cc` @Reynolds1972letcc.
 
-#note[TODO: example]
+#example[
+  #figure[
+    #set align(left)
+    #stack(
+      dir: ttb,
+      spacing: 1em,
+      pseudo(
+        $DATA Bool br(quad True, quad False quad)$,
+        $DATA List br(quad Nil, quad Cons(x : i64, xs : List) quad)$,
+        $CODATA Pred br(quad apply(x : i64): Bool quad)$,
+      ),
+      stack(
+        dir: ltr,
+        spacing: 1fr,
+        pseudo(
+          indent: 1.5em,
+          $DEF all(p : Pred, ell : List): Bool {$,
+          (
+            $ell .CASE {$,
+            (
+              $Nil => True,$,
+              $Cons(x, xs) => p.apply(x).CASE {$,
+              (
+                $True => all(p, xs),$,
+                $False => False,$,
+              ),
+              $}$,
+            ),
+            $}$,
+          ),
+          $}$,
+        ),
+        pseudo(
+          indent: 1.5em,
+          $DEF f(): Bool {$,
+          (
+            $LET ell = Cons(#imm(0), Cons(#imm(1), Nil));$,
+            $LET p = NEW { sp apply(x) =>$,
+            (
+              $IF x equiv #imm(0) br(True)$,
+              $ELSE sp sp sp sp sp br(False)$,
+            ),
+            $};$,
+            $all(p, ell)$,
+          ),
+          $}$,
+        ),
+      ),
+    )
+  ]
+]
 
 === Type System
 All #Fun typing rules are listed in @app:form:fun:typing.
@@ -336,7 +386,63 @@ and corresponds to $LET$-bindings and control operators.
 
 In #Core, each context binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
 
-#note[TODO: example]
+#example[
+  #figure[
+    #set align(left)
+    #stack(
+      dir: ttb,
+      spacing: 1em,
+      pseudo(
+        $DATA Bool br(quad True, quad False quad)$,
+        $DATA List br(quad Nil, quad Cons(x :^prd i64, xs :^prd List) quad)$,
+        $CODATA Pred br(quad apply(x :^prd i64, kappa :^cns Bool) quad)$,
+      ),
+      stack(
+        dir: ltr,
+        spacing: 1fr,
+        pseudo(
+          indent: 1.5em,
+          $DEF all(#none)(p :^prd Pred,$,
+          $#h(3.7em) ell :^prd List, sp kappa :^cns Bool) sp {$,
+          (
+            $cl ell | CASE {$,
+            (
+              $Nil => cut(True, kappa),$,
+              $Cons(x, xs) => cl p | apply(#none)($,
+              (
+                $x,$,
+                $CASE {$,
+                (
+                  $True => all(p, xs),$,
+                  $False => cut(False, kappa),$,
+                ),
+                $})cr$,
+              ),
+            ),
+            $} cr$,
+          ),
+          $}$,
+        ),
+        pseudo(
+          indent: 1.5em,
+          $DEF f(kappa :^cns Bool) sp {$,
+          (
+            $cl Cons(#imm(0), Cons(#imm(1), Nil)) sp | sp tilde(mu) ell. cl$,
+            (
+              $NEW { sp apply(x, alpha) =>$,
+              (
+                $IF x equiv #imm(0) br(cut(True, alpha))$,
+                $ELSE sp sp sp sp sp br(cut(False, alpha))$,
+              ),
+              $} sp | sp tilde(mu) p. all(p, ell, kappa) cr cr$,
+            ),
+          ),
+          $}$,
+        ),
+      ),
+    )
+  ]
+]
 
 === Type System
 @fig:scc:core:typing shows the typing rules for #Core.
@@ -681,7 +787,24 @@ The differences to @def:scc:core are highlighted.
   ]
 ] <def:scc:focused>
 
-#note[TODO: example]
+#example[
+  #figure[
+    #pseudo(
+      $DEF all(p :^prd Pred, ell :^prd List, kappa :^cns Bool) sp {$,
+      (
+        $cl ell | CASE {$,
+        (
+          $Nil => cut(True, kappa),$,
+          $Cons(x, xs) => cl mu alpha. cut(p, apply(x, alpha)) | CASE {$,
+          ($True => all(p, xs),$, $False => cut(False, kappa),$),
+          $} cr$,
+        ),
+        $} cr$,
+      ),
+      $}$,
+    )
+  ]
+]
 
 === Shrinking
 After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating reducible cut patterns.
@@ -732,7 +855,7 @@ The result is a small statement-only fragment.
   ]
 ] <def:scc:shrunk>
 
-#note[TODO: example]
+#note[TODO: example is already shrunk]
 
 == The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
 #AxCut is the final compiler stage before machine code.
@@ -799,7 +922,46 @@ The new #box[$SUBSTITUTE[Gamma := sigma]$] statement replaces the context with $
 Within $Gamma$, bindings may be reordered, duplicated, or omitted.
 The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a substitution in which $v'_1, v'_2, ...$ form the new context $Gamma$.
 
-#note[TODO: example]
+#example[
+  #figure[
+    #pseudo(
+      $DEF all(p :^prd Pred, ell :^prd List, kappa :^cns Bool) sp {$,
+      (
+        $SUBSTITUTE[p := p, sp kappa := kappa, sp ell := ell];$,
+        $SWITCH ell sp {$,
+        (
+          $Nil =>$,
+          (
+            $SUBSTITUTE[kappa := kappa];$,
+            $INVOKE kappa True,$,
+          ),
+          $Cons(x, xs) =>$,
+          (
+            $SUBSTITUTE[p_2 := p, sp x := x, sp kappa := kappa, sp xs := xs, sp p_1 := p];$,
+            $CREATE alpha = (kappa, sp xs, sp p_1) sp {$,
+            (
+              $True =>$,
+              (
+                $SUBSTITUTE[p_1 := p_1, sp xs := xs, sp kappa := kappa];$,
+                $all(p_1, xs, kappa),$,
+              ),
+              $False =>$,
+              (
+                $SUBSTITUTE[kappa := kappa]$,
+                $INVOKE kappa False$,
+              ),
+            ),
+            $};$,
+            $SUBSTITUTE[x := x, sp alpha := alpha, sp p_2 := p_2];$,
+            $INVOKE p_2 apply(x, alpha)$,
+          ),
+        ),
+        $}$,
+      ),
+      $}$,
+    )
+  ]
+]
 
 === Type System
 The #AxCut type system is ordered: the context is treated as list.

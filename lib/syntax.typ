@@ -88,6 +88,20 @@
 
 #let sp = sym.space.nobreak
 
+#let _fun(name) = (..args) => {
+  let args = args.pos()
+  if args.first() == none { name } else {
+    $#name\(#args.join($,sp$)\)$
+  }
+}
+
+// for examples
+#let (List, Nil, Cons) = (`List`, `Nil`, _fun(`Cons`))
+#let (Bool, True, False) = (`Bool`, `True`, `False`)
+#let (Pred, apply) = (`Pred`, _fun(`apply`))
+#let all = _fun(`all`)
+#let xs = $overline(x)$
+
 #let syntax-config(it) = {
   show sym.colon: math.scripts
   it
