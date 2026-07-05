@@ -9,7 +9,10 @@
   "definition",
   "Definition",
   inherited-levels: 1,
-  render: theorion.cosmos.simple.render-fn.with(style: "definition"),
+  render: theorion.cosmos.simple.render-fn.with(style: "definition", inset: (
+    x: 1.5em,
+    y: 0.3em,
+  )),
 )
 
 #let (
