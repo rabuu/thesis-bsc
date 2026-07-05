@@ -23,7 +23,6 @@
 // Fun
 #let LABEL = _kw("label")
 #let GOTO = _kw("goto")
-#let EXIT = _kw("exit")
 
 // AxCut
 #let INVOKE = _kw("invoke")
@@ -76,7 +75,6 @@
 #let ADDI = _rv("addi")
 #let JUMP = _rv("j")
 #let JR = _rv("jr")
-#let ECALL = _rv("ecall")
 
 #let var(x) = $#x$
 #let covar(a) = $#a$

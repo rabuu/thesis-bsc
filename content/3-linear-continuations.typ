@@ -30,7 +30,7 @@ which eventually returns control to the caller along with a return value.
   ))
 
   The function $f$ invokes $g$ with an argument.
-  Function $g$ must return some value --- unless it terminates the program --- and cannot influence what happens after the return.
+  Function $g$ must return some value and cannot influence what happens after the return.
   How the computation continues is determined entirely by the body of $f$.
 ] <ex:lin:fun:local>
 
@@ -321,7 +321,6 @@ This leaves a less expressive language, but one with predictable, purely local c
         $p.D(sigma)$,
         $NEW br(D(Gamma) => p, ...)$,
       ),
-      $EXIT p$,
 
       ($sigma$, "Arguments"),
       alt(
@@ -395,7 +394,6 @@ This image is a strict subset of @def:scc:core.
       ),
       alt(
         $f(sigma, c)$,
-        $EXIT p$,
       ),
 
       ($sigma$, "Arguments (Producer)"),
@@ -597,11 +595,6 @@ And new continuations must be introduced in a producer, via $mu$ or a copattern 
         $Gamma tack sigma : Gamma'$,
         $Gamma, alpha :^cns tau tack c :^cns tau'$,
         $Theta mid Gamma, alpha :^cns tau tack f(sigma, c)$,
-      )),
-      prooftree(rule(
-        name: rn("Exit"),
-        $Gamma tack p :^prd i64$,
-        $Gamma, alpha :^cns tau tack EXIT p$,
       )),
     )
   ],

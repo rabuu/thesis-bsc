@@ -130,7 +130,6 @@ With these conventions in place, we can define #Fun.
         $LABEL alpha br(p)$,
         $GOTO alpha sp (p)$,
       ),
-      $EXIT p$,
 
       ($c$, "Consumers"),
       $alpha$,
@@ -183,8 +182,6 @@ For this thesis, a crucial #Fun feature are control operators.
 $LABEL$ captures the current computation context, the so-called _continuation_, and binds it to a covariable;
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
 This is similar to how some Scheme languages provide explicit access to the current continuation via `let/cc` @Reynolds1972letcc.
-
-Additionally, $EXIT$ terminates the program immediately with a status code.
 
 #note[TODO: example]
 
@@ -262,7 +259,6 @@ Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
       ),
       alt(
         $f(sigma)$,
-        $EXIT p$,
       ),
 
       ($sigma$, "Arguments"),
@@ -495,11 +491,6 @@ This matters later in @ch:lin, where these rules are restricted for continuation
         $Theta mid Gamma tack sigma : Gamma'$,
         $Theta mid Gamma tack f(sigma)$,
       )),
-      prooftree(rule(
-        name: rn("Exit"),
-        $Gamma tack p :^prd i64$,
-        $Gamma tack EXIT p$,
-      )),
     )
 
     #def-box[Argument Typing: $Theta mid Gamma tack sigma : Gamma'$]
@@ -607,10 +598,10 @@ $GOTO$ discards the current continuation altogether and continues the translatio
     ][
       // @typstyle off
       $
-      f2c(LET x = p_1\; sp p_2, with: c) & := cut(f2c(p_1), tilde(mu) x. f2c(p_2, with: c))\
+        #hide[$f2c(x, with: c) & := cut(x, c)$] \
         f2c(p_1 + p_2, with: c) & := cut(f2c(p_1) + f2c(p_2), c) \
         f2c(p.D(sigma), with: c) & := cut(f2c(p), D(f2c(sigma), c)) \
-        f2c(EXIT p, with: c) & := EXIT f2c(p) \
+        f2c(LET x = p_1\; sp p_2, with: c) & := cut(f2c(p_1), tilde(mu) x. f2c(p_2, with: c))\
         f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \
       $
     ]
@@ -678,7 +669,6 @@ The differences to @def:scc:core are highlighted.
       ),
       alt(
         $f(sigma)$,
-        $EXIT sp highlight(x)$,
       ),
 
       ($sigma$, "Arguments"),
@@ -730,7 +720,6 @@ The result is a small statement-only fragment.
       alt(
         $IF x equiv 0 br(s) ELSE br(s)$,
         $f(sigma)$,
-        $EXIT x$,
       ),
 
       ($sigma$, "Arguments"),
@@ -779,7 +768,6 @@ We first define #AxCut's syntax.
       $LIT v <- n; sp s$,
       $v <- v + v; sp s$,
       $IF v equiv 0 br(s) ELSE br(s)$,
-      $EXIT v$,
       $f(sigma)$,
       $SUBSTITUTE[Gamma := sigma]; sp s$,
 
@@ -798,7 +786,7 @@ We first define #AxCut's syntax.
   ]
 ] <def:scc:axcut>
 
-Conditionals, $EXIT$, and calls to top-level definitions remain unchanged.
+Conditionals and calls to top-level definitions remain unchanged.
 Integers and arithmetic have separate syntactic constructs.
 
 The treatment of (co)data and (co)variables is unified and appears in dual pairs.
@@ -892,17 +880,12 @@ The typing rules are presented in @fig:scc:axcut:typing.
           $Gamma tack IF v equiv 0 br(s_1) ELSE br(s_2)$,
         )),
         prooftree(rule(
-          name: rn("Exit"),
-          $v :^prd i64 in Gamma$,
-          $Gamma tack EXIT v$,
-        )),
-      ),
-      (
-        prooftree(rule(
           name: rn("Call"),
           $DEF f(Gamma) br(...) in Theta$,
           $Theta mid Gamma tack f(Gamma)$,
         )),
+      ),
+      (
         prooftree(rule(
           name: rn("Substitute"),
           $Gamma tack sigma : Gamma'$,
@@ -934,7 +917,7 @@ It can reorder, drop, and duplicate (co)variables by building a new context from
 For most rules, the order of the context matters.
 Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
 The exception are integer-specific statements:
-#rn("Plus"), #rn("IfZ"), and #rn("Exit") only require the existence of integer bindings in the context, not exact position.
+#rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position.
 
 For this thesis, the four (co)data rules are particularly relevant.
 
@@ -1001,7 +984,6 @@ We use the following notation: $v^f$ denotes a fresh name for the variable $v$, 
     "where" &&& Gamma' = ({x_1, x_2} union "freeVars"(s)) subset Gamma \
     c2a(IF x equiv 0 br(s_1) ELSE br(s_2), ctx: Gamma) & := && IF x equiv 0 br(c2a(s_1, ctx: Gamma)) ELSE br(c2a(s_2, ctx: Gamma)) \
     c2a(f(Gamma_0), ctx: Gamma) & := && SUBSTITUTE[Gamma_0^f := Gamma_0]; sp f(Gamma_0^f) \
-    c2a(EXIT x, ctx: Gamma) & := && EXIT x
   $
 ] <fig:scc:c2a>
 
@@ -1034,9 +1016,6 @@ We use the following subset of #RISC-V.
         $JR r sp o$,
         $BEQ r sp r sp o$,
         $BNE r sp r sp o$,
-      ),
-      alt(
-        $ECALL$,
       ),
 
       ($r$, "Registers"),
@@ -1089,9 +1068,6 @@ The destination of the unconditional jump $JUMP$ is specified directly, whereas 
 The conditional branching instructions $BEQ$ and $BNE$ compare the values of the two register operands:
 $BNE$ jumps to the given destination if they are equal, $BNE$ if they are not;
 otherwise the execution just continues.
-
-Lastly, $ECALL$ is used to make a system call.
-Before invoking it, the required arguments must be placed in certain registers, specified by the operating system.
 
 === The Runtime Model
 #AxCut already resembles the low-level execution model closely.
@@ -1451,7 +1427,7 @@ $
                                           &    && a2m(s)
 $
 
-==== Machine Integers, Conditionals, and Termination
+==== Machine Integers and Conditionals
 Literals, arithmetic, and conditionals map directly to machine instructions.
 $
   a2m(LIT v <- n\; sp s) & := && LI (REG_2 sp v) sp n \
@@ -1461,14 +1437,6 @@ $
   a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
   & && #hide[$l:$] a2m(s_2) \
   & && l: a2m(s_1) \
-$
-
-The $EXIT$ statement is translated to a system call that terminates the program.
-On Linux, this requires the system call number #imm(93) in #reg(17) and the exit code in #reg(10).
-$
-  a2m(EXIT v) & := && LI #reg(17) #imm(93) \
-              &    && MV #reg(10) (REG_2 sp v) \
-              &    && ECALL \
 $
 
 ==== Let-Bindings and Pattern Matches

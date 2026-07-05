@@ -49,11 +49,6 @@
         $Gamma tack GOTO alpha sp (p) : tau'$,
       )),
       prooftree(rule(
-        name: rn("Exit"),
-        $Gamma tack p : i64$,
-        $Gamma tack EXIT p : tau$,
-      )),
-      prooftree(rule(
         name: rn("Ctor"),
         $DATA T br(..., K(Gamma'), ...) in Theta$,
         $Theta mid Gamma tack sigma : Gamma'$,
@@ -137,7 +132,6 @@
       focus(cut(p, c)) & := && cut(focus(p), focus(c)) \
       focus(IF p equiv 0 br(s_1) ELSE br(s_2)) & := && bind(p, lambda a. IF a equiv 0 br(focus(s_1)) ELSE br(focus(s_2))) \
       focus(f(sigma)) & := && bindargs(sigma, lambda overline(a). f(overline(a))) \
-      focus(EXIT p) & := && bind(p, lambda a. EXIT a)
     $
 
     #def-box[$focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$]
