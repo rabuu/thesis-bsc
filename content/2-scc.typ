@@ -483,7 +483,7 @@ This matters later in @ch:lin, where these rules are restricted for continuation
         $Gamma tack p :^prd i64$,
         $Gamma tack s_1$,
         $Gamma tack s_2$,
-        $Gamma tack IF p equiv 0 br(s_1) ELSE br(s_1)$,
+        $Gamma tack IF p equiv 0 br(s_1) ELSE br(s_2)$,
       )),
       prooftree(rule(
         name: rn("Call"),
