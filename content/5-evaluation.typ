@@ -1,4 +1,9 @@
 #import "/lib/lib.typ": *
 
 = Evaluation <ch:eval>
-#todo[TODO]
+
+== Experimental Setup
+
+== Results
+
+== Discussion
