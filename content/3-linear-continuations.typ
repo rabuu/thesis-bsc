@@ -435,27 +435,29 @@ while constructors have no consumer fields.
 We now adapt typing for restricted #Core so that continuations are used exactly once.
 
 The approach is inspired by linear type systems @Wadler1990linear, rooted in linear logic @Girard1987.
-Linearity is enforced as a structural property by restricting the usage of the typing context.
+Linearity is enforced as a structural property by restricting how the typing context can be used.
 Unlike fully linear systems, only consumer bindings are linear here; producer bindings remain unrestricted.
 
-#note[
-  Thus, weakening and contraction remain available for producer bindings but are disallowed for continuations.
-  And because there is at most one continuation in scope, exchange does not affect consumer bindings.
-]
+This is achieved by keeping the structural properties of the producer context $Gamma$:
+the order and multiplicity of bound variables are irrelevant, and #rn("Var") only checks for the presence of a variable.
+In contrast, the continuations must be used exactly once:
+they cannot be dropped and must be threaded through consumers and statements until they are type-checked by #rn("Covar").
 
-The remaining typing rules follow @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
-In producer judgments, the typing context carries only producers, and in consumer/statement judgments, it carries exactly one additional continuation binding.
+The typing rules are presented in @fig:lin:core:typing.
+They are based on @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
+Producers are typed in a producer-only context, while consumers and statements are typed with exactly one additional continuation binding in scope.
 Formally:
-- $Theta mid Gamma tack p :^prd tau$ types a producer with a producer-only context,
-- $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$ and
-- $Theta mid Gamma, alpha :^cns tau tack s$ type a consumer/statement with exactly one continuation in scope.
+- $Theta mid Gamma tack p :^prd tau$ types a producer,
+- $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$ types a consumer,
+- and $Theta mid Gamma, alpha :^cns tau tack s$ types a statement.
+Here, the comma separating the producer context from the continuation is part of the judgment syntax.
 
-This makes continuation usage explicit:
-producers cannot directly invoke continuations;
-if a producer contains a statement, it must first introduce a continuation;
-and consumers/statements must use their continuation exactly once.
-Intuitively, there is only _the_ continuation that can be tracked through every execution branch until it appears in a function/destructor call or on the right side of a cut.
-And new continuations must be introduced in a producer, via $mu$ or a copattern match.
+The formulation makes continuation usage explicit.
+Producers cannot directly invoke continuations.
+If a producer contains a statement, it must first introduce a continuation (via $mu$ or copattern matching),
+and consumers and statements must use their continuation exactly once.
+
+Intuitively, there is only a single continuation that is tracked through every execution branch until it eventually appears in a function or destructor call, or on the right side of a cut.
 
 #figure(
   kind: "Figure",
@@ -572,7 +574,7 @@ And new continuations must be introduced in a producer, via $mu$ or a copattern 
       )),
     )
   ],
-)
+) <fig:lin:core:typing>
 
 === Focusing and Shrinking
 The #Core transformations focusing (@app:form:focusing) and shrinking (@app:form:shrinking) preserve typability.

@@ -481,20 +481,26 @@ To keep the presentation concise, well-formedness rules for programs and declara
 We assume that all types and names that are used in the program are well-defined and unique.
 
 There is one judgment form per syntactic category:
-#box($Theta mid Gamma tack p :^prd tau$) for producers,
-#box($Theta mid Gamma tack c :^cns tau$) for consumers,
-and #box($Theta mid Gamma tack s$) for statements.
+- #box($Theta mid Gamma tack p :^prd tau$) for producers,
+- #box($Theta mid Gamma tack c :^cns tau$) for consumers,
+- and #box($Theta mid Gamma tack s$) for statements.
 Statements, representing computation, have no type.
 $Theta$ is the global context that holds all top-level declarations and is often omitted in rules that do not mention it.
 $Gamma$ is the local context of active (co)variable bindings.
 
-#note[
-  Conceptually, we treat the typing context in #Core as set.
+In #Core, we conceptually treat the typing context as a set.
+For typing, the order of bindings is irrelevant.
+Since (co)variables may be dropped or used multiple time, the rules #rn("Var") and #rn("Covar") only check whether the relevant binding is present in the context.
 
-  We explicitly include structural context rules that define how bindings in the local context can be manipulated.
-  Specifically, they make it possible to drop, duplicate, and reorder bindings in the context.
-  This matters later in @ch:lin, where these rules are restricted for continuation linearity.
-]
+The side-by-side presentation of the rules expose the language symmetry clearly:
+except for integer-specific rules, producer and consumer rules occur in dual pairs.
+
+The right activation rule #rn("Act-R") types a producer $mu alpha. s$ that abstracts over a consumer in its body.
+Dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ that abstracts over a producer in its body.
+In both cases, the abstracted (co)variable must have the same base type as the abstraction, but with opposite chirality.
+
+#rn("Cut") enforces that the producer and consumer that meet in a cut have matching types.
+This ensures that they can meaningfully interact.
 
 #figure(
   kind: "Figure",
@@ -633,16 +639,6 @@ $Gamma$ is the local context of active (co)variable bindings.
     )
   ],
 ) <fig:scc:core:typing>
-
-The side-by-side presentation of the rules expose the language symmetry clearly:
-except for integer-specific rules, producer and consumer rules occur in dual pairs.
-
-The right activation rule #rn("Act-R") types a producer $mu alpha. s$ that abstracts over a consumer in its body.
-Dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ that abstracts over a producer in its body.
-In both cases, the abstracted (co)variable must have the same base type as the abstraction, but with opposite chirality.
-
-#rn("Cut") enforces that the producer and consumer that meet in a cut have matching types.
-This ensures that they can meaningfully interact.
 
 == Translating #Fun to #Core <sec:scc:f2c>
 We now define the translation $f2c(dot)$ that maps direct-style #Fun to #Core with exlicit continuations.
@@ -996,12 +992,9 @@ The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a su
 ]
 
 === Type System
-The #AxCut type system is ordered: the context is treated as list.
-Hence, there are no implicit structural rules as in #Core.
-Context manipulation is done through statements.
+The typing rules for #AxCut are presented in @fig:scc:axcut:typing.
 
-We relate polarity and chirality via the following notation.
-This allows for compact presentation of dual rules.
+To allow for a compact presentation of dual rules, we relate polarity and chirality via the following notation.
 
 #definition[
   $
@@ -1015,7 +1008,36 @@ This allows for compact presentation of dual rules.
   $
 ]
 
-The typing rules are presented in @fig:scc:axcut:typing.
+The #AxCut type system is ordered: the context is strictly treated as a list.
+Context manipulation is done through statements.
+
+#rn("Substitute") makes this explicit.
+Substitutions can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
+
+For most rules, the order of the context matters.
+The exception are integer-specific statements:
+#rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position, and they do not consume these variables.
+Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
+
+For this thesis, the four (co)data rules are particularly relevant.
+
+The #rn("Let") rule binds a constructor or destructor to a (co)variable.
+The fields must exactly match the final part of the current context and are then removed from it.
+The body is type-checked with the bound (co)variable in scope, where the binding is annotated with its chirality:
+as a producer for constructors and as a consumer for destructors.
+
+#rn("Create") is similar.
+It allocates a closure object and binds it to a (co)variable.
+As with the fields consumed by $LET$, the $CREATE$ statement removes its closure environment $Gamma_0$ from the context.
+The closure environment is used to type-check the methods of the object.
+In the subsequent statement, the object (co)variable is in scope, acting as a consumer for data and as a producer for codata.
+
+The #rn("Switch") rule ensures that $SWITCH$ consumes the (co)variable it acts on from the context,
+while the remaining context is used to type-check the branches.
+Since a producer scrutinee must be data and a consumer scrutinee must be codata, the (co)variable must have been introduced by a $LET$ statement.
+
+Dually, #rn("Invoke") only permits (co)variables introduced by $CREATE$.
+The invoked (co)variable must be the final binding in the context, while the remainder of the context must exactly match the arguments of the corresponding constructor or destructor.
 
 #figure(
   kind: "Figure",
@@ -1104,36 +1126,6 @@ The typing rules are presented in @fig:scc:axcut:typing.
     )
   ],
 ) <fig:scc:axcut:typing>
-
-#note[
-  #rn("Substitute") is the explicit replacement for exchange, weakening, and contraction.
-  It can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
-]
-
-For most rules, the order of the context matters.
-The exception are integer-specific statements:
-#rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position, and they do not consume these variables.
-Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
-
-For this thesis, the four (co)data rules are particularly relevant.
-
-The #rn("Let") rule binds a constructor or destructor to a (co)variable.
-The fields must exactly match the final part of the current context and are then removed from it.
-The body is type-checked with the bound (co)variable in scope, where the binding is annotated with its chirality:
-as a producer for constructors and as a consumer for destructors.
-
-#rn("Create") is similar.
-It allocates a closure object and binds it to a (co)variable.
-As with the fields consumed by $LET$, the $CREATE$ statement removes its closure environment $Gamma_0$ from the context.
-The closure environment is used to type-check the methods of the object.
-In the subsequent statement, the object (co)variable is in scope, acting as a consumer for data and as a producer for codata.
-
-The #rn("Switch") rule ensures that $SWITCH$ consumes the (co)variable it acts on from the context,
-while the remaining context is used to type-check the branches.
-Since a producer scrutinee must be data and a consumer scrutinee must be codata, the (co)variable must have been introduced by a $LET$ statement.
-
-Dually, the #rn("Invoke") only permits (co)variables introduced by $CREATE$.
-The invoked (co)variable must be the final binding in the context, while the remainder of the context must exactly match the arguments of the corresponding constructor or destructor.
 
 == Translating #Core to #AxCut <sec:scc:c2a>
 After shrinking, #Core statements are translated to #AxCut by $c2a(dot)$.
