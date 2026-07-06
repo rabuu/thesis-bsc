@@ -140,47 +140,47 @@ Both producer variables and continuations are introduced via $LET$ or $CREATE$, 
 #example[
   Consider the following #Fun program that uses data and codata.
   #let (Unit, unit) = (`Unit`, `U`)
-  #let (Fun, ap) = (`Fun`, `ap`)
+  #let Fun = `Fun`
 
   #figure(pseudo(
     $DATA Unit sp { quad unit quad }$,
-    $CODATA Fun sp { quad ap(u : Unit): Unit quad }$,
+    $CODATA Fun sp { quad apply(u : Unit): Unit quad }$,
     $DEF f(): Unit sp {$,
     (
-      $highlight(LET sp u, color: #green) = unit;$,
-      $highlight(LET sp h, color: #blue) = NEW { quad ap(u) => u quad };$,
-      $highlight(h.ap(g().ap(u)), color: #orange)$,
+      $highlight(LET sp x, color: #green) = unit;$,
+      $highlight(LET sp h, color: #blue) = NEW { quad apply(u) => U quad };$,
+      $highlight(h.apply(g().apply(x)), color: #orange)$,
     ),
     $}$,
     $DEF g(): Fun { sp ... sp }$,
   ))
 
-  The green and blue fragments bind data to variables.
+  The green and blue fragments bind producers to variables.
   The orange fragment concerns control flow and continuation passing.
 
   The corresponding #AxCut translation shows how $LET$ and $CREATE$ are used for both continuations and data.
 
   #figure(pseudo(
     $DATA Unit sp { quad unit quad }$,
-    $CODATA Fun { quad ap(x :^prd Unit, kappa :^cns Unit) quad }$,
+    $CODATA Fun { quad apply(x :^prd Unit, kappa :^cns Unit) quad }$,
     $DEF f(kappa_f :^cns Unit) sp {$,
     (
-      $highlight(LET sp u, color: #green) = unit;$,
-      $highlight(CREATE sp h, color: #blue) = () sp { sp ap(u, sp kappa_h) =>$,
+      $highlight(LET sp x, color: #green) = unit;$,
+      $highlight(CREATE sp h, color: #blue) = () sp { sp apply(u, kappa_h) =>$,
       (
         $SUBSTITUTE [kappa_h := kappa_h];$,
         $INVOKE kappa_h sp U$,
       ),
       $};$,
-      $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
+      $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
       $highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
       (
-        $LET x = U;$,
-        $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
-        $INVOKE h ap(x, sp kappa_f)$,
+        $LET u = U;$,
+        $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
+        $INVOKE h apply(u, kappa_f)$,
       ),
       $};$,
-      $highlight(LET sp beta, color: #orange) = ap(u, sp alpha);$,
+      $highlight(LET sp beta, color: #orange) = apply(x, alpha);$,
       $g(beta)$,
     ),
     $}$,

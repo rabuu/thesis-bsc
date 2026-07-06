@@ -787,14 +787,15 @@ The differences to @def:scc:core are highlighted.
 ]
 
 === Shrinking
-After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating reducible cut patterns.
+After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating redundant cut patterns.
 
 Many cuts are ruled out directly by typing.
 Trivial naming cuts are removed by renaming.
-Critical pairs ($mu$ against $tilde(mu)$) are resolved by expanding one side.
+Critical pairs ($mu$ against $tilde(mu)$) are resolved by $eta$-expanding one side.
 The choice which side to expand corresponds to the evaluation strategy:
 we choose call-by-value for data and call-by-name for codata.
-Unknown cuts (variable against covariable) are handled by $eta$-expansion.
+Unknown cuts (variable against covariable) are also handled by $eta$-expansion.
+The full definition is in @app:form:shrinking.
 
 The result is a small statement-only fragment.
 
@@ -1059,9 +1060,9 @@ The typing rules are presented in @fig:scc:axcut:typing.
 ]
 
 For most rules, the order of the context matters.
-Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
 The exception are integer-specific statements:
-#rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position.
+#rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position, and they do not consume these variables.
+Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
 
 For this thesis, the four (co)data rules are particularly relevant.
 
@@ -1210,7 +1211,7 @@ and $SW$ writes the contents of the first register to the memory address.
 There are four instructions for jumping.
 The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
 The conditional branching instructions $BEQ$ and $BNE$ compare the values of the two register operands:
-$BNE$ jumps to the given destination if they are equal, $BNE$ if they are not;
+$BEQ$ jumps to the given destination if they are equal, $BNE$ if they are not;
 otherwise the execution just continues.
 
 === The Runtime Model
@@ -1333,15 +1334,17 @@ Each block contains eight slots --- one slot is one word --- and two slots form 
 }))
 
 Unallocated memory blocks are managed in two separate free lists.
+
 The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediately free to use.
+The memory management operations must always maintain the invariant that $HEAP$ points to a directly usable block.
+
 The $TODO$ register points to the lazy free list where blocks may still contain references to other blocks that must be erased before being used.
+If the lazy free list is empty, $TODO$ points to the beginning of the remaining unused memory region.
+This region is automatically allocated at program initialization and consists entirely of zeros.
 
 ==== Memory Layout
 In both free lists, the first slot stores the next-block pointer, or #imm(0) if there is no next block.
 $ NEXTBLOCKOFFSET := #imm(0) $
-
-The memory management operations must always maintain the invariant that $HEAP$ points to a directly usable block.
-$TODO$ may be #imm(0) if the lazy free list is empty.
 
 When a block is allocated, its first field contains metadata.
 Hence, only the latter three fields are usable for payload.
@@ -1515,7 +1518,7 @@ $
             &    && #hide[$l_1:$] SW TEMP REFCOUNTOFFSET sp r \
             &    && #hide[$l_1:$] SHAREFIELDS r \
             &    && #hide[$l_1:$] JUMP l_2 \
-            &    && l_1: SW HEAP #imm(0) sp r \
+            &    && l_1: SW HEAP NEXTBLOCKOFFSET sp r \
             &    && #hide[$l_1:$] MV HEAP r \
             &    && l_2: \
 $

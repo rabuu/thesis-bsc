@@ -1,10 +1,10 @@
 data Unit { U }
-codata Fun { ap(x: Unit): Unit }
+codata Fun { apply(u: Unit): Unit }
 
 def f(): Unit {
-	let u: Unit = U;
-	let h: Fun = new { ap(x) => U };
-	h.ap(g().ap(u))
+	let x: Unit = U;
+	let h: Fun = new { apply(u) => U };
+	h.apply(g().apply(x))
 }
 
-def g(): Fun { new { ap(x) => U } }
+def g(): Fun { new { apply(u) => u } }
