@@ -438,36 +438,9 @@ The approach is inspired by linear type systems @Wadler1990linear, rooted in lin
 Linearity is enforced as a structural property by restricting the usage of the typing context.
 Unlike fully linear systems, only consumer bindings are linear here; producer bindings remain unrestricted.
 
-Concretely, we keep the structural rules (as introduced in @def:scc:core:structural) for producers but disallow dropping and duplication of continuations.
-Thus, weakening and contraction remain available for producer bindings but are disallowed for continuations.
-And because there is at most one continuation in scope, exchange does not affect consumer bindings.
-
-#definition(title: [Structural Rules])[
-  For statement typing, the structural rules are:
-  #figure(rule-set(
-    column-gutter: 2em,
-    manual-grouping: true,
-    (
-      prooftree(rule(
-        name: rn("Weakening"),
-        $Gamma, alpha :^cns tau' tack s$,
-        $Gamma, x :^prd tau, alpha :^cns tau' tack s$,
-      )),
-      prooftree(rule(
-        name: rn("Contraction"),
-        $Gamma, x :^prd tau, x :^prd tau, alpha :^cns tau' tack s$,
-        $Gamma, x :^prd tau, alpha :^cns tau' tack s$,
-      )),
-    ),
-    prooftree(rule(
-      name: rn("Exchange"),
-      $Gamma_1, v_1 :^prd tau_1, v_2 :^prd tau_2, Gamma_2, alpha :^cns tau' tack s$,
-      $Gamma_1, v_2 :^prd tau_2, v_1 :^prd tau_1, Gamma_2, alpha :^cns tau' tack s$,
-    )),
-  ))
-
-  Analogous rules exist for consumer, producer, and argument typing.
-  For producer and argument typing, the additional consumer binding is omitted.
+#note[
+  Thus, weakening and contraction remain available for producer bindings but are disallowed for continuations.
+  And because there is at most one continuation in scope, exchange does not affect consumer bindings.
 ]
 
 The remaining typing rules follow @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
@@ -505,7 +478,8 @@ And new continuations must be introduced in a producer, via $mu$ or a copattern 
       (
         prooftree(rule(
           name: rn("Var"),
-          $x :^prd tau tack x :^prd tau$,
+          $x :^prd tau in Gamma$,
+          $Gamma tack x :^prd tau$,
         )),
         prooftree(rule(
           name: rn("Act-R"),
@@ -548,7 +522,7 @@ And new continuations must be introduced in a producer, via $mu$ or a copattern 
       (
         prooftree(rule(
           name: rn("Covar"),
-          $alpha :^cns tau tack alpha :^cns tau$,
+          $Gamma, alpha :^cns tau tack alpha :^cns tau$,
         )),
         prooftree(rule(
           name: rn("Act-L"),

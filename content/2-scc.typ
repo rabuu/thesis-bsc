@@ -457,35 +457,13 @@ Statements, representing computation, have no type.
 $Theta$ is the global context that holds all top-level declarations and is often omitted in rules that do not mention it.
 $Gamma$ is the local context of active (co)variable bindings.
 
-We explicitly include structural context rules that define how bindings in the local context can be manipulated.
-Specifically, they make it possible to drop, duplicate, and reorder bindings in the context.
-This matters later in @ch:lin, where these rules are restricted for continuation linearity.
+#note[
+  Conceptually, we treat the typing context in #Core as set.
 
-#definition(title: [Structural Rules])[
-  For statement typing, there are the following structural rules:
-  #figure(rule-set(
-    manual-grouping: true,
-    (
-      prooftree(rule(
-        name: rn("Weakening"),
-        $Gamma tack s$,
-        $Gamma, v :^chi tau tack s$,
-      )),
-      prooftree(rule(
-        name: rn("Contraction"),
-        $Gamma, v :^chi tau, v :^chi tau tack s$,
-        $Gamma, v :^chi tau tack s$,
-      )),
-    ),
-    prooftree(rule(
-      name: rn("Exchange"),
-      $Gamma_1, v_1 :^chi tau_1, v_2 :^chi tau_2, Gamma_2 tack s$,
-      $Gamma_1, v_2 :^chi tau_2, v_1 :^chi tau_1, Gamma_2 tack s$,
-    )),
-  ))
-
-  Analogous rules exist for consumer, producer, and argument typing.
-] <def:scc:core:structural>
+  We explicitly include structural context rules that define how bindings in the local context can be manipulated.
+  Specifically, they make it possible to drop, duplicate, and reorder bindings in the context.
+  This matters later in @ch:lin, where these rules are restricted for continuation linearity.
+]
 
 #figure(
   kind: "Figure",
@@ -508,7 +486,8 @@ This matters later in @ch:lin, where these rules are restricted for continuation
       (
         prooftree(rule(
           name: rn("Var"),
-          $x :^prd tau tack x :^prd tau$,
+          $x :^prd tau in Gamma$,
+          $Gamma tack x :^prd tau$,
         )),
         prooftree(rule(
           name: rn("Act-R"),
@@ -551,7 +530,8 @@ This matters later in @ch:lin, where these rules are restricted for continuation
       (
         prooftree(rule(
           name: rn("Covar"),
-          $alpha :^cns tau tack alpha :^cns tau$,
+          $alpha :^cns tau in Gamma$,
+          $Gamma tack alpha :^cns tau$,
         )),
         prooftree(rule(
           name: rn("Act-L"),
@@ -1073,8 +1053,10 @@ The typing rules are presented in @fig:scc:axcut:typing.
   ],
 ) <fig:scc:axcut:typing>
 
-#rn("Substitute") is the explicit replacement for exchange, weakening, and contraction.
-It can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
+#note[
+  #rn("Substitute") is the explicit replacement for exchange, weakening, and contraction.
+  It can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
+]
 
 For most rules, the order of the context matters.
 Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
