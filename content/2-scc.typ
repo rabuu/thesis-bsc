@@ -181,9 +181,16 @@ This gives a uniform framework that can model many familiar language abstraction
 For this thesis, a crucial #Fun feature are control operators.
 $LABEL$ captures the current computation context, the so-called _continuation_, and binds it to a covariable;
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
-This is similar to how some Scheme languages provide explicit access to the current continuation via `let/cc` @Reynolds1972letcc.
 
 #example[
+  Now that we have formally defined #Fun, we revisit the function $all(#none)$ introduced in the introduction.
+  We extend it into a complete #Fun program that illustrates core features of the language,
+  including data and codata types, (co)pattern matching, and function calls.
+  It serves as a running example throughout the remainder of this thesis.
+
+  Notably, the example does not include control operators.
+  Programs that make use of $LABEL$ and $GOTO$ are analyzed in @sec:lin:flow.
+
   #figure[
     #set align(left)
     #stack(
@@ -233,7 +240,17 @@ This is similar to how some Scheme languages provide explicit access to the curr
       ),
     )
   ]
-]
+  The example defines the standard Boolean and integer list data types.
+  Predicates are represented as codata and conceptually correspond to functions of type $i64 -> Bool$.
+
+  The function $all(#none)$ recursively traverses the list $ell$ and returns $False$ as soon as the predicate $p$ does not hold for one of its elements.
+  This is achieved by pattern matching on the list and on the Boolean value returned by the predicate's destructor.
+
+  Function $f$ demonstrates a use of $all(#none)$.
+  It constructs a list and binds it to the variable $ell$.
+  It then creates a predicate by copattern matching, binds it to $p$,
+  and finally invokes $all(#none)$ with these two arguments.
+] <ex:scc:fun>
 
 === Type System
 All #Fun typing rules are listed in @app:form:fun:typing.
@@ -384,9 +401,12 @@ $tilde(mu) x. s$ is a consumer that captures the current producer and binds it a
 The ability for producers and consumers to abstract over the other side of a cut is central to the language
 and corresponds to $LET$-bindings and control operators.
 
-In #Core, each context binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
+In #Core, each binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
 
 #example[
+  This is the #Core equivalent of @ex:scc:fun.
+  The formal translation is presented later in @sec:scc:f2c.
+
   #figure[
     #set align(left)
     #stack(
@@ -395,7 +415,7 @@ In #Core, each context binding is annotated with its chirality, i.e. whether it 
       pseudo(
         $DATA Bool br(quad True, quad False quad)$,
         $DATA List br(quad Nil, quad Cons(x :^prd i64, xs :^prd List) quad)$,
-        $CODATA Pred br(quad apply(x :^prd i64, kappa :^cns Bool) quad)$,
+        $CODATA Pred br(quad apply(x :^prd i64, alpha :^cns Bool) quad)$,
       ),
       stack(
         dir: ltr,
@@ -413,7 +433,7 @@ In #Core, each context binding is annotated with its chirality, i.e. whether it 
                 $x,$,
                 $CASE {$,
                 (
-                  $True => all(p, xs),$,
+                  $True => all(p, xs, kappa),$,
                   $False => cut(False, kappa),$,
                 ),
                 $})cr$,
@@ -442,7 +462,18 @@ In #Core, each context binding is annotated with its chirality, i.e. whether it 
       ),
     )
   ]
-]
+
+  Top-level function definitions and destructors no longer return values, as in #Fun.
+  Instead, the return type is replaced by an additional consumer argument representing the continuation
+  (here $kappa$ for functions and $alpha$ for destructors).
+  Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
+
+  This change is also reflected at call side of functions or destructors.
+  Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as continuation.
+
+  In $f$, the $tilde(mu)$ abstraction binds producers to variables.
+  This corresponds directly to $LET$-bindings in #Fun.
+] <ex:scc:core>
 
 === Type System
 @fig:scc:core:typing shows the typing rules for #Core.
@@ -713,7 +744,7 @@ Both transformations target a progressively smaller subset of #Core.
 === Focusing
 The focusing transformation $focus(dot)$ lifts complex subterms out of argument positions by binding them to a name.
 This is an extension of static focusing @Curien2000.
-The full definition is in @app:form:focusing.
+The transformation is defined in @app:form:focusing.
 
 The resulting fragment resembles A-normal form @Flanagan1993anf @Binder2022anf:
 arguments are restricted to variables and covariables.
@@ -768,6 +799,8 @@ The differences to @def:scc:core are highlighted.
 ] <def:scc:focused>
 
 #example[
+  This is the focused version of the $all(#none)$ function from the running example.
+
   #figure[
     #pseudo(
       $DEF all(p :^prd Pred, ell :^prd List, kappa :^cns Bool) sp {$,
@@ -784,7 +817,10 @@ The differences to @def:scc:core are highlighted.
       $}$,
     )
   ]
-]
+
+  In @ex:scc:core, the inner pattern match appears directly as an argument to $apply(#none)$.
+  The focusing transformation lifts such complex terms out of argument position by introducing a covariable via a $mu$ abstraction, which names the intermediate computation.
+] <ex:scc:focused>
 
 === Shrinking
 After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating redundant cut patterns.
@@ -836,7 +872,7 @@ The result is a small statement-only fragment.
   ]
 ] <def:scc:shrunk>
 
-#note[TODO: example is already shrunk]
+The focused version of the running example from @ex:scc:focused already lies within this shrunk fragment and is therefore not affected by the transformation.
 
 == The Lower-Level Intermediate Language #AxCut <sec:scc:axcut>
 #AxCut is the final compiler stage before machine code.
@@ -904,6 +940,9 @@ Within $Gamma$, bindings may be reordered, duplicated, or omitted.
 The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a substitution in which $v'_1, v'_2, ...$ form the new context $Gamma$.
 
 #example[
+  In #AxCut, the $all(#none)$ function from the running example is represented as follows.
+  The general translation from shrunk #Core is defined in @sec:scc:c2a.
+
   #figure[
     #pseudo(
       $DEF all(p :^prd Pred, ell :^prd List, kappa :^cns Bool) sp {$,
@@ -942,6 +981,18 @@ The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a su
       $}$,
     )
   ]
+
+  Like in shrunk #Core, control flow is completely explicit and every intermediate computation is named.
+
+  The pattern match on $ell$ is represented by a $SWITCH$ statement.
+  In the $Nil$ branch, the continuation $kappa$ is invoked directly.
+
+  In the $Cons(#none)$ branch, the predicate's destructor is invoked with an explicit continuation.
+  This continuation is encoded as the closure $alpha$, which represents the case distinction on the Boolean result.
+  It captures the relevant bindings from the environment and forwards them to the recursive call in the $True$ branch.
+
+  Preceding each statement, explicit substitutions modify the context.
+  Depending on the subsequent computation, bindings are either propagated, dropped, or duplicated as required.
 ]
 
 === Type System
