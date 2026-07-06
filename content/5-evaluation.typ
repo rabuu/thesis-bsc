@@ -4,7 +4,7 @@
 This chapter evaluates the impact of the compiler optimization presented in @ch:lin and @ch:codegen.
 The evaluation focuses primarily on execution time, while other metrics are discussed only briefly.
 To quantify the effect of the optimization,
-we compare programs compiled using a version of the compiler that incorporates the optimizations presented in this thesis
+we compare programs compiled using a version of the compiler that incorporates the optimization presented in this thesis
 against programs compiled using the unmodified compiler.
 
 == Experimental Setup
@@ -81,11 +81,15 @@ All benchmark programs are listed in @tab:bench:descr along with a short descrip
 === Measurements
 All experiments were conducted on a machine with an AMD Ryzen 7 3800X processor running Debian 13.
 Execution times were measured with the `hyperfine` #footnote(link("https://github.com/sharkdp/hyperfine")) tool,
-which for each benchmark performs three warmup runs and then reports the mean runtime and standard deviation over ten executions.
+which for each benchmark performs three warmup runs and then reports the mean execution time and standard deviation over ten executions.
 
 == Results
+@fig:eval:results shows the execution time of each benchmark for the baseline and optimized compiler, sorted by relative speedup.
+The exact measurements for all benchmarks are provided in @app:bench.
+
 #figure(
+  caption: [Execution time comparison of the baseline and optimized compiler output.],
   image("/resources/benchmarks/runtime.svg"),
-)
+) <fig:eval:results>
 
 == Discussion
