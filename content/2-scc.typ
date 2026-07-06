@@ -468,7 +468,7 @@ In #Core, each binding is annotated with its chirality, i.e. whether it is a pro
   (here $kappa$ for functions and $alpha$ for destructors).
   Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
 
-  This change is also reflected at call side of functions or destructors.
+  This change is also reflected at call site of functions or destructors.
   Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as continuation.
 
   In $f$, the $tilde(mu)$ abstraction binds producers to variables.
