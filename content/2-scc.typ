@@ -11,7 +11,7 @@ In the implementation @Mueller2026scc, multiple backends are supported.
 For this thesis, we pick #RISC-V as target architecture for simplicity.
 
 The compiler consists of a sequence of translations through progressively lower-level representations.
-The intermediate languages #Core and #AxCut are directly based on the classical sequent calculus and therefore form the conceptual center of the SCC design.
+The intermediate languages #Core and #AxCut are directly based on the classical sequent calculus and form the conceptual center of the SCC design.
 
 The following figure shows the full pipeline.
 Each box represents a compiler stage and the arrows represent the translations between them.
@@ -86,7 +86,7 @@ Every compiler pipeline begins with a surface language: the language in which so
 For the SCC, this language is #Fun @Binder2024grokking.
 
 #Fun is an expression-oriented, functional programming language.
-It is not intended to be a production language, but a compact vehicle for demonstrating the SCC's concepts.
+It is not intended to be a production language, but a compact vehicle for demonstrating how the SCC operates.
 In particular, its support for control operators makes it well suited for studying how complex control flow is represented and compiled.
 
 === Syntax
@@ -97,7 +97,7 @@ We first fix naming conventions that remain valid throughout the thesis.
 #definition(title: "Naming Conventions")[
   - $x,y,...$ are _variable names_,
   - $alpha, beta, ...$ are _covariable names_,
-  - $T$ is some user-defined _type name_,
+  - $T$ is a user-defined _type name_,
   - $K,D,X$ are _tags_ used for constructors and destructors,
   - and $f$ is a _label_ used for top-level definitions.
 ] <naming>
@@ -175,7 +175,7 @@ top-level (first-order) function definitions, variables, non-recursive let-bindi
 
 Besides built-in integers ($i64$), #Fun has user-defined algebraic data and codata types.
 Data types are defined by constructors $K(sigma)$ that produce elements of the data type and consumed by pattern matching ($CASE$).
-Dually, the less common codata types @Hagino1989 @Downen2019codata are defined by destructors $D(sigma)$ that consume elements of the codata type and produced by copattern matching ($NEW$) @Abel2013copattern.
+Dually, codata types @Hagino1989 @Downen2019codata are defined by destructors $D(sigma)$ that consume elements of the codata type and are produced by copattern matching ($NEW$) @Abel2013copattern.
 This gives a uniform framework that can model many familiar language abstractions like lists, streams, and higher-order function types.
 
 For this thesis, a crucial #Fun feature are control operators.
@@ -184,6 +184,7 @@ $GOTO$ invokes such a continuation and can therefore cause non-local control flo
 
 #example[
   Now that we have formally defined #Fun, we revisit the function $all(#none)$ introduced in the introduction.
+  #note[Did future me really put this into the introduction?]
   We extend it into a complete #Fun program that illustrates core features of the language,
   including data and codata types, (co)pattern matching, and function calls.
   It serves as a running example throughout the remainder of this thesis.
@@ -240,16 +241,19 @@ $GOTO$ invokes such a continuation and can therefore cause non-local control flo
       ),
     )
   ]
-  The example defines the standard Boolean and integer list data types.
-  Predicates are represented as codata and conceptually correspond to functions of type $i64 -> Bool$.
+  The example defines standard Boolean and integer list data types.
+  Predicates are represented as codata with a single $apply(#none)$ destructor
+  --- conceptually, a predicate can be viewed as a first-class function of type $i64 -> Bool$.
 
-  The function $all(#none)$ recursively traverses the list $ell$ and returns $False$ as soon as the predicate $p$ does not hold for one of its elements.
+  The function $all(#none)$ recursively traverses the list $ell$ and returns $False$ as soon as the predicate $p$ does not hold for one of its elements;
+  if the predicate holds for every element, the function returns $True$.
   This is achieved by pattern matching on the list and on the Boolean value returned by the predicate's destructor.
 
   Function $f$ demonstrates a use of $all(#none)$.
   It constructs a list and binds it to the variable $ell$.
   It then creates a predicate by copattern matching, binds it to $p$,
   and finally invokes $all(#none)$ with these two arguments.
+  Here, $f$ would return $False$ because not all elements of $ell$ are #imm(0).
 ] <ex:scc:fun>
 
 === Type System
@@ -283,9 +287,8 @@ The next stage is #Core.
 It extends the $lambda mu tilde(mu)$-calculus @Curien2000, which is a term assignment system for Gentzen's classical sequent calculus LK @Gentzen1935a,
 with integer arithmetic, top-level definitions, and algebraic (co)data.
 
-#Core remains relatively high-level, but unlike #Fun it makes control flow explicit.
-This resembles continuation-passing style (CPS) @Appel1991cps in spirit, but uses the symmetry of the sequent calculus.
-Producers represent data and consumers represent first-class computation contexts.
+#Core makes control flow explicit by reifying computation contexts as first-class constructs called _consumers_.
+This is similar to continuation-passing style (CPS) @Appel1991cps, where computation contexts are instead encoded as functions.
 
 === Syntax
 Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
@@ -468,7 +471,7 @@ In #Core, each binding is annotated with its chirality, i.e. whether it is a pro
   (here $kappa$ for functions and $alpha$ for destructors).
   Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
 
-  This change is also reflected at call site of functions or destructors.
+  This change is also reflected at the call site of functions or destructors.
   Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as continuation.
 
   In $f$, the $tilde(mu)$ abstraction binds producers to variables.
@@ -982,7 +985,6 @@ The notation #box[$v'_1 := v_1, v'_2 := v_2, ...$] is used as shorthand for a su
 
   The pattern match on $ell$ is represented by a $SWITCH$ statement.
   In the $Nil$ branch, the continuation $kappa$ is invoked directly.
-
   In the $Cons(#none)$ branch, the predicate's destructor is invoked with an explicit continuation.
   This continuation is encoded as the closure $alpha$, which represents the case distinction on the Boolean result.
   It captures the relevant bindings from the environment and forwards them to the recursive call in the $True$ branch.
