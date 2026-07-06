@@ -1378,16 +1378,18 @@ Each block contains eight slots --- one slot is one word --- and two slots form 
 
 Unallocated memory blocks are managed in two separate free lists.
 
-The $HEAP$ register points to the first block of the linear free list which contains blocks that are immediately free to use.
+The $HEAP$ register points to the first block of the _linear_ free list, which contains blocks that are immediately free to use.
 The memory management operations must always maintain the invariant that $HEAP$ points to a directly usable block.
 
-The $TODO$ register points to the lazy free list where blocks may still contain references to other blocks that must be erased before being used.
+The $TODO$ register points to the _lazy_ free list where blocks may still contain references to other blocks that must be erased before being used.
 If the lazy free list is empty, $TODO$ points to the beginning of the remaining unused memory region.
 This region is automatically allocated at program initialization and consists entirely of zeros.
 
 ==== Memory Layout
-In both free lists, the first slot stores the next-block pointer, or #imm(0) if there is no next block.
+In both free lists, the first slot of each block stores the pointer to the next block.
 $ NEXTBLOCKOFFSET := #imm(0) $
+The last block of the linear free list stores a #imm(0) in its first slot,
+the last block of the lazy free list points to the unused memory region.
 
 When a block is allocated, its first field contains metadata.
 Hence, only the latter three fields are usable for payload.
