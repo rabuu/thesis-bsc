@@ -46,9 +46,7 @@
 
 #show heading: set text(font: settings.font-sans)
 #show heading.where(level: 1): set text(size: settings.font-size-chapter)
-#show heading.where(level: 1, supplement: auto): set heading(
-  supplement: "Chapter",
-)
+#show heading.where(level: 1): set heading(supplement: "Chapter")
 
 #show: syntax-config
 #show: theorem-config
@@ -159,6 +157,7 @@
 )
 
 #show: appendix.with(title: none)
+#show heading.where(level: 1): set heading(supplement: "Appendix")
 
 #include "content/A-supplementary-formalization.typ"
 #include "content/B-benchmark-results.typ"
