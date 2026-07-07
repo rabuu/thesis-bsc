@@ -16,10 +16,12 @@ The goal of this chapter is therefore to make this notion of "simple control flo
 We begin with an informal analysis of how control flow is represented throughout the different compiler stages.
 This builds intuition for the optimization and motivates the formal restrictions introduced later in this chapter.
 
-=== ...in #Fun
+=== Local Control Flow and Linear Continuations
 Control flow in #Fun is mostly implicit due to its direct-style call-and-return semantics.
 Invoking a top-level definition or destructor transfers control from the caller to the callee,
 which eventually returns control to the caller along with a return value.
+When control flow is determined only by this kind of call-and-return semantics,
+it is referred to as _local_.
 
 #example[
   This program demonstrates local control flow in #Fun programs.
@@ -29,15 +31,48 @@ which eventually returns control to the caller along with a return value.
     $DEF g(x: i64): i64 sp { quad x + x quad }$,
   ))
 
-  The function $f$ invokes $g$ with an argument.
-  Function $g$ must return some value and cannot influence what happens after the return.
-  How the computation continues is determined entirely by the body of $f$.
+  The function $f$ invokes $g$.
+  Function $g$ must return a value.
+  After that, the computation is guaranteed to continue where it left off.
 ] <ex:lin:fun:local>
 
-But there is an important exception: control operators, i.e. $LABEL$ and $GOTO$, can circumvent the usual local control flow
+In #Core, this is made explicit with consumers.
+The translation from #Fun to #Core tracks the current continuation,
+and for every implicit return continuation in #Fun, it introduces an explicit consumer argument.
+Returning a value in #Fun becomes invoking this consumer in #Core.
+
+#example[
+  This is the translation of @ex:lin:fun:local to #Core.
+
+  #figure(pseudo(
+    $DEF f(kappa :^cns i64) sp { quad cut((mu alpha. g(#imm(1), sp alpha)) + #imm(2), kappa) quad }$,
+    $DEF g(x :^prd i64, sp kappa :^cns i64) sp { quad cut(x + x, kappa) quad }$,
+  ))
+
+  The functions $f$ and $g$ no longer return values directly.
+  Instead, both receive an additional explicit continuation argument $kappa$.
+  A cut with $kappa$ corresponds exactly to returning a value in @ex:lin:fun:local.
+  In $f$, the call to $g$ explicitly specifies where computation continues by capturing the current continuation via the $mu$ operator.
+] <ex:lin:core:local>
+
+In a program with purely local control flow, as in @ex:lin:core:local,
+each continuation is invoked exactly once at runtime.
+Intuitively, this is because invoking the continuation corresponds to returning a value and a function in #Fun must return exactly once, if no control effects are involved.
+
+#definition(title: [Linear Continuation])[
+  A continuation is _linear_ if it is invoked exactly once in every possible branch of execution.
+]
+
+This is the key observation of this chapter:
+if a #Fun program has only local control flow, then the corresponding continuations in #Core and consequently #AxCut are linear.
+
+=== Non-Local Control Flow and Nonlinear Continuations
+In #Fun, the control operators $LABEL$ and $GOTO$ can circumvent the usual local control flow
 by providing explicit control of where a computation continues.
-In #Fun, $LABEL$ is the only way to get an explicit handle to the otherwise implicit current continuation.
-This continuation is bound to a covariable and can be passed around, duplicated, and dropped, so control flow can become non-local.
+$LABEL$ is the only way to get a handle to the otherwise implicit current continuation.
+This continuation is bound to a covariable and can be passed around and even duplicated or dropped.
+Then, $GOTO$ can bypass the usual call-and-return restrictions by transferring control flow to an arbitrary continuation.
+This kind of control flow is called _non-local_.
 
 #example[
   This #Fun program uses control operators and therefore exhibits non-local control flow.
@@ -57,47 +92,11 @@ This continuation is bound to a covariable and can be passed around, duplicated,
   At the call site in $f$, it is no longer guaranteed that execution resumes after the call to $g$.
 ] <ex:lin:fun:nonlocal>
 
-We call control flow _local_ when the computation flow is uniquely determined by direct-style call-return semantics, as in @ex:lin:fun:local.
-When control operators break this property, as in @ex:lin:fun:nonlocal, we call it _non-local_ control flow.
-
-=== ...in #Core
-In #Core, control flow is no longer implicit: it is represented explicitly through consumers.
-This makes terms more verbose, but also simplifies reasoning about control flow and continuations.
-
-The translation from #Fun to #Core tracks the current continuation.
-Whenever #Fun has an implicit return continuation --- that is in top-level definitions and destructors ---,
-#Core introduces an explicit consumer argument.
-Returning a value in #Fun becomes invoking this consumer in #Core.
-
-#example[
-  This is the translation of @ex:lin:fun:local to #Core.
-
-  #figure(pseudo(
-    $DEF f(kappa :^cns i64) sp { quad cut((mu alpha. g(#imm(1), sp alpha)) + #imm(2), kappa) quad }$,
-    $DEF g(x :^prd i64, sp kappa :^cns i64) sp { quad cut(x + x, kappa) quad }$,
-  ))
-
-  The definitions $f$ and $g$ no longer return values directly.
-  Instead, both receive an additional explicit continuation argument $kappa$.
-  A cut with $kappa$ corresponds exactly to returning a value in @ex:lin:fun:local.
-  In $f$, the call to $g$ explicitly specifies where computation should continue by capturing the current continuation via the $mu$ operator.
-] <ex:lin:core:local>
-
-In a program with purely local control flow, as in @ex:lin:core:local,
-this continuation is invoked exactly once at runtime.
-Intuitively, this is because invoking the continuation corresponds to returning a value and a function in #Fun must return exactly once, if no control effects are involved.
-
-#definition(title: [Linear Continuation])[
-  A continuation is _linear_ if it is invoked exactly once in every possible branch of execution.
-]
-
-This is the key observation of this chapter:
-if a #Fun program has only local control flow, then the corresponding continuations in #Core are linear.
-Conversely, control operators can introduce nonlinear continuation usage.
+Again, #Core makes this explicit with consumers representing continuations.
+Non-local control flow leads to nonlinear continuations.
 
 #example[
   This is the translation of @ex:lin:fun:nonlocal to #Core.
-  It illustrates how non-local control flow corresponds to nonlinear continuations.
 
   #figure(pseudo(
     $DEF f(kappa :^cns i64) sp {$,
@@ -117,84 +116,17 @@ Conversely, control operators can introduce nonlinear continuation usage.
     $}$,
   ))
 
-  In $f$, the first $mu$ abstraction names the current continuation.
-  Here, that continuation is $kappa$, so $alpha$ is another name for $kappa$.
-  This continuation is not linear: it is passed to $g$ and used in a cut.
-  In $g$, neither $alpha$ nor $kappa$ is linear, since one of them is dropped depending on $x$.
-]
+  In $f$, the covariable $alpha$ is a name for the function continuation, corresponding to the explicit continuation introduced by $LABEL$ in #Fun.
+  The covariable $beta$ abstracts the current continuation where $g$ is called, which is introduced by the translation.
+  The continuation $alpha$ is not linear: it is passed to $g$ and used in a cut.
+
+  In $g$, one of the two available continuations is invoked depending on $x$;
+  since the other continuation is dropped, neither $alpha$ nor $kappa$ is linear.
+] <ex:lin:core:nonlocal>
 
 To summarize: #Fun programs with local control flow map to #Core programs with only linear continuations.
 #Fun programs that use control operators for non-local control flow result in #Core programs where continuations may be nonlinear.
 The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
-
-=== ...in #AxCut
-In #AxCut, linearity in general becomes even more transparent because duplication and dropping of (co)variables are concentrated in explicit $SUBSTITUTE$ statements.
-These are the only potential source of nonlinearity.
-
-The translation from #Core to #AxCut preserves the linearity of continuations:
-a linear continuation in #Core is translated to a linear continuation in #AxCut.
-
-#AxCut unifies the handling of producers and consumers symmetrically and operationally.
-Both producer variables and continuations are introduced via $LET$ or $CREATE$, depending on the combination of its chirality and polarity.
-
-#example[
-  Consider the following #Fun program that uses data and codata.
-  #let (Unit, unit) = (`Unit`, `U`)
-  #let Fun = `Fun`
-
-  #figure(pseudo(
-    $DATA Unit sp { quad unit quad }$,
-    $CODATA Fun sp { quad apply(u : Unit): Unit quad }$,
-    $DEF f(): Unit sp {$,
-    (
-      $highlight(LET sp x, color: #green) = unit;$,
-      $highlight(LET sp h, color: #blue) = NEW { quad apply(u) => U quad };$,
-      $highlight(h.apply(g().apply(x)), color: #orange)$,
-    ),
-    $}$,
-    $DEF g(): Fun { sp ... sp }$,
-  ))
-
-  The green and blue fragments bind producers to variables.
-  The orange fragment concerns control flow and continuation passing.
-
-  The corresponding #AxCut translation shows how $LET$ and $CREATE$ are used for both continuations and data.
-
-  #figure(pseudo(
-    $DATA Unit sp { quad unit quad }$,
-    $CODATA Fun { quad apply(x :^prd Unit, kappa :^cns Unit) quad }$,
-    $DEF f(kappa_f :^cns Unit) sp {$,
-    (
-      $highlight(LET sp x, color: #green) = unit;$,
-      $highlight(CREATE sp h, color: #blue) = () sp { sp apply(u, kappa_h) =>$,
-      (
-        $SUBSTITUTE [kappa_h := kappa_h];$,
-        $INVOKE kappa_h sp U$,
-      ),
-      $};$,
-      $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
-      $highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
-      (
-        $LET u = U;$,
-        $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
-        $INVOKE h apply(u, kappa_f)$,
-      ),
-      $};$,
-      $highlight(LET sp beta, color: #orange) = apply(x, alpha);$,
-      $g(beta)$,
-    ),
-    $}$,
-    $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
-  ))
-
-  In #AxCut, a producer variable for data (e.g. $u$) is introduced by $LET$.
-  A producer variable for codata (e.g. $h$) is introduced by $CREATE$.
-  Dually, a continuation for data (e.g. $alpha$) is introduced by $CREATE$,
-  while a continuation for codata (e.g. $beta$) is introduced by $LET$.
-] <ex:lin:axcut:4intros>
-
-For code generation, this means we must distinguish linear from nonlinear uses of $CREATE$, $LET$, $SWITCH$, and $INVOKE$.
-The rest of this chapter formalizes exactly this distinction.
 
 == The Scope of the Optimization <sec:lin:scope>
 This thesis presents how to exploit the linearity of continuations in the SCC to improve the generated machine code.
@@ -632,6 +564,63 @@ The same quantity is tracked in typing contexts.
 We also annotate $SWITCH$.
 This is not strictly necessary --- as it could be inferred from the context ---, but it makes subsequent code-generation translations more direct.
 No additional annotation is needed for $INVOKE$, since code generation for it is independent of quantity.
+
+#note[TODO: example]
+// #example[
+//   Consider the following #Fun program that uses data and codata.
+//   #let (Unit, unit) = (`Unit`, `U`)
+//   #let Fun = `Fun`
+//
+//   #figure(pseudo(
+//     $DATA Unit sp { quad unit quad }$,
+//     $CODATA Fun sp { quad apply(u : Unit): Unit quad }$,
+//     $DEF f(): Unit sp {$,
+//     (
+//       $highlight(LET sp x, color: #green) = unit;$,
+//       $highlight(LET sp h, color: #blue) = NEW { quad apply(u) => U quad };$,
+//       $highlight(h.apply(g().apply(x)), color: #orange)$,
+//     ),
+//     $}$,
+//     $DEF g(): Fun { sp ... sp }$,
+//   ))
+//
+//   The green and blue fragments bind producers to variables.
+//   The orange fragment concerns control flow and continuation passing.
+//
+//   The corresponding #AxCut translation shows how $LET$ and $CREATE$ are used for both continuations and data.
+//
+//   #figure(pseudo(
+//     $DATA Unit sp { quad unit quad }$,
+//     $CODATA Fun { quad apply(x :^prd Unit, kappa :^cns Unit) quad }$,
+//     $DEF f(kappa_f :^cns Unit) sp {$,
+//     (
+//       $highlight(LET sp x, color: #green) = unit;$,
+//       $highlight(CREATE sp h, color: #blue) = () sp { sp apply(u, kappa_h) =>$,
+//       (
+//         $SUBSTITUTE [kappa_h := kappa_h];$,
+//         $INVOKE kappa_h sp U$,
+//       ),
+//       $};$,
+//       $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
+//       $highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
+//       (
+//         $LET u = U;$,
+//         $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
+//         $INVOKE h apply(u, kappa_f)$,
+//       ),
+//       $};$,
+//       $highlight(LET sp beta, color: #orange) = apply(x, alpha);$,
+//       $g(beta)$,
+//     ),
+//     $}$,
+//     $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
+//   ))
+//
+//   In #AxCut, a producer variable for data (e.g. $u$) is introduced by $LET$.
+//   A producer variable for codata (e.g. $h$) is introduced by $CREATE$.
+//   Dually, a continuation for data (e.g. $alpha$) is introduced by $CREATE$,
+//   while a continuation for codata (e.g. $beta$) is introduced by $LET$.
+// ] <ex:lin:axcut:4intros>
 
 === Type System
 The typing rules from @fig:scc:axcut:typing are adapted so that every linear binding is used exactly once in well-typed programs.
