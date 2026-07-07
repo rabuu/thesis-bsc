@@ -183,11 +183,9 @@ $LABEL$ captures the current computation context, the so-called _continuation_, 
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
 
 #example[
-  Now that we have formally defined #Fun, we revisit the function $all(#none)$ introduced in the introduction.
-  #note[Did future me really put this into the introduction?]
-  We extend it into a complete #Fun program that illustrates core features of the language,
+  Consider the following #Fun program that illustrates core features of the language,
   including data and codata types, (co)pattern matching, and function calls.
-  It serves as a running example throughout the remainder of this thesis.
+  It serves as a running example throughout the remainder of this chapter.
 
   Notably, the example does not include control operators.
   Programs that make use of $LABEL$ and $GOTO$ are analyzed in @sec:lin:flow.
