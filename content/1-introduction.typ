@@ -6,8 +6,8 @@ through a sequence of intermediate representations and transformations.
 The choice of these intermediate representations is a central design decision in compiler construction:
 they should be expressive enough for analysis and optimizations, while being suitable for generating efficient low-level machine code.
 
-For functional programming languages in particular, compiler intermediate representations are usually based on the $lambda$-calculus which corresponds to the natural deduction proof system by Gentzen @Gentzen1935a[ sec. II].
-More recently, however, Gentzen's sequent calculus @Gentzen1935a[ sec. III], or specifically its corresponding term assignment system, the $lambda mu tilde(mu)$-calculus @Curien2000, has been found to offer a compelling alternative basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
+For functional programming languages in particular, compiler intermediate representations are usually based on the #box[$lambda$-calculus] which corresponds to the natural deduction proof system by Gentzen @Gentzen1935a[ sec. II].
+More recently, however, Gentzen's sequent calculus @Gentzen1935a[ sec. III], or specifically its corresponding term assignment system, the #box[$lambda mu tilde(mu)$-calculus] @Curien2000, has been found to offer a compelling alternative basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
 In sequent-calculus-based intermediate representations, control flow and its duality to data flow are made explicit,
 which is especially suitable for compilers that handle advanced control operators and complex control-flow behavior.
 

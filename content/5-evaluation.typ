@@ -110,7 +110,7 @@ The regressions are small and lie within the range of measurement noise,
 as indicated by their standard deviations,
 so they are not considered a genuine slowdown introduced by the optimization.
 
-The largest gains occur in benchmarks dominated by deep or frequent recursive calls:
+The largest gains occur in benchmarks dominated by deep or frequent recursive #box[calls:]
 `Ack` (35%), `IterateIncrement` (18%), `Boyer` (14%), `Tak` (14%), `Takl` (13%).
 Here, `Ack` stands out as a clear outlier, achieving a speedup nearly twice that of the next-best benchmark,
 which suggests that its recursive structure benefits especially strongly from the optimization.
