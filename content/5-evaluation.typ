@@ -2,8 +2,9 @@
 
 = Evaluation <ch:eval>
 This chapter evaluates the impact of the compiler optimization presented in @ch:lin and @ch:codegen.
-The evaluation focuses primarily on execution time, while other metrics are discussed only briefly.
-To quantify the effect of the optimization,
+The evaluation focuses exclusively on execution time;
+other aspects affected by the optimization like codesize and memory usage are likely to improve as well, but are not evaluated here.
+To quantify the effect on performance,
 we compare programs compiled using a version of the compiler that incorporates the optimization presented in this thesis
 against programs compiled using the unmodified compiler.
 
@@ -12,11 +13,11 @@ against programs compiled using the unmodified compiler.
 === Implementation
 The SCC has a Rust #footnote(link("https://rust-lang.org")) implementation @Mueller2026scc.
 The optimization was implemented as an extension of the original compiler, within the same project.
-This ensures that all differences in measurements result from the optimization alone.
+For the evaluation, this ensures that the effect of the optimization is isolated from unrelated implementation details.
 
-At the time of writing, the optimization is implemented exclusively for the x86-64 backend.
-Consequently, all experiments presented in this chapter target only x86-64 code generation.
-The backend emits x86-64 instructions that closely mirror the #RISC-V translation presented in this thesis.
+At the time of writing, the optimization is implemented only for the x86-64 backend,
+so all measurements in this chapter are limited to that backend.
+The compiler emits x86-64 instructions that closely mirror the #RISC-V translation presented in this thesis.
 The resulting assembly is compiled to object code by the Yasm Assembler #footnote(link("https://github.com/yasm/yasm"))
 and linked with a small C driver and runtime that handles command-line arguments, memory allocation, and console output.
 
@@ -25,8 +26,8 @@ To evaluate the optimization, we compare the performance of the unoptimized and 
 We use the original benchmark suite provided by the SCC project @Mueller2026sccbench,
 which in turn draws many of its programs from the Manticore #footnote(link("https://github.com/ManticoreProject/benchmark")) and NoFib @Partain1993nofib suites.
 
-Since the optimization only applies to programs without control operators, benchmarks that use $LABEL$ or $GOTO$ were excluded.
-All remaining benchmarks are therefore programs to which the optimization applies.
+We do not include benchmark programs using $LABEL$ and $GOTO$ since the optimization does not apply to programs with control operators.
+For all included benchmarks, the optimization causes changes to the generated code.
 
 In total, we evaluate the optimization on 30 programs of different sizes that use a variety of language features.
 All benchmark programs are listed in @tab:bench:descr along with a short description @Mueller2026[ sec. 9].
@@ -93,3 +94,4 @@ The exact measurements for all benchmarks are provided in @app:bench.
 ) <fig:eval:results>
 
 == Discussion
+#todo[TODO]
