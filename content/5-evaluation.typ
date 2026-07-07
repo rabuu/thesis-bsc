@@ -3,26 +3,25 @@
 = Evaluation <ch:eval>
 This chapter evaluates the impact of the compiler optimization presented in @ch:lin and @ch:codegen.
 The evaluation focuses exclusively on execution time;
-other aspects affected by the optimization like codesize and memory usage are likely to improve as well, but are not evaluated here.
-To quantify the effect on performance,
-we compare programs compiled using a version of the compiler that incorporates the optimization presented in this thesis
-against programs compiled using the unmodified compiler.
+other aspects affected by the optimization like code size and memory usage are likely to improve as well, but are not evaluated here.
+To quantify the effect of our approach,
+we compare the performance of programs compiled with the optimizing compiler against programs compiled with the original compiler.
 
 == Experimental Setup
 
 === Implementation
 The SCC has a Rust #footnote(link("https://rust-lang.org")) implementation @Mueller2026scc.
-The optimization was implemented as an extension of the original compiler, within the same project.
+The optimization was implemented as an extension of the existing compiler, within the same codebase.
 For the evaluation, this ensures that the effect of the optimization is isolated from unrelated implementation details.
 
 At the time of writing, the optimization is implemented only for the x86-64 backend,
 so all measurements in this chapter are limited to that backend.
 The compiler emits x86-64 instructions that closely mirror the #RISC-V translation presented in this thesis.
-The resulting assembly is compiled to object code by the Yasm Assembler #footnote(link("https://github.com/yasm/yasm"))
-and linked with a small C driver and runtime that handles command-line arguments, memory allocation, and console output.
+The generated assembly is compiled to object code by the Yasm Assembler #footnote(link("https://github.com/yasm/yasm"))
+and linked with a small C runtime that handles command-line arguments, memory allocation, and console output.
 
 === Benchmark Suite
-To evaluate the optimization, we compare the performance of the unoptimized and optimized compiler on a collection of benchmark programs written in #Fun.
+The optimization is evaluated on a collection of benchmark programs written in#Fun.
 We use the original benchmark suite provided by the SCC project @Mueller2026sccbench,
 which in turn draws many of its programs from the Manticore #footnote(link("https://github.com/ManticoreProject/benchmark")) and NoFib @Partain1993nofib suites.
 
@@ -82,7 +81,7 @@ All benchmark programs are listed in @tab:bench:descr along with a short descrip
 === Measurements
 All experiments were conducted on a machine with an AMD Ryzen 7 3800X processor running Debian 13.
 Execution times were measured with the `hyperfine` #footnote(link("https://github.com/sharkdp/hyperfine")) tool,
-which for each benchmark performs three warmup runs and then reports the mean execution time and standard deviation over ten executions.
+which for each benchmark performs three warm-up runs and then reports the mean execution time and standard deviation over ten executions.
 
 === Limitations
 Since all measurements were taken on a single machine using the x86-64 backend, results may differ on other hardware and architectures.
@@ -95,14 +94,15 @@ the optimization's effect on long-running, "real-world" applications remains unt
   image("/resources/benchmarks/runtime.svg"),
 ) <fig:eval:results>
 
-@fig:eval:results shows the execution time of each benchmark for the baseline and optimized compiler, sorted by relative speedup.
+@fig:eval:results shows the execution time of each benchmark for the baseline and optimizing compiler, sorted by relative speedup.
 The exact measurements for all benchmarks are provided in @app:bench.
 
 == Discussion
-The optimization's impact varies considerably from one program to another.
-Averaged across all 30 benchmarks, it yields a geometric mean speedup of approximately #todo[TODO].
+The optimization improves performance for the majority of the evaluated benchmarks,
+but the impact varies considerably from one program to another.
+Averaged across all 30 benchmarks, it yields a geometric mean speedup of approximately 6.3%.
 
-For 15 benchmarks, the optimization achieves a significant speedup of more than 5%;
+For 15 benchmarks, the optimization achieves a significant speedup greater than 5%;
 for 11 benchmarks, it yields only a small speedup of less than 5%, or none at all;
 and for the remaining 4 benchmarks, the measurements show minor regressions of less than 3%.
 
@@ -110,13 +110,15 @@ The regressions are small and lie within the range of measurement noise,
 as indicated by their standard deviations,
 so they are not considered a genuine slowdown introduced by the optimization.
 
-The largest gains occur in benchmarks dominated by deep or frequent recursive #box[calls:]
+The largest improvements occur in benchmarks dominated by deep or frequent recursive calls:
 `Ack` (35%), `IterateIncrement` (18%), `Boyer` (14%), `Tak` (14%), `Takl` (13%).
-Here, `Ack` stands out as a clear outlier, achieving a speedup nearly twice that of the next-best benchmark,
+Since the optimization reduces the overhead associated with function calls,
+programs executing very large numbers of recursive calls benefit proportionally more.
+Among them, `Ack` stands out as a clear outlier, achieving a speedup nearly twice that of the next-best benchmark,
 which suggests that its recursive structure benefits especially strongly from the optimization.
 
-Benchmarks with only small or no speedup tend to feature comparatively fewer function or method calls,
+Benchmarks with only small or no speedup generally perform fewer function or method calls,
 so less time is spent on executing code affected by the optimization.
 
-In summary, the results indicate an overall positive effect of the optimization.
-On average, the improvement is moderate, but for recursion-heavy programs, the speedups are substantial.
+Overall, the evaluation demonstrates that the proposed optimization improves performance without introducing meaningful slowdowns.
+While the average improvement is moderate, recursion-intensive and call-heavy programs benefit substantially.
