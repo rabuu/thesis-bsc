@@ -394,7 +394,7 @@ Built-in integers and arithmetic are the main asymmetric exception as they have 
 Top-level definitions and destructors in #Core do not have a return type.
 Instead, the interaction between caller and callee is generalized by allowing arbitrary consumer arguments that act as _continuations_.
 The equivalent of returning from a function or destructor is passing a value to a continuation.
-Neatly, since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
+Since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
 
 The abstractions $mu$ and $tilde(mu)$ capture the current opposite side:
 $mu alpha. s$ is a producer that captures the current consumer and binds it as covariable $alpha$ in its body $s$;
