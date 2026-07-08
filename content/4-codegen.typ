@@ -26,7 +26,8 @@ This increases the payload capacity per block and removes instruction overhead f
 A natural first attempt is to keep the original memory layout and simply let $STORE$ and $LOAD$ use all four fields as payload in linear blocks.
 However, this leads to an ordering conflict.
 
-Consider storing the registers from $Gamma_0$ into a fresh block while using all four fields.
+Consider the scenario from the following illustration.
+We want to store the eight registers from $Gamma_0$ into a fresh block, using all four fields.
 A naïve strategy is to store from back to front and then call $ACQUIRE$, just like in @sec:scc:codegen:mem.
 In the situation below, seven slots are already written.
 The conflict arises at the first register ($a_1$).
@@ -140,16 +141,13 @@ To resolve this deadlock, the layout must be changed so metadata and payload do 
 Two equivalent options are possible.
 Either rearrange (co)variable components so that the memory pointer is stored in the second register,
 or rearrange the free-list block layout so that the pointer to the next block is stored in the second slot.
-In this thesis, we choose the latter and place the pointer to the next block of a free list in the second slot but the first.
+In this thesis, we choose the latter and place the pointer to the next block of a free list in the second slot.
+$ NEXTBLOCKOFFSET & := #imm(1) $
 
 To preserve the alignment between the next-block pointer and reference-count position,
 nonlinear allocated blocks also store the reference count in the second slot.
 This does not apply to linear blocks, since they do not carry a reference count.
-
-$
-  NEXTBLOCKOFFSET & := #imm(1) \
-   REFCOUNTOFFSET & := #imm(1) \
-$
+$ REFCOUNTOFFSET & := #imm(1) $
 
 Applying this modification to @fig:scc:codegen:layout yields:
 #figure(
@@ -681,7 +679,7 @@ while a $1$ annotation selects the linear variants introduced above.
   block(width: 100%)[
     #set math.lr(size: 1em)
 
-    // #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
+    #def-box[$a2m(dot) : "Statement"_AxCut -> I^*$]
     $
       a2m(LET_q sp v = X(Gamma_0)\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 \
       & && LI (REG_2 sp v) sp (INDEX X) \

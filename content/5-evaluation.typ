@@ -104,10 +104,8 @@ The optimization improves performance for the majority of the evaluated benchmar
 but the impact varies considerably from one program to another.
 Averaged across all 30 benchmarks, it yields a geometric mean speedup of approximately 6.3%.
 
-#note[yield yield]
-
 For 15 benchmarks, the optimization achieves a significant speedup greater than 5%;
-for 11 benchmarks, it yields only a small speedup of less than 5%, or none at all;
+for 11 benchmarks, the speedup is less than 5%, or none at all;
 and for the remaining 4 benchmarks, the measurements show minor regressions of less than 3%.
 
 The regressions are small and lie within the range of measurement noise,

@@ -2,14 +2,16 @@
 #import deps: fletcher
 
 = Linear Continuations <ch:lin>
-A central feature of the SCC is its explicit representation of control flow
-by leveraging the symmetric properties of the sequent calculus.
-Consumers become first-class objects that naturally allow for a very expressive handling of control flow.
+A central feature of the SCC is its explicit representation of control flow,
+based on the structure of the sequent calculus, in which consumers are treated dually to producers.
+Consumers become first-class objects, which allows the SCC to naturally and uniformly express even complex control flow.
 
-However, many programs do not require this full expressive power.
+This expressiveness, however, is not free: first-class consumers require a runtime representation and memory management strategy general enough to support this full range of control flow.
+Yet many programs do not need this.
 In typical functional programs, control flow is often simple: calls return to their call site and computation continues locally.
-In such cases, we should not sacrifice performance and memory usage for power and expressiveness that is never used.
+In such cases, we should not sacrifice performance and memory usage for expressiveness that is never used.
 
+If the compiler can statically identify programs that only require simple control flow, we can generate more efficient code for them.
 The goal of this chapter is therefore to make this notion of "simple control flow" precise and to propagate the resulting information to code generation.
 
 == Control Flow and Continuations <sec:lin:flow>
@@ -71,7 +73,7 @@ In #Fun, the control operators $LABEL$ and $GOTO$ can circumvent the usual local
 by providing explicit control of where a computation continues.
 $LABEL$ is the only way to get a handle to the otherwise implicit current continuation.
 This continuation is bound to a covariable and can be passed around and even duplicated or dropped.
-Then, $GOTO$ can bypass the usual call-and-return restrictions by transferring control flow to an arbitrary continuation.
+Then, $GOTO$ can bypass the usual call-and-return restrictions by transferring control to an arbitrary continuation.
 This kind of control flow is called _non-local_.
 
 #example[
@@ -101,9 +103,9 @@ Non-local control flow leads to nonlinear continuations.
   #figure(pseudo(
     $DEF f(kappa :^cns i64) sp {$,
     (
-      $cl mu alpha.$,
+      $cl mu highlight(alpha).$,
       (
-        $cut((mu beta. g(#imm(1), sp alpha, sp beta)) + #imm(2), alpha)$,
+        $cut((mu beta. g(#imm(1), sp highlight(alpha), sp beta)) + #imm(2), highlight(alpha))$,
       ),
       $| kappa cr$,
     ),
@@ -131,18 +133,17 @@ The source of nonlinearity is the ability to capture a continuation explicitly u
 == The Scope of the Optimization <sec:lin:scope>
 This thesis shows how to exploit the linearity of continuations in the SCC to improve the generated machine code.
 As discussed above, programs that rely on control operators inherently require the expressive power of nonlinear continuations.
-Consequently, the optimization targets only programs with entirely local control flow.
+Consequently, the optimization can only target the local control flow in the program.
 
-This is a deliberate design choice.
-In principle, one could attempt a mixed strategy with both linear and nonlinear continuations in one program.
-However, this would require significantly more bookkeeping and analysis infrastructure across all compiler stages.
-For the purposes of this thesis, we instead prioritize a clear and robust pipeline for the fully local case.
+In this thesis, we restrict ourselves to programs without _any_ non-local control flow.
+Distinguishing which parts of a program are affected by non-local control flow from those that are not
+would require significantly more bookkeeping and analysis infrastructure, which is beyond the scope of this thesis.
 
 Moreover, the low-level optimization is conceptually not limited to continuations.
 The relevant memory-management mechanisms are identical for producers and consumers,
-which, in theory, makes the approach applicable to linear data in general.
-In this thesis, however, we apply it only to linear continuations, because they provide a simple but impactful entry point.
-It is sufficient to restrict control operators to statically prove that continuations are linear.
+which makes the approach applicable to linear data in general.
+In this thesis, however, we apply it only to linear continuations, because they provide a simple but impactful entry point:
+it is sufficient to restrict control operators to statically prove that continuations are linear.
 
 The following illustration shows how we modify the SCC pipeline in the rest of this thesis.
 #figure({
@@ -278,15 +279,15 @@ Only the rules involving $LABEL$, $GOTO$ and covariables are removed.
 == Restricting #Core <sec:lin:core>
 After restricting #Fun, we must retain this linearity information in the next stage: #Core.
 
-One possible approach would be to extend #Core with explicit linearity annotations on continuations --- or even all (co)variables.
+One possible approach would be to extend #Core with explicit linearity annotations on continuations, or even all (co)variables.
 That approach is more general which could be appealing, but it would require a considerably more complex linear type system.
 
-In this thesis we choose instead to restrict #Core to a fragment where continuation linearity is guaranteed by construction.
+In this thesis, we choose instead to restrict #Core to a fragment where continuation linearity is guaranteed by construction.
 Unlike in #Fun, this cannot be done by simply removing some control operators.
 In #Core, continuations are explicit everywhere, so linearity must be enforced structurally.
 
 The guiding idea is simple:
-because restricted #Fun cannot express non-local control effects, every consumer introduced by its translation should already be linear.
+because restricted #Fun cannot express non-local control effects, every consumer introduced by its translation must already be linear.
 So we restrict #Core exactly to the image of the translation (@fig:scc:f2c) from restricted #Fun.
 This image is a strict subset of @def:scc:core.
 
@@ -356,7 +357,7 @@ This image is a strict subset of @def:scc:core.
 
 In #Core programs that are translated from the restricted fragment of #Fun,
 all consumer arguments arise from the translation itself.
-In particular, consumer arguments in parameter/argument lists are exactly those introduced to represent the implicit #Fun continuation.
+In particular, consumer arguments in parameter and argument lists are exactly those introduced to represent the implicit #Fun continuation.
 
 This is reflected by restricting $sigma$ and $Gamma$ to producers only.
 As a result, continuation positions become explicit:
@@ -384,7 +385,7 @@ Formally:
 - and $Theta mid Gamma, alpha :^cns tau tack s$ types a statement.
 Here, the comma separating the producer context from the continuation is part of the judgment syntax.
 
-The formulation makes continuation usage explicit.
+This formulation makes continuation usage explicit.
 Producers cannot directly invoke continuations.
 If a producer contains a statement, it must first introduce a continuation (via $mu$ or copattern matching),
 and consumers and statements must use their continuation exactly once.
@@ -522,7 +523,7 @@ The next step is to carry this information into #AxCut.
 A possible approach is again to restrict #AxCut to the exact image of the translation from restricted #Core.
 In this thesis, however, we choose a more general design:
 we extend #AxCut with explicit linearity annotations for both producers and consumers.
-This makes the intermediate representation suitable for more general linearity-based optimizations beyond continuations.
+This makes the intermediate representation suitable for extending the optimization to producers.
 
 #AxCut unifies the treatment of producers and consumers.
 A (co)variable is either introduced by $LET$ and consumed by $SWITCH$, or introduced by $CREATE$ and consumed by $INVOKE$.
@@ -621,7 +622,7 @@ No additional annotation is needed for $INVOKE$, since code generation for it is
 ] <ex:lin:axcut:4intros>
 
 === Type System
-The typing rules from @fig:scc:axcut:typing are adapted so that every linear binding is used exactly once in well-typed programs.
+The typing rules from @fig:scc:axcut:typing are adapted so that every linear binding is used exactly once in a well-typed program.
 The updated rules are shown in @fig:lin:axcut:typing.
 
 To formulate these rules, we first introduce a notation to separate linear and unrestricted parts of a typing context.
@@ -636,7 +637,7 @@ To formulate these rules, we first introduce a notation to separate linear and u
     & (Gamma, v :^chi_1 tau)^1 & := Gamma^1, v :^chi_1 tau \
   $
 
-  Thus, $Gamma^omega$ contains exactly the unrestricted bindings and $Gamma^1$ the linear bindings of $Gamma$.
+  Thus, $Gamma^omega$ contains exactly the unrestricted bindings of $Gamma$, and $Gamma^1$ contains exactly the linear bindings.
 ]
 
 The key enforcement point for linearity is $SUBSTITUTE$, since that is where duplication and dropping can occur.
@@ -725,7 +726,7 @@ The additional premises for linear continuations are highlighted.
 ) <fig:lin:axcut:typing>
 
 == Extending the Translation from #Core to #AxCut <sec:lin:c2a>
-With linearity-aware #AxCut in place, translation can preserve and expose the continuation information from restricted #Core.
+With linearity-aware #AxCut in place, the translation can preserve and expose the continuation information from restricted #Core.
 Since all continuations in restricted #Core are linear, the translation marks them with quantity $1$.
 All producers, however, are marked with $omega$, because we have no static information about them.
 
