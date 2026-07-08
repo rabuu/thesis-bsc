@@ -178,7 +178,7 @@ Data types are defined by constructors $K(sigma)$ that produce elements of the d
 Dually, codata types @Hagino1989 @Downen2019codata are defined by destructors $D(sigma)$ that consume elements of the codata type and are produced by copattern matching ($NEW$) @Abel2013copattern.
 This gives a uniform framework that can model many familiar language abstractions like lists, streams, and higher-order function types.
 
-For this thesis, a crucial #Fun feature is its control operators.
+For this thesis, a crucial feature of #Fun is its control operators.
 $LABEL$ captures the current computation context, the so-called _continuation_, and binds it to a covariable;
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
 
@@ -282,10 +282,10 @@ The whole expression may have an arbitrary type $tau'$ because control flow does
 
 == The High-Level Intermediate Language #Core <sec:scc:core>
 The next stage is #Core.
-It extends the $lambda mu tilde(mu)$-calculus @Curien2000, which is a term assignment system for Gentzen's classical sequent calculus LK @Gentzen1935a,
-with integer arithmetic, top-level definitions, and algebraic (co)data.
+It is based on the $lambda mu tilde(mu)$-calculus @Curien2000, which is a term assignment system for Gentzen's classical sequent calculus LK @Gentzen1935a.
+#Core extends it with integer arithmetic, top-level definitions, and algebraic (co)data types.
 
-#Core makes control flow explicit by reifying computation contexts as first-class constructs called _consumers_.
+#Core makes control flow explicit by reifying computation contexts as first-class constructs called consumers.
 This is similar to continuation-passing style (CPS) @Appel1991cps, where computation contexts are instead encoded as functions.
 
 === Syntax
@@ -381,7 +381,7 @@ Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
   ]
 ] <def:scc:core>
 
-#Core has three separate syntactic categories for terms: producers, consumers, and statements.
+#Core has three separate syntactic categories for terms: producers, consumers, and statements (also known as commands).
 Producers and consumers describe how data can be introduced and eliminated;
 statements drive computation.
 The central computational form is the cut $cut(p, c)$ where a matching pair of a producer and a consumer interact.
@@ -389,18 +389,18 @@ The central computational form is the cut $cut(p, c)$ where a matching pair of a
 A defining property of #Core is its producer/consumer symmetry.
 For (co)data, constructs appear in dual pairs: constructors and destructors, pattern matches and copattern matches.
 This is possible because, in contrast to #Fun, pattern matches and destructor invocations are represented independently of the value they act on.
-Built-in integers and arithmetic are the main asymmetric exception as they have no consumer counterparts.
+Built-in integers and arithmetic have no consumer counterparts.
 
 Top-level definitions and destructors in #Core do not have a return type.
 Instead, the interaction between caller and callee is generalized by allowing arbitrary consumer arguments that act as _continuations_.
-The equivalent of returning from a function or destructor is passing a value to a continuation.
-Since destructors no longer have a return type, the definition of data and codata types become perfectly symmetric.
+In #Core, returning from a function or destructor corresponds to passing a value to a continuation.
+Since destructors no longer have a return type, the definitions of data and codata types become perfectly symmetric.
 
-The abstractions $mu$ and $tilde(mu)$ capture the current opposite side:
+The abstractions $mu$ and $tilde(mu)$ capture the current opposite side of a cut:
 $mu alpha. s$ is a producer that captures the current consumer and binds it as covariable $alpha$ in its body $s$;
 $tilde(mu) x. s$ is a consumer that captures the current producer and binds it as $x$.
-The ability for producers and consumers to abstract over the other side of a cut is central to the language
-and corresponds to $LET$-bindings and control operators.
+The ability for producers and consumers to abstract over the other side of a cut is central to the language,
+and subsumes control operators and $LET$-bindings in #Fun.
 
 In #Core, each binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
 
@@ -465,7 +465,7 @@ In #Core, each binding is annotated with its chirality, i.e. whether it is a pro
   ]
 
   Top-level function definitions and destructors no longer return values, as in #Fun.
-  Instead, the return type is replaced by an additional consumer argument representing the continuation
+  Instead, return types are replaced by an additional consumer argument representing the continuation
   (here $kappa$ for functions and $alpha$ for destructors).
   Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
 
@@ -487,11 +487,11 @@ There is one judgment form per syntactic category:
 - and #box($Theta mid Gamma tack s$) for statements.
 Statements, representing computation, have no type.
 $Theta$ is the global context that holds all top-level declarations and is often omitted in rules that do not mention it.
-$Gamma$ is the local context of active (co)variable bindings.
+$Gamma$ is the local context of in-scope (co)variable bindings.
 
 In #Core, we conceptually treat the typing context as a set.
 For typing, the order of bindings is irrelevant.
-Since (co)variables may be dropped or used multiple time, the rules #rn("Var") and #rn("Covar") only check whether the relevant binding is present in the context.
+Since (co)variables may be dropped or used multiple times, the rules #rn("Var") and #rn("Covar") only check whether the relevant binding is present in the context.
 
 The side-by-side presentation of the rules expose the language symmetry clearly:
 except for integer-specific rules, producer and consumer rules occur in dual pairs.
@@ -826,7 +826,7 @@ Many cuts are ruled out directly by typing.
 Trivial naming cuts are removed by renaming.
 Critical pairs ($mu$ against $tilde(mu)$) are resolved by $eta$-expanding one side.
 The choice which side to expand corresponds to the evaluation strategy:
-we choose call-by-value for data and call-by-name for codata.
+we choose call-by-value for data and call-by-name for codata to ensure that all $eta$-laws hold @Binder2024grokking.
 Unknown cuts (variable against covariable) are also handled by $eta$-expansion.
 The full definition is in @app:form:shrinking.
 
