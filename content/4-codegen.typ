@@ -141,7 +141,7 @@ To resolve this deadlock, the layout must be changed so metadata and payload do 
 Two equivalent options are possible.
 Either rearrange (co)variable components so that the memory pointer is stored in the second register,
 or rearrange the free-list block layout so that the pointer to the next block is stored in the second slot.
-In this thesis, we choose the latter and place the pointer to the next block of a free list in the second slot.
+In this thesis, we choose the latter and place the pointer to the next block of a free list in the second slot instead of the first.
 $ NEXTBLOCKOFFSET & := #imm(1) $
 
 To preserve the alignment between the next-block pointer and reference-count position,

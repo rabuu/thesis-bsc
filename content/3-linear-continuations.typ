@@ -361,7 +361,7 @@ In particular, consumer arguments in parameter and argument lists are exactly th
 
 This is reflected by restricting $sigma$ and $Gamma$ to producers only.
 As a result, continuation positions become explicit:
-each top-level definition and destructor has exactly one consumer argument at the end --- the continuation ---,
+each top-level definition and destructor has exactly one consumer argument at the end --- the continuation ---
 while constructors have no consumer fields.
 
 === Type System

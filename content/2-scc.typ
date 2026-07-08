@@ -498,7 +498,7 @@ except for integer-specific rules, producer and consumer rules occur in dual pai
 
 The right activation rule #rn("Act-R") types a producer $mu alpha. s$ that abstracts over a consumer in its body.
 Dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ that abstracts over a producer in its body.
-In both cases, the abstracted (co)variable must have the same base type as the abstraction, but with opposite chirality.
+In both cases, the abstracted (co)variable must have the same type as the abstraction, but with opposite chirality.
 
 #rn("Cut") enforces that the producer and consumer that meet in a cut have matching types.
 This ensures that they can meaningfully interact.
@@ -1020,7 +1020,7 @@ Context manipulation is done through statements.
 Substitutions can reorder, drop, and duplicate (co)variables by building a new context from old bindings.
 
 For most rules, the order of the context matters.
-The exception are integer-specific statements:
+The exceptions are integer-specific statements:
 #rn("Plus") and #rn("IfZ") only require the existence of integer bindings in the context, not exact position, and they do not consume these variables.
 Usually, statements in #AxCut are preceded by an explicit substitution that prepares the context for the subsequent statement.
 
@@ -1514,7 +1514,7 @@ $
 Here, $OFFSET_1 sp v$ and $OFFSET_2 sp v$ denote the offsets within a memory block that correspond to the first and second components of the (co)variable $v$, respectively.
 
 If $Gamma$ contains more bindings than can fit into a single memory block, multiple blocks are chained together.
-This details of this mechanism are not relevant to this thesis and therefore omitted.
+The details of this mechanism are not relevant to this thesis and therefore omitted.
 
 ==== Release
 $RELEASE$ is used to free a memory block that is loaded into registers.
@@ -1535,7 +1535,7 @@ $
 $
 
 ==== Load
-To load values from memory into registers, $LOAD$ first releases the memory block and then copies its into the corresponding registers from back to front.
+To load values from memory into registers, $LOAD$ first releases the memory block and then copies it into the corresponding registers from back to front.
 $
                  LOAD r sp Gamma & := && RELEASE r \
                                  &    && LOADV r sp Gamma \
