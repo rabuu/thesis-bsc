@@ -86,13 +86,15 @@ which for each benchmark performs three warm-up runs and then reports the mean e
 === Limitations
 Since all measurements were taken on a single machine using the x86-64 backend, results may differ on other hardware and architectures.
 Also, the benchmark suite, while diverse, consists of relatively short-running programs;
-the optimization's effect on long-running, "real-world" applications remains untested.
+the optimization's effect on long-running, real-world applications remains untested.
 
 == Results
 #figure(
   caption: [Execution time comparison of the baseline and optimized compiler output.],
   image("/resources/benchmarks/runtime.svg"),
 ) <fig:eval:results>
+
+#note[bigger numbers]
 
 @fig:eval:results shows the execution time of each benchmark for the baseline and optimizing compiler, sorted by relative speedup.
 The exact measurements for all benchmarks are provided in @app:bench.
@@ -101,6 +103,8 @@ The exact measurements for all benchmarks are provided in @app:bench.
 The optimization improves performance for the majority of the evaluated benchmarks,
 but the impact varies considerably from one program to another.
 Averaged across all 30 benchmarks, it yields a geometric mean speedup of approximately 6.3%.
+
+#note[yield yield]
 
 For 15 benchmarks, the optimization achieves a significant speedup greater than 5%;
 for 11 benchmarks, it yields only a small speedup of less than 5%, or none at all;
