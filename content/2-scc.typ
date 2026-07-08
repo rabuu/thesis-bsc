@@ -1475,45 +1475,6 @@ $ACQUIRE$ allocates a new memory block.
 More precisely, it removes the first block from the linear free list, initializes its reference count to #imm(0), and stores a pointer to the block in the register $r$.
 It then reestablishes the invariant that $HEAP$ always points a block that can be allocated immediately.
 
-// The following illustration depicts the state of the registers and heap after $ACQUIRE$ has completed.
-//
-// #figure(cetz.canvas({
-//   import cetz.draw: *
-//   import diagram: *
-//
-//   scale(0.8)
-//
-//   let regy = 4
-//
-//   content((0, regy - 0.5), [Registers])
-//   slots(
-//     15,
-//     labels: (none, reg("temp"), reg("heap"), reg("todo"), none, reg("r")),
-//     data: (imm(0), none, none, none, ddd) + (none,) * 9 + (ddd,),
-//     offset: (2, regy),
-//     open-right: true,
-//   )
-//
-//   let memy1 = 2
-//   let memy2 = 0
-//   content((0, memy1 - 0.5), [Memory])
-//   memblock(offset: (5, memy1), data: (imm(0),))
-//   memblock(offset: (5, memy2))
-//
-//   ptr(
-//     (4.5, regy - 0.6),
-//     (4.5, memy2 - 0.5),
-//     (5, memy2 - 0.5),
-//   )
-//
-//   ptr(
-//     (7.5, regy - 0.6),
-//     (7.5, regy - 1.5),
-//     (5.5, regy - 1.5),
-//     (5.5, memy1),
-//   )
-// }))
-
 In the best case, the linear free list contains another block
 and $HEAP$ is simply updated to point to the next block in the list.
 
