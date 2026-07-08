@@ -174,11 +174,11 @@ At its core, #Fun is an ordinary direct-style functional language:
 top-level (first-order) function definitions, variables, non-recursive let-bindings, machine integers, arithmetic (only addition is shown), and conditionals.
 
 Besides built-in integers ($i64$), #Fun has user-defined algebraic data and codata types.
-Data types are defined by constructors $K(sigma)$ that produce elements of the data type and consumed by pattern matching ($CASE$).
+Data types are defined by constructors $K(sigma)$ that produce elements of the data type and are consumed by pattern matching ($CASE$).
 Dually, codata types @Hagino1989 @Downen2019codata are defined by destructors $D(sigma)$ that consume elements of the codata type and are produced by copattern matching ($NEW$) @Abel2013copattern.
 This gives a uniform framework that can model many familiar language abstractions like lists, streams, and higher-order function types.
 
-For this thesis, a crucial #Fun feature are control operators.
+For this thesis, a crucial #Fun feature is its control operators.
 $LABEL$ captures the current computation context, the so-called _continuation_, and binds it to a covariable;
 $GOTO$ invokes such a continuation and can therefore cause non-local control flow.
 
@@ -251,7 +251,7 @@ $GOTO$ invokes such a continuation and can therefore cause non-local control flo
   It constructs a list and binds it to the variable $ell$.
   It then creates a predicate by copattern matching, binds it to $p$,
   and finally invokes $all(#none)$ with these two arguments.
-  Here, $f$ would return $False$ because not all elements of $ell$ are #imm(0).
+  Here, $f$ returns $False$ because not all elements of $ell$ are #imm(0).
 ] <ex:scc:fun>
 
 === Type System
@@ -642,7 +642,7 @@ This ensures that they can meaningfully interact.
 ) <fig:scc:core:typing>
 
 == Translating #Fun to #Core <sec:scc:f2c>
-We now define the translation $f2c(dot)$ that maps direct-style #Fun to #Core with exlicit continuations.
+We now define the translation $f2c(dot)$ that maps direct-style #Fun to #Core with explicit continuations.
 The full definition is shown in @fig:scc:f2c.
 
 Generally, the translation is designed to avoid unnecessary administrative redexes.
@@ -658,7 +658,7 @@ Top-level definitions and codata destructors receive an additional consumer argu
 Calls and destructor invocations pass the current continuation explicitly.
 
 The translations of the control operators are of particular relevance to this thesis,
-as they are the only constructs for which the current continuation $c$ is not passed through linearly.
+as they are the only constructs for which the current continuation $c$ is not passed along linearly.
 $
   f2c(LABEL alpha br(p), with: c) := cut(mu alpha. f2c(p, with: alpha), c) #h(4em)
   f2c(GOTO alpha sp (p), with: c) & := f2c(p, with: alpha) \

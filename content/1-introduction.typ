@@ -12,9 +12,9 @@ In sequent-calculus-based intermediate representations, control flow and its dua
 which is especially suitable for compilers that handle advanced control operators and complex control-flow behavior.
 
 The _Sequent Calculus Compiler (SCC)_ @Mueller2026 @Mueller2026scc follows this approach.
-It compiles a functional programming language to native machine code through the usage of sequent-calculus-based intermediate representations.
+It compiles a functional programming language to native machine code using sequent-calculus-based intermediate representations.
 A key design feature of the SCC is that control flow is made explicit with first-class _consumers_
-which represent _continuations_ of computation.
+that represent _continuations_ of computation.
 
 Consider this simple term, where a function $f$ is called and then $1$ is added to the result.
 $ f(x) + 1 $

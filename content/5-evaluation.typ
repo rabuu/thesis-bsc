@@ -3,7 +3,7 @@
 = Evaluation <ch:eval>
 This chapter evaluates the impact of the compiler optimization presented in @ch:lin and @ch:codegen.
 The evaluation focuses exclusively on execution time;
-other aspects affected by the optimization like code size and memory usage are likely to improve as well, but are not evaluated here.
+other aspects affected by the optimization such as code size and memory usage are likely to improve as well, but are not evaluated here.
 To quantify the effect of our approach,
 we compare the performance of programs compiled with the optimizing compiler against programs compiled with the original compiler.
 
@@ -12,7 +12,7 @@ we compare the performance of programs compiled with the optimizing compiler aga
 === Implementation
 The SCC has a Rust #footnote(link("https://rust-lang.org")) implementation @Mueller2026scc.
 The optimization was implemented as an extension of the existing compiler, within the same codebase.
-For the evaluation, this ensures that the effect of the optimization is isolated from unrelated implementation details.
+This ensures that the effect of the optimization is isolated from unrelated implementation details.
 
 At the time of writing, the optimization is implemented only for the x86-64 backend,
 so all measurements in this chapter are limited to that backend.
@@ -21,11 +21,11 @@ The generated assembly is compiled to object code by the Yasm Assembler #footnot
 and linked with a small C runtime that handles command-line arguments, memory allocation, and console output.
 
 === Benchmark Suite
-The optimization is evaluated on a collection of benchmark programs written in#Fun.
+The optimization is evaluated on a collection of benchmark programs written in #Fun.
 We use the original benchmark suite provided by the SCC project @Mueller2026sccbench,
 which in turn draws many of its programs from the Manticore #footnote(link("https://github.com/ManticoreProject/benchmark")) and NoFib @Partain1993nofib suites.
 
-We do not include benchmark programs using $LABEL$ and $GOTO$ since the optimization does not apply to programs with control operators.
+We do not include benchmark programs using $LABEL$ and $GOTO$, since the optimization does not apply to programs with control operators.
 For all included benchmarks, the optimization causes changes to the generated code.
 
 In total, we evaluate the optimization on 30 programs of different sizes that use a variety of language features.
@@ -108,7 +108,7 @@ and for the remaining 4 benchmarks, the measurements show minor regressions of l
 
 The regressions are small and lie within the range of measurement noise,
 as indicated by their standard deviations,
-so they are not considered a genuine slowdown introduced by the optimization.
+so they are not considered a meaningful slowdown introduced by the optimization.
 
 The largest improvements occur in benchmarks dominated by deep or frequent recursive calls:
 `Ack` (35%), `IterateIncrement` (18%), `Boyer` (14%), `Tak` (14%), `Takl` (13%).

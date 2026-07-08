@@ -129,7 +129,7 @@ To summarize: #Fun programs with local control flow map to #Core programs with o
 The source of nonlinearity is the ability to capture a continuation explicitly using $LABEL$ and duplicate or drop it like an ordinary variable.
 
 == The Scope of the Optimization <sec:lin:scope>
-This thesis presents how to exploit the linearity of continuations in the SCC to improve the generated machine code.
+This thesis shows how to exploit the linearity of continuations in the SCC to improve the generated machine code.
 As discussed above, programs that rely on control operators inherently require the expressive power of nonlinear continuations.
 Consequently, the optimization targets only programs with entirely local control flow.
 

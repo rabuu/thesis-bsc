@@ -23,7 +23,7 @@ if the reference count is never inspected or updated, we can omit it entirely in
 This increases the payload capacity per block and removes instruction overhead for reference-count maintenance.
 
 == The Naïve Approach and Where it Fails <sec:codegen:naive>
-A natural first attempt is to keep the original memory layout and simply let $STORE$ and $LOAD$ use all four fields for payload in linear blocks.
+A natural first attempt is to keep the original memory layout and simply let $STORE$ and $LOAD$ use all four fields as payload in linear blocks.
 However, this leads to an ordering conflict.
 
 Consider storing the registers from $Gamma_0$ into a fresh block while using all four fields.
@@ -79,7 +79,7 @@ As soon as $a_1$ is written into the first slot, the pointer to the next block i
 But calling $ACQUIRE$ earlier is also impossible:
 it would place a pointer into the first register after $Gamma$, overwriting $a_1$ before it is stored.
 
-A completely symmetric issue appears for loading.
+A symmetric issue appears for loading.
 Suppose we want to load all eight payload slots into registers.
 Naïvely, we would call $RELEASE$ and then load back to front.
 
