@@ -3,13 +3,13 @@
 = Introduction <ch:intro>
 Compilers translate high-level programming languages into executable machine code
 through a sequence of intermediate representations and transformations.
-The choice of these intermediate representations is a central design decision in compiler construction:
+The choice of these intermediate representations is a central design decision in compiler #box[construction:]
 they should be expressive enough for analysis and optimizations, while being suitable for generating efficient low-level machine code.
 
 For functional programming languages in particular, compiler intermediate representations are usually based on the #box[$lambda$-calculus] which corresponds to the natural deduction proof system by Gentzen @Gentzen1935a[ sec. II].
 More recently, however, Gentzen's sequent calculus @Gentzen1935a[ sec. III], or specifically its corresponding term assignment system, the #box[$lambda mu tilde(mu)$-calculus] @Curien2000, has been found to offer a compelling alternative basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
 In sequent-calculus-based intermediate representations, control flow and its duality to data flow are made explicit,
-which is especially suitable for compilers that handle advanced control operators and complex control-flow behavior.
+which is especially suitable for compilers that handle advanced control operators and complex control flow.
 
 The _Sequent Calculus Compiler (SCC)_ @Mueller2026 @Mueller2026scc follows this approach.
 It compiles a functional programming language to native machine code using sequent-calculus-based intermediate representations.
@@ -23,13 +23,13 @@ In the SCC, such computation contexts are made explicit with consumers that can 
 
 This provides an expressive and uniform representation of computation
 that can encode complex control effects (e.g. non-local exits, exceptions, generators).
-However, this expressiveness comes at a cost because the runtime system must support the generalized control flow behavior.
+However, this expressiveness comes at a cost because the runtime system must support the generalized control-flow behavior.
 
 This thesis is motivated by the observation that in many programs control flow is simple and continuations are _linear_, i.e. each continuation is used exactly once.
 In such cases, the additional runtime overhead that is needed to track complex continuation usage is unnecessary.
 If the compiler can statically prove that all continuations are linear, then it is possible to generate more efficient machine code for these cases.
 
-Concretely, we investigate linear continuations in the SCC and how they can be exploited for code generation.
+Therefore, we investigate linear continuations in the SCC and how they can be exploited for code generation.
 The central idea is to provide the low-level stages of the compilation pipeline with additional information about the linearity of continuations and use this information to optimize the memory layout and avoid unnecessary memory management operations at runtime.
 
 We implement the optimization as an extension to the existing SCC implementation @Mueller2026scc,
@@ -52,4 +52,4 @@ The remainder of this thesis is organized as follows:
 
 - In @ch:eval, we evaluate our approach with benchmarks and discuss the resulting performance improvements.
 
-- To conclude, in @ch:conclusion we summarize the results of this thesis and give directions on future work.
+- To conclude, in @ch:conclusion we summarize the results of this thesis and give directions for future work.
