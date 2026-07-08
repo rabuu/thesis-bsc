@@ -930,6 +930,11 @@ The treatment of (co)data and (co)variables is unified and appears in dual pairs
 $LET$ binds a constructor or destructor to a name and $SWITCH$ matches on it.
 $CREATE$ introduces a closure object with methods, which can be invoked with a destructor/constructor via $INVOKE$.
 
+Generally, a producer variable for data is introduced by $LET$.
+A producer variable for codata is introduced by $CREATE$.
+Dually, a continuation for data is introduced by $CREATE$,
+while a continuation for codata is introduced by $LET$.
+
 In #Fun and #Core, bound (co)variables may be used multiple times or not at all.
 In #AxCut, however, the context must be managed via explicit substitutions.
 The new #box[$SUBSTITUTE[Gamma := sigma]$] statement replaces the context with $Gamma$, which is constructed from currently active bindings.

@@ -522,9 +522,9 @@ The next step is to carry this information into #AxCut.
 A possible approach is again to restrict #AxCut to the exact image of the translation from restricted #Core.
 In this thesis, however, we choose a more general design:
 we extend #AxCut with explicit linearity annotations for both producers and consumers.
-This makes the intermediate representation usable for more general linearity-based optimizations beyond continuations.
+This makes the intermediate representation suitable for more general linearity-based optimizations beyond continuations.
 
-#AxCut unifies the treatment of producer and consumer (co)variables.
+#AxCut unifies the treatment of producers and consumers.
 A (co)variable is either introduced by $LET$ and consumed by $SWITCH$, or introduced by $CREATE$ and consumed by $INVOKE$.
 In both cases, it contains a reference to runtime data:
 for $LET$, tagged fields (of constructors and destructors);
@@ -562,65 +562,63 @@ At binding sites ($LET$, $CREATE$), quantity $omega$ means unrestricted usage an
 The same quantity is tracked in typing contexts.
 
 We also annotate $SWITCH$.
-This is not strictly necessary --- as it could be inferred from the context ---, but it makes subsequent code-generation translations more direct.
+This is not strictly necessary, as it could be inferred from the context, but it makes subsequent code-generation translations more direct.
 No additional annotation is needed for $INVOKE$, since code generation for it is independent of quantity.
 
-#note[TODO: example]
-// #example[
-//   Consider the following #Fun program that uses data and codata.
-//   #let (Unit, unit) = (`Unit`, `U`)
-//   #let Fun = `Fun`
-//
-//   #figure(pseudo(
-//     $DATA Unit sp { quad unit quad }$,
-//     $CODATA Fun sp { quad apply(u : Unit): Unit quad }$,
-//     $DEF f(): Unit sp {$,
-//     (
-//       $highlight(LET sp x, color: #green) = unit;$,
-//       $highlight(LET sp h, color: #blue) = NEW { quad apply(u) => U quad };$,
-//       $highlight(h.apply(g().apply(x)), color: #orange)$,
-//     ),
-//     $}$,
-//     $DEF g(): Fun { sp ... sp }$,
-//   ))
-//
-//   The green and blue fragments bind producers to variables.
-//   The orange fragment concerns control flow and continuation passing.
-//
-//   The corresponding #AxCut translation shows how $LET$ and $CREATE$ are used for both continuations and data.
-//
-//   #figure(pseudo(
-//     $DATA Unit sp { quad unit quad }$,
-//     $CODATA Fun { quad apply(x :^prd Unit, kappa :^cns Unit) quad }$,
-//     $DEF f(kappa_f :^cns Unit) sp {$,
-//     (
-//       $highlight(LET sp x, color: #green) = unit;$,
-//       $highlight(CREATE sp h, color: #blue) = () sp { sp apply(u, kappa_h) =>$,
-//       (
-//         $SUBSTITUTE [kappa_h := kappa_h];$,
-//         $INVOKE kappa_h sp U$,
-//       ),
-//       $};$,
-//       $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
-//       $highlight(CREATE sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
-//       (
-//         $LET u = U;$,
-//         $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
-//         $INVOKE h apply(u, kappa_f)$,
-//       ),
-//       $};$,
-//       $highlight(LET sp beta, color: #orange) = apply(x, alpha);$,
-//       $g(beta)$,
-//     ),
-//     $}$,
-//     $DEF g(kappa_g :^cns Fun) sp { sp ... sp }$,
-//   ))
-//
-//   In #AxCut, a producer variable for data (e.g. $u$) is introduced by $LET$.
-//   A producer variable for codata (e.g. $h$) is introduced by $CREATE$.
-//   Dually, a continuation for data (e.g. $alpha$) is introduced by $CREATE$,
-//   while a continuation for codata (e.g. $beta$) is introduced by $LET$.
-// ] <ex:lin:axcut:4intros>
+#example[
+  Consider the following #Fun program.
+
+  #let (Unit, unit) = (`Unit`, `U`)
+  #let Fn = `Fun`
+
+  #figure(pseudo(
+    $DATA Unit sp { quad unit quad }$,
+    $CODATA Fn sp { quad apply(u : Unit): Unit quad }$,
+    $DEF f(): Unit sp {$,
+    (
+      $highlight(LET sp x, color: #green) = unit;$,
+      $highlight(LET sp h, color: #blue) = NEW { quad apply(u) => U quad };$,
+      $highlight(h.apply(g().apply(x)), color: #orange)$,
+    ),
+    $}$,
+    $DEF g(): Fn { sp ... sp }$,
+  ))
+
+  The first two lines of $f$ bind producers to variables.
+  The third line concerns control flow and continuation passing.
+
+  Since the #Fun program does not use control operators, the continuations are known to be linear.
+  However, the compiler has no information about the linearity of producers.
+  Therefore, the translation to #AxCut annotates continuations with $1$ and producers with $omega$.
+  The corresponding modifications for the translation function are presented in @sec:lin:c2a.
+
+  #figure(pseudo(
+    $DATA Unit sp { quad unit quad }$,
+    $CODATA Fn { quad apply(x :^prd_omega Unit, kappa :^cns_1 Unit) quad }$,
+    $DEF f(kappa_f :^cns_1 Unit) sp {$,
+    (
+      $highlight(LET_omega sp x, color: #green) = unit;$,
+      $highlight(CREATE_omega sp h, color: #blue) = () sp { sp apply(u, kappa_h) =>$,
+      (
+        $SUBSTITUTE [kappa_h := kappa_h];$,
+        $INVOKE kappa_h sp U$,
+      ),
+      $};$,
+      $SUBSTITUTE [x := x, sp kappa_f := kappa_f, sp h := h];$,
+      $highlight(CREATE_1 sp alpha, color: #orange) = (kappa_f, sp h) sp { sp unit =>$,
+      (
+        $LET_omega sp u = U;$,
+        $SUBSTITUTE [u := u, sp kappa_f := kappa_f, sp h := h];$,
+        $INVOKE h apply(u, kappa_f)$,
+      ),
+      $};$,
+      $highlight(LET_1 sp beta, color: #orange) = apply(x, alpha);$,
+      $g(beta)$,
+    ),
+    $}$,
+    $DEF g(kappa_g :^cns_1 Fn) sp { sp ... sp }$,
+  ))
+] <ex:lin:axcut:4intros>
 
 === Type System
 The typing rules from @fig:scc:axcut:typing are adapted so that every linear binding is used exactly once in well-typed programs.
@@ -641,7 +639,7 @@ To formulate these rules, we first introduce a notation to separate linear and u
   Thus, $Gamma^omega$ contains exactly the unrestricted bindings and $Gamma^1$ the linear bindings of $Gamma$.
 ]
 
-The key enforcement point for the linearity of continuations is $SUBSTITUTE$, since that is where duplication and dropping can occur.
+The key enforcement point for linearity is $SUBSTITUTE$, since that is where duplication and dropping can occur.
 Therefore, rule #rn("Substitute") requires each linear variable in the current context to appear exactly once in the substitution list.
 
 Additionally, linear bindings must not be hidden inside unrestricted containers.
