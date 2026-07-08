@@ -22,7 +22,7 @@ The remaining computation after the call to $f$ --- namely "add 1 to the result"
 In the SCC, such computation contexts are made explicit with consumers that can be named, passed around, duplicated, and dropped.
 
 This provides an expressive and uniform representation of computation
-that can encode complex control effects (e.g. early returns, exceptions, asynchronous code).
+that can encode complex control effects (e.g. non-local exits, exceptions, generators).
 However, this expressiveness comes at a cost because the runtime system must support the generalized control flow behavior.
 
 This thesis is motivated by the observation that in many programs control flow is simple and continuations are _linear_, i.e. each continuation is used exactly once.
