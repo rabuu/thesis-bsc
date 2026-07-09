@@ -94,6 +94,8 @@ This thesis covers several related languages, each with its own syntax.
 To keep notation brief and consistent, shared concepts are written uniformly across sections.
 We first fix naming conventions that remain valid throughout the thesis.
 
+#pagebreak()
+
 #definition(title: "Naming Conventions")[
   - $x,y,...$ are _variable names_,
   - $alpha, beta, ...$ are _covariable names_,
@@ -481,28 +483,6 @@ In #Core, each binding is annotated with its chirality, i.e., whether it is a pr
 To keep the presentation concise, well-formedness rules for type declarations are omitted.
 We assume that all types and names that are used in the program are well-defined and unique.
 
-There is one judgment form per syntactic category:
-- #box($Theta mid Gamma tack p :^prd tau$) for producers,
-- #box($Theta mid Gamma tack c :^cns tau$) for consumers,
-- and #box($Theta mid Gamma tack s$) for statements.
-Statements, representing computation, have no type.
-$Theta$ is the global context that holds all top-level declarations and is often omitted in rules that do not mention it.
-$Gamma$ is the local context of in-scope (co)variable bindings.
-
-In #Core, we conceptually treat the typing context as a set.
-For typing, the order of bindings is irrelevant.
-Since (co)variables may be dropped or used multiple times, the rules #rn("Var") and #rn("Covar") only check whether the relevant binding is present in the context.
-
-The side-by-side presentation of the rules expose the language symmetry clearly:
-except for integer-specific rules, producer and consumer rules occur in dual pairs.
-
-The right activation rule #rn("Act-R") types a producer $mu alpha. s$ that abstracts over a consumer in its body.
-Dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ that abstracts over a producer in its body.
-In both cases, the abstracted (co)variable must have the same type as the abstraction, but with opposite chirality.
-
-#rn("Cut") enforces that the producer and consumer that meet in a cut have matching types.
-This ensures that they can meaningfully interact.
-
 #figure(
   kind: "Figure",
   supplement: "Figure",
@@ -641,6 +621,28 @@ This ensures that they can meaningfully interact.
     )
   ],
 ) <fig:scc:core:typing>
+
+There is one judgment form per syntactic category:
+- #box($Theta mid Gamma tack p :^prd tau$) for producers,
+- #box($Theta mid Gamma tack c :^cns tau$) for consumers,
+- and #box($Theta mid Gamma tack s$) for statements.
+Statements, representing computation, have no type.
+$Theta$ is the global context that holds all top-level declarations and is often omitted in rules that do not mention it.
+$Gamma$ is the local context of in-scope (co)variable bindings.
+
+In #Core, we conceptually treat the typing context as a set.
+For typing, the order of bindings is irrelevant.
+Since (co)variables may be dropped or used multiple times, the rules #rn("Var") and #rn("Covar") only check whether the relevant binding is present in the context.
+
+The side-by-side presentation of the rules expose the language symmetry clearly:
+except for integer-specific rules, producer and consumer rules occur in dual pairs.
+
+The right activation rule #rn("Act-R") types a producer $mu alpha. s$ that abstracts over a consumer in its body.
+Dually, the left activation rule #rn("Act-L") types a consumer $tilde(mu) x. s$ that abstracts over a producer in its body.
+In both cases, the abstracted (co)variable must have the same type as the abstraction, but with opposite chirality.
+
+#rn("Cut") enforces that the producer and consumer that meet in a cut have matching types.
+This ensures that they can meaningfully interact.
 
 == Translating #Fun to #Core <sec:scc:f2c>
 We now define the translation $f2c(dot)$ that maps direct-style #Fun to #Core with explicit continuations.
@@ -1591,6 +1593,8 @@ $
                                           &    && MOVE [Gamma' := sigma] \
                                           &    && a2m(s)
 $
+
+#pagebreak()
 
 ==== Machine Integers and Conditionals
 Literals, arithmetic, and conditionals map directly to machine instructions.

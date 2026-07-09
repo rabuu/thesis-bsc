@@ -145,6 +145,8 @@ which makes the approach applicable to linear data in general.
 In this thesis, however, we apply it only to linear continuations because they provide a simple but impactful entry point:
 it is sufficient to restrict control operators to statically prove that continuations are linear.
 
+#pagebreak()
+
 The following illustration shows how we modify the SCC pipeline in the rest of this thesis.
 #figure({
   import fletcher: diagram, edge, node, shapes
@@ -366,6 +368,7 @@ while constructors have no consumer fields.
 
 === Type System
 We now adapt typing for restricted #Core so that continuations are used exactly once.
+The typing rules are presented in @fig:lin:core:typing.
 
 The approach is inspired by linear type systems @Wadler1990linear, rooted in linear logic @Girard1987.
 Linearity is enforced as a structural property by restricting how the typing context can be used.
@@ -375,22 +378,6 @@ This is achieved by keeping the structural properties of the producer context $G
 the order and multiplicity of bound variables are irrelevant, and #rn("Var") only checks for the presence of a variable.
 In contrast, continuations must be used exactly once:
 they cannot be dropped and must be threaded through consumers and statements until they are type-checked by #rn("Covar").
-
-The typing rules are presented in @fig:lin:core:typing.
-They are based on @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
-Producers are typed in a producer-only context, while consumers and statements are typed with exactly one additional continuation binding in scope.
-Formally:
-- $Theta mid Gamma tack p :^prd tau$ types a producer,
-- $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$ types a consumer,
-- and $Theta mid Gamma, alpha :^cns tau tack s$ types a statement.
-Here, the comma separating the producer context from the continuation is part of the judgment syntax.
-
-This formulation makes continuation usage explicit.
-Producers cannot directly invoke continuations.
-If a producer contains a statement, it must first introduce a continuation (via $mu$ or copattern matching),
-and consumers and statements must use their continuation exactly once.
-
-Intuitively, there is only a single continuation that is tracked through every execution branch until it eventually appears in a function or destructor call, or on the right side of a cut.
 
 #figure(
   kind: "Figure",
@@ -510,6 +497,21 @@ Intuitively, there is only a single continuation that is tracked through every e
   ],
 ) <fig:lin:core:typing>
 
+The rules are based on @fig:scc:core:typing, but with judgments that explicitly track the unique continuation.
+Producers are typed in a producer-only context, while consumers and statements are typed with exactly one additional continuation binding in scope.
+Formally:
+- $Theta mid Gamma tack p :^prd tau$ types a producer,
+- $Theta mid Gamma, alpha :^cns tau tack c :^cns tau'$ types a consumer,
+- and $Theta mid Gamma, alpha :^cns tau tack s$ types a statement.
+Here, the comma separating the producer context from the continuation is part of the judgment syntax.
+
+This formulation makes continuation usage explicit.
+Producers cannot directly invoke continuations.
+If a producer contains a statement, it must first introduce a continuation (via $mu$ or copattern matching),
+and consumers and statements must use their continuation exactly once.
+
+Intuitively, there is only a single continuation that is tracked through every execution branch until it eventually appears in a function or destructor call, or on the right side of a cut.
+
 === Focusing and Shrinking
 The #Core transformations focusing (@app:form:focusing) and shrinking (@app:form:shrinking) preserve typability.
 Since continuation linearity is enforced by typing in restricted #Core, both transformations also preserve continuation linearity.
@@ -534,6 +536,8 @@ for $CREATE$, a closure object with environment and methods.
 If it is statically known that this data is used linearly, the memory management can be specialized.
 
 Therefore, we now annotate each binding with whether it is linear or unrestricted.
+
+#pagebreak()
 
 #definition(title: [Extended #AxCut])[
   #figure[
