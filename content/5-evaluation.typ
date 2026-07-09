@@ -94,8 +94,6 @@ the optimization's effect on long-running, real-world applications remains untes
   image("/resources/benchmarks/runtime.svg"),
 ) <fig:eval:results>
 
-#note[bigger numbers]
-
 @fig:eval:results shows the execution time of each benchmark for the baseline and optimizing compiler, sorted by relative speedup.
 The exact measurements for all benchmarks are provided in @app:bench.
 
