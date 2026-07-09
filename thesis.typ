@@ -138,18 +138,26 @@
   }
 })
 
-#show heading.where(level: 1): it => {
-  pagebreak-to()
-  pad(it, top: 3cm, bottom: 1cm)
+#{
+  show heading.where(level: 1): it => {
+    pagebreak-to()
+    pad(it, top: 3cm, bottom: 1cm)
+  }
+
+  include "content/1-introduction.typ"
+  include "content/2-scc.typ"
+  include "content/3-linear-continuations.typ"
+  include "content/4-codegen.typ"
+  include "content/5-evaluation.typ"
+  include "content/6-conclusion.typ"
 }
 
-#include "content/1-introduction.typ"
-#include "content/2-scc.typ"
-#include "content/3-linear-continuations.typ"
-#include "content/4-codegen.typ"
-#include "content/5-evaluation.typ"
-#include "content/6-conclusion.typ"
+#show heading.where(level: 1): it => {
+  pagebreak(weak: true)
+  pad(it, top: 1cm, bottom: 1cm)
+}
 
+#pagebreak-to()
 #bibliography(
   "references.yaml",
   style: "association-for-computing-machinery",
