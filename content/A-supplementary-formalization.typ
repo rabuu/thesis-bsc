@@ -1,9 +1,10 @@
 #import "/lib/lib.typ": *
 
 = Supplementary Formalization <app:form>
-#todo[TODO]
 
 == Typing Rules for #Fun <app:form:fun:typing>
+The following rules define the typing judgments for #Fun, as introduced in @sec:scc:fun.
+
 #figure(
   block(width: 100%)[
     #def-box[Producer Typing: $Theta mid Gamma tack p : tau$]
@@ -117,13 +118,10 @@
 )
 
 == The Focusing Transformation <app:form:focusing>
+This is the full definition of the focusing transformation, introduced in @sec:scc:focusing.
+
 #figure(
   block(width: 100%)[
-    #def-box[$focus(dot) : "Definition"_Core -> "Definition"_("Focused" Core)$]
-    $
-      focus(DEF f(Gamma) br(s)) & := && DEF f(Gamma) br(focus(s))
-    $
-
     #def-box[$focus(dot) : "Statement"_Core -> "Statement"_("Focused" Core)$]
     $
       focus(cut(p_1 + p_2, c)) & := && bind(p_1, lambda a_1. bind(p_2, lambda a_2. cut(a_1 + a_2, focus(c)))) \
@@ -136,30 +134,24 @@
 
     #def-box[$focus(dot) : "Producer"_Core -> "Producer"_("Focused" Core)$]
     $
-      focus(x) & := && x \
-      focus(mu alpha. s) & := && mu alpha. focus(s) \
-      focus(NEW br(D_1(Gamma_1) => s_1, ...)) & := && NEW br(D_1(Gamma_1) => focus(s_1), ...) \
-      focus(K(sigma)) &&& "does not occur" \
-      focus(n) & := && n \
-      focus(p_1 + p_2) &&& "does not occur"
+      focus(x) := x
+      quad quad focus(mu alpha. s) := mu alpha. focus(s)
+      quad quad focus(n) := n \
+      focus(NEW br(D_1(Gamma_1) => s_1, ...)) := NEW br(D_1(Gamma_1) => focus(s_1), ...) \
+      focus(K(sigma)) " and " focus(p_1 + p_2) quad "do not occur"
     $
 
     #def-box[$focus(dot) : "Consumer"_Core -> "Consumer"_("Focused" Core)$]
     $
-      focus(alpha) & := && alpha \
-      focus(tilde(mu) x. s) & := && tilde(mu) x. focus(s) \
-      focus(CASE br(K_1(Gamma_1) => s_1, ...)) & := && CASE br(K_1(Gamma_1) => focus(s_1), ...) \
-      focus(D(sigma)) &&& "does not occur" \
+      focus(alpha) := alpha
+      quad quad focus(tilde(mu) x. s) := tilde(mu) x. focus(s) \
+      focus(CASE br(K_1(Gamma_1) => s_1, ...)) := CASE br(K_1(Gamma_1) => focus(s_1), ...) \
+      focus(D(sigma)) quad "does not occur"
     $
-  ],
-)
 
-#figure(
-  block(width: 100%)[
     #def-box[$bind(dot, dot) : "Producer"_Core times ("Var" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
     $
-      bind(x, k) & := && k(x) \
-      bind(mu alpha. s, k) & := && cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
+      bind(x, k) := k(x) quad &&& quad bind(mu alpha. s, k) := cut(mu alpha. focus(s), tilde(mu) x. k(x)) \
       bind(K(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(K(overline(a)), tilde(mu) x. k(x))) \
       bind(NEW br(D_1(Gamma_1) => s_1, ...), k) & := && cut(NEW br(D_1(Gamma_1) => focus(s_1), ...), tilde(mu) x. k(x)) \
       bind(n, k) & := && cut(n, tilde(mu) x. k(x)) \
@@ -168,8 +160,7 @@
 
     #def-box[$bind(dot, dot) : "Consumer"_Core times ("Covar" -> "Statement"_("Focused" Core)) -> "Statement"_("Focused" Core)$]
     $
-      bind(alpha, k) & := && k(alpha) \
-      bind(tilde(mu) x. s, k) & := && cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
+      bind(alpha, k) := k(alpha) quad &&& quad bind(tilde(mu) x. s, k) := cut(mu alpha. k(alpha), tilde(mu) x. focus(s)) \
       bind(D(sigma), k) & := && bindargs(sigma, lambda overline(a). cut(mu alpha. k(alpha), D(overline(a)))) \
       bind(CASE br(K_1(Gamma_1) => s_1, ...), k) & := && cut(mu alpha. k(alpha), CASE br(K_1(Gamma_1) => focus(s_1), ...)) \
     $
@@ -184,56 +175,60 @@
 
 
 == The Shrinking Transformation <app:form:shrinking>
+This section defines the shrinking transformation, introduced in @sec:scc:shrinking.
 
-+ Inline all possible pairs of producers and consumers in cuts.
+In shrunk #Core, all producers and consumers are inlined into cuts.
+Many combinations are precluded by typing. Some others can be eliminated.
 
-+ Remove renaming:
-  #figure[
-    $
-      shrink(cut(mu alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
-      shrink(cut(y, tilde(mu)x. s)) & := && shrink(s[x mapsto y]) \
-      shrink(cut(K_j (sigma), CASE br(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
-      shrink(cut(NEW br(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
-    $
-  ]
+First, cuts that only rename terms can be removed.
+#figure[
+  $
+    shrink(cut(mu alpha. s, beta)) & := && shrink(s[alpha mapsto beta]) \
+    shrink(cut(y, tilde(mu)x. s)) & := && shrink(s[x mapsto y]) \
+    shrink(cut(K_j (sigma), CASE br(K_1(Gamma_1) => s_1, ...))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+    shrink(cut(NEW br(D_1(Gamma_1) => s_1, ...), D_j (sigma))) & := && shrink(s_j [Gamma_j mapsto sigma]) \
+  $
+]
 
-+ Remove critical pairs:
-  #figure[
-    $
-      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
-      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
-      "with" &&& DEF j(Gamma) br(shrink(s_2)) \
-      "and" &&& Gamma := "freeVars"(shrink(s_2)) \
-      shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(mu alpha. j(Gamma), D_1(Gamma_1)), ...), tilde(mu)x. shrink(s_2)) \
-      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
-      "with" &&& DEF j(Gamma) br(shrink(s_1)) \
-      "and" &&& Gamma := "freeVars"(shrink(s_1)) \
-    $
-  ]
+Critical pairs are resolved by $eta$-expanding one of the sides, depending on the polarity.
+#figure[
+  $
+    shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(mu alpha. shrink(s_1), CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), tilde(mu)x. j(Gamma)), ...))\
+    "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+    "with" &&& DEF j(Gamma) br(shrink(s_2)) \
+    "and" &&& Gamma := "freeVars"(shrink(s_2)) \
+    shrink(cut(mu alpha. s_1, tilde(mu)x. s_2)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(mu alpha. j(Gamma), D_1(Gamma_1)), ...), tilde(mu)x. shrink(s_2)) \
+    "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
+    "with" &&& DEF j(Gamma) br(shrink(s_1)) \
+    "and" &&& Gamma := "freeVars"(shrink(s_1)) \
+  $
+]
 
-+ Remove unknown cuts:
-  #figure[
-    $
-      shrink(cut(x, alpha)_T) & := && cut(x, CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
-      "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
-      shrink(cut(x, alpha)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
-      "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
-    $
-  ]
+Similarly, we can eliminate unknown cuts.
+#figure[
+  $
+    shrink(cut(x, alpha)_T) & := && cut(x, CASE br(K_1(Gamma_1) => cut(K_1(Gamma_1), alpha), ...)) \
+    "where" &&& DATA T br(K_1(Gamma_1), ...) in Theta \
+    shrink(cut(x, alpha)_T) & := && cut(NEW br(D_1(Gamma_1) => cut(x, D_1(Gamma_1)), ...), alpha) \
+    "where" &&& CODATA T br(D_1(Gamma_1), ...) in Theta \
+  $
+]
 
-+ Deal with built-in types:
+Special care must go into critical pairs and unknown cuts for built-in integers,
+because it is impossible to $eta$-expand them.
+This can be solved by wrapping integer continuations in a dedicated data type: $DATA "Cont" br("Ret"(x :^prd i64)) in Theta$.
 
-  Define $DATA "Cont" br("Ret"(x :^prd i64)) in Theta$
+Now, shrinking for integers works as follows.
 
-  #figure[
-    $
-      shrink(cut(mu alpha. s_1, tilde(mu) x. s_2)_i64) & := && cut(mu alpha. shrink(s_1), CASE br("Ret"(x) => shrink(s_2))) \
-      shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
-      shrink(cut(n, alpha)) & := && cut(n, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
-      shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
-    $
-    $
-      shrink(Gamma\, alpha :^cns i64) & := && shrink(Gamma), alpha :^cns "Cont" \
-          shrink(Gamma\, v :^chi tau) & := && shrink(Gamma), v :^chi tau
-    $
-  ]
+#figure[
+  $
+    shrink(cut(mu alpha. s_1, tilde(mu) x. s_2)_i64) & := && cut(mu alpha. shrink(s_1), CASE br("Ret"(x) => shrink(s_2))) \
+    shrink(cut(x, alpha)_i64) & := && cut("Ret"(x), alpha) \
+    shrink(cut(n, alpha)) & := && cut(n, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+    shrink(cut(x_1 + x_2, alpha)) & := && cut(x_1 + x_2, tilde(mu)x. cut("Ret"(x), alpha)) quad(x "fresh") \
+  $
+  $
+    shrink(Gamma\, alpha :^cns i64) & := && shrink(Gamma), alpha :^cns "Cont" \
+        shrink(Gamma\, v :^chi tau) & := && shrink(Gamma), v :^chi tau
+  $
+]

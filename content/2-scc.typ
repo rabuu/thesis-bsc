@@ -738,7 +738,7 @@ $GOTO$ discards the current continuation altogether and continues the translatio
 Before translating #Core to #AxCut, the SCC applies two normalization steps.
 Both transformations target a progressively smaller subset of #Core.
 
-=== Focusing
+=== Focusing <sec:scc:focusing>
 The focusing transformation $focus(dot)$ lifts complex subterms out of argument positions by binding them to a name.
 This is an extension of static focusing @Curien2000.
 The transformation is defined in @app:form:focusing.
@@ -819,7 +819,7 @@ The differences to @def:scc:core are highlighted.
   The focusing transformation lifts such complex terms out of argument position by introducing a covariable via a $mu$ abstraction, which names the intermediate computation.
 ] <ex:scc:focused>
 
-=== Shrinking
+=== Shrinking <sec:scc:shrinking>
 After focusing, the shrinking transformation $shrink(dot)$ reduces syntax further by inlining producers and consumers into cuts and then eliminating redundant cut patterns.
 
 Many cuts are ruled out directly by typing.
