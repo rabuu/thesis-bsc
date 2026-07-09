@@ -17,7 +17,7 @@
     inside: settings.margin-inside,
     outside: settings.margin-outside,
   ),
-  background: scaffolder.scaffolding(),
+  // background: scaffolder.scaffolding(),
 )
 
 #set text(
