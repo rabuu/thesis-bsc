@@ -478,7 +478,7 @@ In #Core, each binding is annotated with its chirality, i.e., whether it is a pr
 
 === Type System
 @fig:scc:core:typing shows the typing rules for #Core.
-To keep the presentation concise, well-formedness rules for programs and declarations are omitted.
+To keep the presentation concise, well-formedness rules for type declarations are omitted.
 We assume that all types and names that are used in the program are well-defined and unique.
 
 There is one judgment form per syntactic category:
@@ -508,13 +508,14 @@ This ensures that they can meaningfully interact.
   supplement: "Figure",
   caption: [Typing rules for #Core.],
   block(width: 100%)[
-    #def-box[Declaration Typing: $Theta tack delta$]
+    #def-box[Well-Formed Declarations: $Theta tack delta$]
     #rule-set(
       prooftree(rule(
         name: rn("Def"),
         $Theta mid Gamma tack s$,
         $Theta tack DEF f(Gamma) br(s)$,
       )),
+      $...$,
     )
 
     #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]

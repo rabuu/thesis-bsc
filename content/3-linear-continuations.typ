@@ -397,13 +397,14 @@ Intuitively, there is only a single continuation that is tracked through every e
   supplement: "Figure",
   caption: [Typing rules for restricted #Core.],
   block(width: 100%)[
-    #def-box[Declaration Typing: $Theta tack delta$]
+    #def-box[Well-Formed Declarations: $Theta tack delta$]
     #rule-set(
       prooftree(rule(
         name: rn("Def"),
         $Theta mid Gamma, alpha :^cns tau tack s$,
         $Theta tack DEF f(Gamma, alpha :^cns tau) br(s)$,
       )),
+      $...$,
     )
 
     #def-box[Producer Typing: $Theta mid Gamma tack p :^prd tau$]
