@@ -6,16 +6,13 @@
 }
 
 = Abstract
-#todo[TODO]
-
-The Sequent Calculus Compiler (SCC) uses sequent-calculus-based intermediate representations to compile a functional programming language to native machine code.
-Within the SCC, control flow is explicitly encoded using consumers.
-A continuation is a consumer that represents the remainder of a computation.
-In standard functional programs, each continuation is used linearly, i.e. exactly once.
-However, the SCC also supports control operators that break this linearity assumption.
-This thesis investigates how to statically track the linearity of continuations and exploit it to generate more efficient machine code, reducing both runtime overhead and memory usage.
-To achieve that, the memory allocation mechanisms are extended for linear usage of data.
-In this work, these improvements are only applied specifically to continuations, but serve as a foundation for more general use cases.
+The Sequent Calculus Compiler (SCC) compiles a functional programming language to machine code using intermediate representations based on the sequent calculus.
+Within the SCC, control flow is made explicit by representing continuations as first-class values.
+This enables expressive handling of complex control flow, but requires a memory management strategy general enough to support arbitrary continuation usage.
+However, in many functional programs control flow is simple: continuations are linear, i.e. invoked exactly once.
+This thesis investigates how programs with only linear continuations can be compiled into more efficient code by eliminating unnecessary memory management operations.
+Benchmarks show that this optimization measurably reduces runtime overhead,
+with the largest improvements for programs dominated by frequent function calls.
 
 #pagebreak()
 
@@ -23,23 +20,27 @@ In this work, these improvements are only applied specifically to continuations,
   #set text(lang: "de")
 
   = Zusammenfassung
-  #todo[TODO]
-
-  Der Sequent Calculus Compiler (SCC) nutzt Zwischenrepräsentationen, die auf dem Sequenzenkalkül basieren, um eine funktionale Programmiersprache in nativen Maschinencode zu übersetzen.
-  Im SCC wird der Kontrollfluss explizit durch sogenannte Consumer kodiert.
-  Eine Continuation ist ein Consumer, der den Rest einer Berechnung repräsentiert.
-  In einem normalen funktionalen Programm wird jede Continuation linear verwendet, also genau einmal.
-  Der SCC unterstützt jedoch auch Kontrolloperatoren, die dieser Linearitätsannahme widersprechen.
-  Diese Arbeit untersucht, wie sich die Linearität von Continuations statisch nachverfolgen lässt und wie sie zur Generierung effizienteren Maschinencodes genutzt werden kann,
-  um sowohl Laufzeit-Overhead als auch Arbeitsspeicherverbrauch zu reduzieren.
-  Dazu werden die Speicherallokationsmechanismen für den Gebrauch von linearen Daten erweitert.
-  In dieser Arbeit werden diese Optimierungen zunächst nur für Continuations umgesetzt, sie bilden jedoch eine Grundlage für weitergehende Anwendungen.
+  Der Sequent Calculus Compiler (SCC) übersetzt eine funktionale Programmiersprache in Maschinencode,
+  wobei Zwischendarstellungen verwendet werden, die auf dem Sequenzenkalkül basieren.
+  Im SCC wird Kontrollfluss explizit, indem Continuations direkt als Werte repräsentiert werden.
+  Das ermöglicht eine flexible Darstellung von komplexem Kontrollfluss,
+  erfordert jedoch eine Speicherverwaltungsstrategie, die allgemein genug ist,
+  um beliebige Verwendung von Continuations zu unterstützen.
+  Allerdings ist in vielen funktionalen Programmen der Kontrollfluss einfach:
+  Continuations sind linear, das heißt, sie werden genau einmal aufgerufen.
+  In dieser Arbeit wird untersucht, wie Programme mit ausschließlich linearen Continuations zu effizienterem Code kompiliert werden können,
+  indem unnötige Speicherverwaltungsoperationen eliminiert werden.
+  Benchmarks zeigen, dass diese Optimierung den Laufzeit-Overhead messbar reduziert,
+  wobei die größten Verbesserungen bei Programmen mit häufigen Funktionsaufrufen auftreten.
 ]
 
 #pagebreak-to()
 
 = Acknowledgments
-#todo[thank you]
+I would like to thank Philipp Schuster, Marius Müller, and Tim Süberkrüb for suggesting this topic, for the opportunity to work on it as my thesis, and for the great help throughout the entire process.
+
+I am also very grateful for the support from my family and friends, during this thesis and in general.
+Special thanks go to Leander and Annika!
 
 #pagebreak-to()
 
