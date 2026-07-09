@@ -198,7 +198,7 @@ $ACQUIRE_1$ removes the head of the linear free list and reestablishes the invar
 Compared to $ACQUIRE$, it does not initialize a reference count.
 
 $
-  ACQUIRE_1 sp r & := && MV r HEAP \
+  ACQUIRE_1 sp r & := && MV r HEAP && quad (l_1,l_2 "fresh") \
   & && LW HEAP NEXTBLOCKOFFSET HEAP \
   & && BNE HEAP #reg(0) l_1 \
   & && #hide[$l_1:$] MV HEAP TODO \
@@ -684,11 +684,11 @@ while a $1$ annotation selects the linear variants introduced above.
       a2m(LET_q sp v = X(Gamma_0)\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 \
       & && LI (REG_2 sp v) sp (INDEX X) \
       & && a2m(s) \
-      a2m(CREATE_q sp v = Gamma_0 sp b\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 \
+      a2m(CREATE_q sp v = Gamma_0 sp b\; s) & := && STORE_q sp (REG_1 sp v) sp Gamma_0 && quad quad (l "fresh") \
       & && LA (REG_2 sp v) sp l \
       & && a2m(s) \
       & && l: VTABLE_q sp b sp Gamma_0 \
-      a2m(SWITCH_q sp v sp b) & := && JR (REG_2 sp v) sp l \
+      a2m(SWITCH_q sp v sp b) & := && JR (REG_2 sp v) sp l && quad quad (l "fresh") \
       & && l: JTABLE_q sp b sp Gamma \
       a2m(INVOKE v sp X(Gamma)) & := && JR (REG_2 sp v) sp (INDEX X) \
     $

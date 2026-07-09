@@ -329,6 +329,12 @@ Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
         $f(sigma)$,
       ),
 
+      ($tau$, "Types"),
+      alt(
+        $i64$,
+        $T$,
+      ),
+
       ($sigma$, "Arguments"),
       alt(
         $empty$,
@@ -340,12 +346,6 @@ Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
       alt(
         $var(x)$,
         $covar(alpha)$,
-      ),
-
-      ($tau$, "Types"),
-      alt(
-        $i64$,
-        $T$,
       ),
 
       ($chi$, "Chirality"),
@@ -678,9 +678,9 @@ $GOTO$ discards the current continuation altogether and continues the translatio
 
     #def-box[$f2c(dot) : "Declaration"_Fun -> "Declaration"_Core$]
     $
-      f2c(DEF f(Gamma) : tau br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad(alpha "fresh") \
-      f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad(alpha_1, ... "fresh") \
-      f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...)
+      f2c(DEF f(Gamma) : tau br(p)) & := DEF f(Gamma, alpha :^cns tau) br(f2c(p, with: alpha)) quad && (alpha "fresh") \
+      f2c(DATA T br(K_1(Gamma_1), ...)) & := DATA T br(K_1(Gamma_1), ...) \
+      f2c(CODATA T br(D_1(Gamma_1): tau_1, ...)) & := CODATA T br(D_1(Gamma_1, alpha_1 :^cns tau_1), ...) quad && (alpha_1, ... "fresh") \
     $
 
     #def-box[$f2c(dot) : "Producer"_Fun -> "Producer"_Core$]
@@ -840,15 +840,21 @@ The result is a small statement-only fragment.
       alt(
         $cut(K(sigma), alpha)$,
         $cut(K(sigma), tilde(mu) x. s)$,
+      ),
+      alt(
         $cut(x, D(sigma))$,
         $cut(mu alpha. s, D(sigma))$,
       ),
       alt(
         $cut(x, CASE br(K(Gamma) => s, ...))$,
+      ),
+      alt(
         $cut(mu alpha. s, CASE br(K(Gamma) => s, ...))$,
       ),
       alt(
         $cut(NEW br(D(Gamma) => s, ...), alpha)$,
+      ),
+      alt(
         $cut(NEW br(D(Gamma) => s, ...), tilde(mu)x. s)$,
       ),
       alt(
@@ -878,7 +884,7 @@ It is close to shrunk #Core, but restructured to be more suitable for code gener
 There are two main differences to shrunk #Core.
 
 First, #AxCut merges dual constructs from #Core that have identical computational content @Ostermann2022.
-For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ binds a tagged variant to a name.
+For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ bind a tagged variant to a name.
 #AxCut represents such duals uniformly.
 As a consequence, the distinction between variables and covariables becomes less visible, syntactically and operationally.
 
@@ -1444,11 +1450,11 @@ Each additional reference increments it by one.
 
 $SHAREBLOCK$ increments the reference count of a block by $n$ if $r$ contains a non-null memory pointer.
 $
-  SHAREBLOCK r sp n & := && BEQ r #reg(0) l \
-                    &    && #hide[$l:$] LW TEMP REFCOUNTOFFSET r \
-                    &    && #hide[$l:$] ADDI TEMP TEMP n \
-                    &    && #hide[$l:$] SW TEMP REFCOUNTOFFSET sp r \
-                    &    && l: \
+  SHAREBLOCK r sp n & := && BEQ r #reg(0) l && quad (l "fresh") \
+  & && #hide[$l:$] LW TEMP REFCOUNTOFFSET r \
+  & && #hide[$l:$] ADDI TEMP TEMP n \
+  & && #hide[$l:$] SW TEMP REFCOUNTOFFSET sp r \
+  & && l: \
 $
 
 $SHAREFIELDS$ applies #box[$SHAREBLOCK f sp 1$] to each child field pointer $f$ in a block.
@@ -1458,15 +1464,15 @@ $ERASEBLOCK$ checks whether a memory block has a reference count of #imm(0):
 if yes, it prepends the block to the lazy free list (but without erasing its children);
 if not, it decrements the reference count.
 $
-  ERASEBLOCK r & := && BEQ r #reg(0) l_1 \
-               &    && #hide[$l_1:$] LW TEMP REFCOUNTOFFSET r \
-               &    && #hide[$l_1:$] BEQ TEMP #reg(0) l_2 \
-               &    && #hide[$l_1:$] #hide[$l_2:$] ADDI TEMP TEMP #imm(-1) \
-               &    && #hide[$l_1:$] #hide[$l_2:$] SW TEMP REFCOUNTOFFSET r \
-               &    && #hide[$l_1:$] #hide[$l_2:$] JUMP l_1 \
-               &    && #hide[$l_1:$] l_2: SW TODO NEXTBLOCKOFFSET r \
-               &    && #hide[$l_1:$] #hide[$l_2:$] MV TODO r \
-               &    && l_1: \
+  ERASEBLOCK r & := && BEQ r #reg(0) l_1 && quad (l_1,l_2 "fresh") \
+  & && #hide[$l_1:$] LW TEMP REFCOUNTOFFSET r \
+  & && #hide[$l_1:$] BEQ TEMP #reg(0) l_2 \
+  & && #hide[$l_1:$] #hide[$l_2:$] ADDI TEMP TEMP #imm(-1) \
+  & && #hide[$l_1:$] #hide[$l_2:$] SW TEMP REFCOUNTOFFSET r \
+  & && #hide[$l_1:$] #hide[$l_2:$] JUMP l_1 \
+  & && #hide[$l_1:$] l_2: SW TODO NEXTBLOCKOFFSET r \
+  & && #hide[$l_1:$] #hide[$l_2:$] MV TODO r \
+  & && l_1: \
 $
 
 $ERASEFIELDS$ applies #box[$ERASEBLOCK f$] to all child field pointers $f$.
@@ -1485,19 +1491,19 @@ Before this block can be reused, its children must be erased by $ERASEFIELDS$.
 Finally, if the lazy free list is also empty, a new block is obtained using bump allocation.
 
 $
-  ACQUIRE r & := && MV r HEAP \
-            &    && LW HEAP NEXTBLOCKOFFSET HEAP \
-            &    && BEQ HEAP #reg(0) l_1 \
-            &    && #hide[$l_1:$] SW #reg(0) REFCOUNTOFFSET r \
-            &    && #hide[$l_1:$] JUMP l_2 \
-            &    && l_1: MV HEAP TODO \
-            &    && #hide[$l_1:$] LW TODO NEXTBLOCKOFFSET TODO \
-            &    && #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
-            &    && #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) NEXTBLOCKOFFSET HEAP \
-            &    && #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
-            &    && #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
-            &    && #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
-            &    && l_2: \
+  ACQUIRE r & := && MV r HEAP && quad (l_1,l_2,l_3 "fresh") \
+  & && LW HEAP NEXTBLOCKOFFSET HEAP \
+  & && BEQ HEAP #reg(0) l_1 \
+  & && #hide[$l_1:$] SW #reg(0) REFCOUNTOFFSET r \
+  & && #hide[$l_1:$] JUMP l_2 \
+  & && l_1: MV HEAP TODO \
+  & && #hide[$l_1:$] LW TODO NEXTBLOCKOFFSET TODO \
+  & && #hide[$l_1:$] BEQ TODO #reg(0) l_3 \
+  & && #hide[$l_1:$] #hide[$l_3:$] SW #reg(0) NEXTBLOCKOFFSET HEAP \
+  & && #hide[$l_1:$] #hide[$l_3:$] ERASEFIELDS HEAP \
+  & && #hide[$l_1:$] #hide[$l_3:$] JUMP l_2 \
+  & && #hide[$l_1:$] l_3: ADDI TODO HEAP #imm(32) \
+  & && l_2: \
 $
 
 ==== Store
@@ -1524,15 +1530,15 @@ Otherwise, it cannot be freed.
 Instead, its reference count is decremented, and its children are shared, since the values loaded into the registers now hold additional references to them.
 
 $
-  RELEASE r & := && LW TEMP REFCOUNTOFFSET r \
-            &    && BEQ TEMP #reg(0) l_1 \
-            &    && #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
-            &    && #hide[$l_1:$] SW TEMP REFCOUNTOFFSET sp r \
-            &    && #hide[$l_1:$] SHAREFIELDS r \
-            &    && #hide[$l_1:$] JUMP l_2 \
-            &    && l_1: SW HEAP NEXTBLOCKOFFSET sp r \
-            &    && #hide[$l_1:$] MV HEAP r \
-            &    && l_2: \
+  RELEASE r & := && LW TEMP REFCOUNTOFFSET r && quad (l_1,l_2 "fresh") \
+  & && BEQ TEMP #reg(0) l_1 \
+  & && #hide[$l_1:$] ADDI TEMP TEMP #imm(-1) \
+  & && #hide[$l_1:$] SW TEMP REFCOUNTOFFSET sp r \
+  & && #hide[$l_1:$] SHAREFIELDS r \
+  & && #hide[$l_1:$] JUMP l_2 \
+  & && l_1: SW HEAP NEXTBLOCKOFFSET sp r \
+  & && #hide[$l_1:$] MV HEAP r \
+  & && l_2: \
 $
 
 ==== Load
@@ -1593,7 +1599,7 @@ $
   & && a2m(s) \
   a2m(v <- v_1 + v_2\; sp s) & := && ADD (REG_2 sp v) sp (REG_2 sp v_1) sp (REG_2 sp v_2) \
   & && a2m(s) \
-  a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l \
+  a2m(IF v equiv 0 br(s_1) ELSE br(s_2)) & := && BEQ (REG_2 sp v) #reg(0) l && quad (l "fresh") \
   & && #hide[$l:$] a2m(s_2) \
   & && l: a2m(s_1) \
 $
@@ -1612,13 +1618,13 @@ $INDEX X$ is the jump-table byte offset of tag $X$ (constructor/destructor posit
 $LET$-bound (co)variables in #AxCut are consumed by pattern matches using the $SWITCH$ statement.
 The translation function turns it into an indirect jump into a generated jump table.
 $
-  a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l \
+  a2m(SWITCH v sp b) & := && JR (REG_2 sp v) sp l & quad quad (l "fresh") \
                      &    && l: JTABLE b sp Gamma \
 $
 
 Jump tables are defined as follows.
 $
-  JTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma & := && overline(JUMP l_i) \
+  JTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma & := && overline(JUMP l_i) && (overline(l_i) "fresh") \
   &&& JTABLEB br(overline(X_i (Gamma_i) => s_i)) sp Gamma sp overline(l_i) \
   JTABLEB br(X_1(Gamma_1) => s_1, b) sp Gamma sp \(l_1, overline(l)\) & := && l_1: LOAD (REG_1 sp x) sp Gamma_1 #h(4em) && (x "fresh after" Gamma) \
   &&& #hide[$l_1:$] a2m(s_1) \
@@ -1634,16 +1640,16 @@ The pointer to the environment is stored in the first component of the created (
 and the instruction pointer to the virtual table in the second.
 
 $
-  a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 \
-                                      &    && LA (REG_2 sp v) sp l \
-                                      &    && a2m(s) \
-                                      &    && l: VTABLE b sp Gamma_0 \
+  a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 && quad quad (l "fresh") \
+  & && LA (REG_2 sp v) sp l \
+  & && a2m(s) \
+  & && l: VTABLE b sp Gamma_0 \
 $
 
 Virtual tables are defined as follows.
 
 $
-  VTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma_0 & := && overline(JUMP l_i) \
+  VTABLE br(overline(X_i (Gamma_i) => s_i)) sp Gamma_0 & := && overline(JUMP l_i) && (overline(l_i) "fresh") \
   &&& VTABLEB br(overline(X_i (Gamma_i) => s_i)) sp Gamma_0 sp overline(l_i) \
   VTABLEB br(X_1(Gamma_1) => s_1, b) sp Gamma sp \(l_1, overline(l)\) & := && l_1: LOAD (REG_1 sp x) sp Gamma_0 #h(4em) && (x "fresh after" Gamma_1) \
   &&& #hide[$l_1:$] a2m(s_1) \
