@@ -142,7 +142,7 @@ would require significantly more bookkeeping and analysis infrastructure, which 
 Moreover, the low-level optimization is conceptually not limited to continuations.
 The relevant memory-management mechanisms are identical for producers and consumers,
 which makes the approach applicable to linear data in general.
-In this thesis, however, we apply it only to linear continuations, because they provide a simple but impactful entry point:
+In this thesis, however, we apply it only to linear continuations because they provide a simple but impactful entry point:
 it is sufficient to restrict control operators to statically prove that continuations are linear.
 
 The following illustration shows how we modify the SCC pipeline in the rest of this thesis.
@@ -280,7 +280,7 @@ Only the rules involving $LABEL$, $GOTO$ and covariables are removed.
 After restricting #Fun, we must retain this linearity information in the next stage: #Core.
 
 One possible approach would be to extend #Core with explicit linearity annotations on continuations, or even all (co)variables.
-That approach is more general which could be appealing, but it would require a considerably more complex linear type system.
+That approach is more general, which could be appealing, but it would require a considerably more complex linear type system.
 
 In this thesis, we choose instead to restrict #Core to a fragment where continuation linearity is guaranteed by construction.
 Unlike in #Fun, this cannot be done by simply removing some control operators.
@@ -728,7 +728,7 @@ The additional premises for linear continuations are highlighted.
 == Extending the Translation from #Core to #AxCut <sec:lin:c2a>
 With linearity-aware #AxCut in place, the translation can preserve and expose the continuation information from restricted #Core.
 Since all continuations in restricted #Core are linear, the translation marks them with quantity $1$.
-All producers, however, are marked with $omega$, because we have no static information about them.
+All producers, however, are marked with $omega$ because we have no static information about them.
 
 #figure(
   kind: "Figure",

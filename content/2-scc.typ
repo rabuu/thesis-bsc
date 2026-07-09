@@ -90,7 +90,7 @@ It is not intended to be a production language, but a compact vehicle for demons
 In particular, its support for control operators makes it well suited for studying how complex control flow is represented and compiled.
 
 === Syntax
-This thesis covers several related languages, each with their own syntax.
+This thesis covers several related languages, each with its own syntax.
 To keep notation brief and consistent, shared concepts are written uniformly across sections.
 We first fix naming conventions that remain valid throughout the thesis.
 
@@ -384,7 +384,7 @@ Many constructs from #Fun reappear in #Core, adapted to its two-sided structure.
 #Core has three separate syntactic categories for terms: producers, consumers, and statements (also known as commands).
 Producers and consumers describe how data can be introduced and eliminated;
 statements drive computation.
-The central computational form is the cut $cut(p, c)$ where a matching pair of a producer and a consumer interact.
+The central computational form is the cut $cut(p, c)$, where a matching producer and consumer interact.
 
 A defining property of #Core is its producer/consumer symmetry.
 For (co)data, constructs appear in dual pairs: constructors and destructors, pattern matches and copattern matches.
@@ -402,7 +402,7 @@ $tilde(mu) x. s$ is a consumer that captures the current producer and binds it a
 The ability for producers and consumers to abstract over the other side of a cut is central to the language,
 and subsumes control operators and $LET$-bindings in #Fun.
 
-In #Core, each binding is annotated with its chirality, i.e. whether it is a producer ($prd$) or consumer ($cns$).
+In #Core, each binding is annotated with its chirality, i.e., whether it is a producer ($prd$) or consumer ($cns$).
 
 #example[
   This is the #Core equivalent of @ex:scc:fun.
@@ -470,7 +470,7 @@ In #Core, each binding is annotated with its chirality, i.e. whether it is a pro
   Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
 
   This change is also reflected at the call site of functions or destructors.
-  Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as continuation.
+  Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as the continuation.
 
   In $f$, the $tilde(mu)$ abstraction binds producers to variables.
   This corresponds directly to $LET$-bindings in #Fun.
@@ -745,7 +745,7 @@ The transformation is defined in @app:form:focusing.
 
 The resulting fragment resembles A-normal form @Flanagan1993anf @Binder2022anf:
 arguments are restricted to variables and covariables.
-The differences to @def:scc:core are highlighted.
+The differences from @def:scc:core are highlighted.
 
 #definition(title: [Focused #Core])[
   #figure[
@@ -825,7 +825,7 @@ After focusing, the shrinking transformation $shrink(dot)$ reduces syntax furthe
 Many cuts are ruled out directly by typing.
 Trivial naming cuts are removed by renaming.
 Critical pairs ($mu$ against $tilde(mu)$) are resolved by $eta$-expanding one side.
-The choice which side to expand corresponds to the evaluation strategy:
+The choice of which side to expand corresponds to the evaluation strategy:
 we choose call-by-value for data and call-by-name for codata to ensure that all $eta$-laws hold @Binder2024grokking.
 Unknown cuts (variable against covariable) are also handled by $eta$-expansion.
 The full definition is in @app:form:shrinking.
@@ -877,7 +877,7 @@ It is close to shrunk #Core, but restructured to be more suitable for code gener
 There are two main differences to shrunk #Core.
 
 First, #AxCut merges dual constructs from #Core that have identical computational content @Ostermann2022.
-For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ bind a tagged variant to a name.
+For example, both $cut(K(sigma), tilde(mu)x. s)$ and $cut(mu alpha. s, D(sigma))$ binds a tagged variant to a name.
 #AxCut represents such duals uniformly.
 As a consequence, the distinction between variables and covariables becomes less visible, syntactically and operationally.
 
@@ -927,7 +927,7 @@ Conditionals and calls to top-level definitions remain unchanged.
 Integers and arithmetic have separate syntactic constructs.
 
 The treatment of (co)data and (co)variables is unified and appears in dual pairs.
-$LET$ binds a constructor or destructor to a name and $SWITCH$ matches on it.
+$LET$ binds a constructor or destructor to a name, and $SWITCH$ matches on it.
 $CREATE$ introduces a closure object with methods, which can be invoked with a destructor/constructor via $INVOKE$.
 
 Generally, a producer variable for data is introduced by $LET$.
@@ -1243,7 +1243,7 @@ We use the following subset of #RISC-V.
 ] <def:scc:riscv>
 
 In #RISC-V, there are 32 registers, each containing one word.
-The register #reg(0) always holds the value #imm(0), all other registers are general-purpose.
+The register #reg(0) always holds the value #imm(0)\; all other registers are general-purpose.
 A program is a sequence of instructions.
 Labels may be attached to instructions and referenced as jump destinations.
 
@@ -1260,7 +1260,7 @@ There are four instructions for jumping.
 The destination of the unconditional jump $JUMP$ is specified directly, whereas the indirect jump $JR$ computes it by adding an immediate offset to the address in its register operand.
 The conditional branching instructions $BEQ$ and $BNE$ compare the values of the two register operands:
 $BEQ$ jumps to the given destination if they are equal, $BNE$ if they are not;
-otherwise the execution just continues.
+otherwise, the execution just continues.
 
 === The Runtime Model
 #AxCut already resembles the low-level execution model closely.
@@ -1293,7 +1293,7 @@ Each (co)variable occupies two registers.
 Register #reg(0) is constant #imm(0), $TEMP$ is a scratch register, $HEAP$ and $TODO$ are used for memory management.
 All other registers are mapped to context bindings.
 
-For each (co)variable $v$ in the context, we denote its corresponding first register by $REG_1 sp v$ and its corresponding second register as $REG_2 sp v$.
+For each (co)variable $v$ in the context, we denote its corresponding first register by $REG_1 sp v$ and its corresponding second register by $REG_2 sp v$.
 
 There is only a limited number of registers (32 in #RISC-V), which means, in practice, sometimes not all (co)variables can be stored in registers.
 We ignore this restriction in this thesis, but this is solved by spilling any additional (co)variables to memory.
@@ -1304,7 +1304,7 @@ In particular, $LET$ stores constructor/destructor fields in memory, and $CREATE
 Therefore, code generation requires automatic memory management.
 
 The SCC uses heap-only allocation with constant-time reference counting @Lam2024.
-This means, memory is conceptually partitioned into equal-sized blocks that are allocated and freed individually.
+This means memory is conceptually partitioned into equal-sized blocks that are allocated and freed individually.
 Each block contains eight slots --- one slot is one word --- and two slots form a field.
 
 #figure(cetz.canvas({
@@ -1393,7 +1393,7 @@ This region is automatically allocated at program initialization and consists en
 ==== Memory Layout
 In both free lists, the first slot of each block stores the pointer to the next block.
 $ NEXTBLOCKOFFSET := #imm(0) $
-The last block of the linear free list stores a #imm(0) in its first slot,
+The last block of the linear free list stores a #imm(0) in its first slot;
 the last block of the lazy free list points to the unused memory region.
 
 When a block is allocated, its first field contains metadata.
@@ -1473,7 +1473,7 @@ $ERASEFIELDS$ applies #box[$ERASEBLOCK f$] to all child field pointers $f$.
 ==== Acquire
 $ACQUIRE$ allocates a new memory block.
 More precisely, it removes the first block from the linear free list, initializes its reference count to #imm(0), and stores a pointer to the block in the register $r$.
-It then reestablishes the invariant that $HEAP$ always points a block that can be allocated immediately.
+It then reestablishes the invariant that $HEAP$ always points to a block that can be allocated immediately.
 
 In the best case, the linear free list contains another block
 and $HEAP$ is simply updated to point to the next block in the list.
@@ -1514,7 +1514,7 @@ $
 Here, $OFFSET_1 sp v$ and $OFFSET_2 sp v$ denote the offsets within a memory block that correspond to the first and second components of the (co)variable $v$, respectively.
 
 If $Gamma$ contains more bindings than can fit into a single memory block, multiple blocks are chained together.
-The details of this mechanism are not relevant to this thesis and therefore omitted.
+The details of this mechanism are not relevant to this thesis and are therefore omitted.
 
 ==== Release
 $RELEASE$ is used to free a memory block that is loaded into registers.
@@ -1628,9 +1628,9 @@ The tag selects the entry of the jump table; each entry reloads the fields from 
 
 ==== Objects and Invocations
 $CREATE$ allocates a closure object.
-It stores the captured environment to memory and generates a virtual table.
+It stores the captured environment in memory and generates a virtual table.
 The pointer to the environment is stored in the first component of the created (co)variable,
-the instruction pointer to the virtual table in the second.
+and the instruction pointer to the virtual table in the second.
 
 $
   a2m(CREATE v = Gamma_0 sp b\; sp s) & := && STORE (REG_1 sp v) sp Gamma_0 \

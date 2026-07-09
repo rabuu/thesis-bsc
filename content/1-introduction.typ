@@ -6,7 +6,7 @@ through a sequence of intermediate representations and transformations.
 The choice of these intermediate representations is a central design decision in compiler #box[construction:]
 they should be expressive enough for analysis and optimizations, while being suitable for generating efficient low-level machine code.
 
-For functional programming languages in particular, compiler intermediate representations are usually based on the #box[$lambda$-calculus] which corresponds to the natural deduction proof system by Gentzen @Gentzen1935a[ sec. II].
+For functional programming languages in particular, compiler intermediate representations are usually based on the #box[$lambda$-calculus], which corresponds to the natural deduction proof system by Gentzen @Gentzen1935a[ sec. II].
 More recently, however, Gentzen's sequent calculus @Gentzen1935a[ sec. III], or specifically its corresponding term assignment system, the #box[$lambda mu tilde(mu)$-calculus] @Curien2000, has been found to offer a compelling alternative basis for compiler design @Binder2024grokking @Downen2016sequent @Schuster2025 @Mueller2026.
 In sequent-calculus-based intermediate representations, control flow and its duality to data flow are made explicit,
 which is especially suitable for compilers that handle advanced control operators and complex control flow.
@@ -16,16 +16,16 @@ It compiles a functional programming language to native machine code using seque
 A key design feature of the SCC is that control flow is made explicit with first-class _consumers_
 that represent _continuations_ of computation.
 
-Consider this simple term, where a function $f$ is called and then $1$ is added to the result.
+Consider this simple term, where a function $f$ is called, and then $1$ is added to the result.
 $ f(x) + 1 $
 The remaining computation after the call to $f$ --- namely "add 1 to the result" --- is the continuation of $f$.
 In the SCC, such computation contexts are made explicit with consumers that can be named, passed around, duplicated, and dropped.
 
 This provides an expressive and uniform representation of computation
-that can encode complex control effects (e.g. non-local exits, exceptions, generators).
+that can encode complex control effects (e.g., non-local exits, exceptions, generators).
 However, this expressiveness comes at a cost because the runtime system must support the generalized control-flow behavior.
 
-This thesis is motivated by the observation that in many programs control flow is simple and continuations are _linear_, i.e. each continuation is used exactly once.
+This thesis is motivated by the observation that in many programs control flow is simple and continuations are _linear_, i.e., each continuation is used exactly once.
 In such cases, the additional runtime overhead that is needed to track complex continuation usage is unnecessary.
 If the compiler can statically prove that all continuations are linear, then it is possible to generate more efficient machine code for these cases.
 

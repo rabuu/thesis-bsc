@@ -3,7 +3,7 @@
 = Evaluation <ch:eval>
 This chapter evaluates the impact of the compiler optimization presented in @ch:lin and @ch:codegen.
 The evaluation focuses exclusively on execution time;
-other aspects affected by the optimization such as code size and memory usage are likely to improve as well, but are not evaluated here.
+other aspects affected by the optimization, such as code size and memory usage, are likely to improve as well, but are not evaluated here.
 To quantify the effect of our approach,
 we compare the performance of programs compiled with the optimizing compiler against programs compiled with the original compiler.
 

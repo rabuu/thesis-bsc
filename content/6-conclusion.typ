@@ -21,7 +21,7 @@ with substantial speedups for programs involving frequent function calls.
 Although this thesis applies the extensions to #AxCut and code generation only to linear continuations, they are not specific to continuations.
 The backend is already suited to generating more efficient code for arbitrary linear data, including producers.
 However, to make full use of this, the compiler requires more static information about linearity than #Fun and #Core currently provide.
-One way to obtain more information would be to design more elaborate, linear type systems for #Fun and #Core.
+One way to obtain more information would be to design more elaborate linear type systems for #Fun and #Core.
 An alternative, requiring no changes to the compiler frontend, would be to add a linearity detection pass to #AxCut that identifies exactly
 which bindings are used linearly by tracking whether they are duplicated or dropped.
 

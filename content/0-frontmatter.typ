@@ -9,7 +9,7 @@
 The Sequent Calculus Compiler (SCC) compiles a functional programming language to machine code using intermediate representations based on the sequent calculus.
 Within the SCC, control flow is made explicit by representing continuations as first-class values.
 This enables expressive handling of complex control flow, but requires a memory management strategy general enough to support arbitrary continuation usage.
-However, in many functional programs control flow is simple: continuations are linear, i.e. invoked exactly once.
+However, in many functional programs control flow is simple: continuations are linear, i.e., invoked exactly once.
 This thesis investigates how programs with only linear continuations can be compiled into more efficient code by eliminating unnecessary memory management operations.
 Benchmarks show that this optimization measurably reduces runtime overhead,
 with the largest improvements for programs dominated by frequent function calls.

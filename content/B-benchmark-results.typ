@@ -1,10 +1,10 @@
 #import "/lib/lib.typ": *
 
 = Detailed Benchmark Results <app:bench>
-The following table lists all bechmarking results, discussed in @ch:eval.
+The following table lists all benchmark results discussed in @ch:eval.
 
 For every benchmark, we measured mean execution time ($mu$) and standard deviation ($sigma$)
-over ten runs, for both the baseline (base) and optimizing compiler (opt).
+over ten runs, for both the baseline (base) and the optimizing compiler (opt).
 
 #figure(table(
   columns: 6,

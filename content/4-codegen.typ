@@ -134,7 +134,7 @@ But loading $a_1$ first overwrites the block pointer register, which is still ne
 In both directions, the deadlock comes from the same source:
 in the original layout (@fig:scc:codegen:layout), the first slot has a double role.
 It stores the pointer to the next block of the free list,
-but it also corresponds to the first register of the (co)variable which contains the pointer to the block itself.
+but it also corresponds to the first register of the (co)variable, which contains the pointer to the block itself.
 
 == Changing the Memory Layout
 To resolve this deadlock, the layout must be changed so metadata and payload do not compete for the same critical slot.
@@ -323,7 +323,7 @@ First, store all non-conflicting slots: the latter three fields and the very fir
 
 Two steps remain: write $a_2$ and call $ACQUIRE_1$.
 Now, there is no deadlock, but the order is fixed.
-$ACQUIRE_1$ must come first, otherwise writing $a_2$ would destroy the free-list pointer before the $HEAP$ invariant is restored.
+$ACQUIRE_1$ must come first; otherwise writing $a_2$ would destroy the free-list pointer before the $HEAP$ invariant is restored.
 
 #figure(cetz.canvas({
   import cetz.draw: *
@@ -551,7 +551,7 @@ First load the non-conflicting slots, which are all but the very first slot ($a_
 
 The first slot cannot be loaded directly, because that would overwrite the memory block pointer register.
 But at this point, we can safely call $RELEASE_1$:
-it writes the `next` pointer to the second slot which has already been loaded.
+it writes the `next` pointer to the second slot, which has already been loaded.
 
 #figure(cetz.canvas({
   import cetz.draw: *
