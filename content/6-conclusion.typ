@@ -4,10 +4,10 @@
 
 == Summary
 In this thesis, we presented an optimization for the Sequent Calculus Compiler that exploits linear continuations to improve code generation.
-We showed that the SCC represents local control flow as continuations that are used linearly,
-which enables a more efficient memory representation and management strategy.
+We showed that the SCC represents local control flow with linear continuations,
+which enable a more efficient memory representation and management strategy.
 
-To make this optimization possible, we restricted the surface language #Fun by excluding control operators,
+To make the optimization possible, we restricted the surface language #Fun by excluding control operators,
 and identified the corresponding fragment of #Core in which all continuations are linear.
 We extended #AxCut with linearity annotations to preserve this information.
 Based on these annotations, we adapted code generation to distinguish between linear and unrestricted memory,
@@ -22,7 +22,7 @@ Although this thesis applies the extensions to #AxCut and code generation only t
 The backend is already suited to generating more efficient code for arbitrary linear data, including producers.
 However, to make full use of this, the compiler requires more static information about linearity than #Fun and #Core currently provide.
 One way to obtain more information would be to design more elaborate linear type systems for #Fun and #Core.
-An alternative, requiring no changes to the compiler frontend, would be to add a linearity detection pass to #AxCut that identifies exactly
+An alternative, requiring no changes to the compiler frontend, would be to add a linearity detection pass for #AxCut that identifies exactly
 which bindings are used linearly by tracking whether they are duplicated or dropped.
 
 Since the optimization is currently implemented and evaluated only for the x86-64 backend, an obvious next step is to extend it to the other backends (#RISC-V and AArch64).

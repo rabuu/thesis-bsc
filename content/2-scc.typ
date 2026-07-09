@@ -469,7 +469,7 @@ In #Core, each binding is annotated with its chirality, i.e., whether it is a pr
   (here $kappa$ for functions and $alpha$ for destructors).
   Computation proceeds by explicitly invoking or forwarding the continuation rather than returning a result.
 
-  This change is also reflected at the call site of functions or destructors.
+  This change is also reflected at the call site of functions and destructors.
   Instead of receiving a returned value and using it, a consumer is passed directly as an argument to the called function or destructor, acting as the continuation.
 
   In $f$, the $tilde(mu)$ abstraction binds producers to variables.
@@ -817,7 +817,7 @@ The differences from @def:scc:core are highlighted.
   ]
 
   In @ex:scc:core, the inner pattern match appears directly as an argument to $apply(#none)$.
-  The focusing transformation lifts such complex terms out of argument position by introducing a covariable via a $mu$ abstraction, which names the intermediate computation.
+  The focusing transformation lifts the complex terms out of argument position by introducing a covariable via a $mu$ abstraction, which names the intermediate computation.
 ] <ex:scc:focused>
 
 === Shrinking <sec:scc:shrinking>
@@ -1020,7 +1020,7 @@ To allow for a compact presentation of dual rules, we relate polarity and chiral
   $
 ]
 
-The #AxCut type system is ordered: the context is strictly treated as a list.
+The #AxCut type system is ordered: the context is treated strictly as a list.
 Context manipulation is done through statements.
 
 #rn("Substitute") makes this explicit.
@@ -1274,7 +1274,7 @@ otherwise, the execution just continues.
 Its context state corresponds to the register state during execution.
 
 Some registers are reserved for special purposes.
-All remaining registers encode currently active (co)variable bindings.
+All remaining registers encode currently in-scope (co)variable bindings.
 Each (co)variable occupies two registers.
 
 #figure(cetz.canvas({
@@ -1558,7 +1558,7 @@ We now present $a2m(dot)$, the translation from #AxCut statements to #RISC-V ins
 An #AxCut program is a list of type declarations and top-level definitions.
 Type declarations have no runtime behavior and are not translated.
 
-Top-level definitions are translated by attaching labels to translated bodies.
+Top-level definitions are translated by attaching labels to the translated bodies.
 $ a2m(DEF f(Gamma) br(s)) & := && f: a2m(s) $
 
 A function call translates to a direct jump.
@@ -1606,7 +1606,7 @@ $
 
 ==== Let-Bindings and Pattern Matches
 $LET$ binds a constructor/destructor to a variable.
-Code generation stores fields in memory via $STORE$, then creates a two-register (co)variable:
+Code generation stores the fields in memory via $STORE$, and then creates a two-register (co)variable:
 pointer in the first component, tag index in the second.
 $
   a2m(LET v = X(Gamma_0)\; s) & := && STORE (REG_1 sp v) sp Gamma_0 \

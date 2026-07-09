@@ -119,7 +119,7 @@ Non-local control flow leads to nonlinear continuations.
   ))
 
   In $f$, the covariable $alpha$ is a name for the function continuation, corresponding to the explicit continuation introduced by $LABEL$ in #Fun.
-  The covariable $beta$ abstracts the current continuation where $g$ is called, which is introduced by the translation.
+  The covariable $beta$ abstracts the current continuation where $g$ is called; it is introduced by the translation.
   The continuation $alpha$ is not linear: it is passed to $g$ and used in a cut.
 
   In $g$, one of the two available continuations is invoked depending on $x$;
@@ -277,7 +277,7 @@ The typing rules from @app:form:fun:typing carry over to this fragment.
 Only the rules involving $LABEL$, $GOTO$ and covariables are removed.
 
 == Restricting #Core <sec:lin:core>
-After restricting #Fun, we must retain this linearity information in the next stage: #Core.
+After restricting #Fun, we must retain the gained information about local control flow in the next stage: #Core.
 
 One possible approach would be to extend #Core with explicit linearity annotations on continuations, or even all (co)variables.
 That approach is more general, which could be appealing, but it would require a considerably more complex linear type system.
@@ -373,7 +373,7 @@ Unlike fully linear systems, only consumer bindings are linear here; producer bi
 
 This is achieved by keeping the structural properties of the producer context $Gamma$:
 the order and multiplicity of bound variables are irrelevant, and #rn("Var") only checks for the presence of a variable.
-In contrast, the continuations must be used exactly once:
+In contrast, continuations must be used exactly once:
 they cannot be dropped and must be threaded through consumers and statements until they are type-checked by #rn("Covar").
 
 The typing rules are presented in @fig:lin:core:typing.
@@ -645,7 +645,7 @@ The key enforcement point for linearity is $SUBSTITUTE$, since that is where dup
 Therefore, rule #rn("Substitute") requires each linear variable in the current context to appear exactly once in the substitution list.
 
 Additionally, linear bindings must not be hidden inside unrestricted containers.
-Concretely: fields of nonlinear $LET$ bindings must be unrestricted, and environments of a nonlinear $CREATE$ binding must be unrestricted.
+Concretely: fields of nonlinear $LET$ bindings must be unrestricted, and environment bindings of nonlinear $CREATE$ closures must be unrestricted.
 Otherwise, a linear inner (co)variable could be duplicated or dropped indirectly through the unrestricted outer container.
 
 The additional premises for linear continuations are highlighted.
