@@ -17,3 +17,13 @@
 #let bindargs(x, c) = $scr(L)(#x)[#c]$
 
 #let shrink(x) = $scr(S)(#x)$
+
+// colors
+#let orange = rgb("#E69F00")
+#let green = rgb("#009E73")
+#let lightgreen = rgb("#B8E986")
+#let yellow = rgb("#F0E442")
+#let blue = rgb("#0072B8")
+#let lightblue = rgb("#56B4E9")
+#let red = rgb("#D0021B")
+#let purple = rgb("#9013FE")

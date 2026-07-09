@@ -1,4 +1,5 @@
 #import "settings.typ"
+#import "globals.typ": *
 
 #let _kw(it) = text(weight: "bold", raw(it))
 #let _macro(it) = smallcaps(it)
