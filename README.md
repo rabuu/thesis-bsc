@@ -5,6 +5,12 @@ The thesis is written in [Typst](https://typst.app) (0.15.0).
 
 ## Build Instructions
 There are [just](https://just.systems) recipes for common build and dev tasks.
+
+To sync all submodules:
+```
+just sync-submodules
+```
+
 To build the thesis:
 ```sh
 just compile

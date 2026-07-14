@@ -36,6 +36,9 @@ check-format:
 clean:
 	fd --no-ignore -e pdf -x rm -v {}
 
+sync-submodules:
+	git submodule update --init --recursive
+
 configure-git-hooks:
 	git config core.hooksPath scripts/git-hooks
 
